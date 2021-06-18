@@ -1,0 +1,15 @@
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.csproj.AssemblyReference.cache
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.GeneratedMSBuildEditorConfig.editorconfig
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.AssemblyInfoInputs.cache
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.AssemblyInfo.cs
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.csproj.CoreCompileInputs.cache
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\DAL.deps.json
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\DAL.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\ref\DAL.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\DAL.pdb
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\ref\DAL.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.pdb
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\DAL.runtimeconfig.json
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\bin\Debug\net5.0\DAL.runtimeconfig.dev.json
+S:\Škola\MUNI\PV178\Chos5555Bot\DAL\obj\Debug\net5.0\DAL.genruntimeconfig.cache
