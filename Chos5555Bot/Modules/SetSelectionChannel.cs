@@ -17,14 +17,13 @@ namespace Chos5555Bot.Modules
         [Command("setSelectionChannel")]
         private async Task Command()
         {
-            Console.WriteLine("inside command\n");
-
             var guild = await CheckGuild();
 
-            guild.SelectionRoom = new Room() { DiscordId = Context.Channel.Id };
-            await repo.UpdateGuild(guild);
+            var newRoom = new Room() { DiscordId = Context.Channel.Id };
+            await repo.AddRoom(newRoom);
 
-            Console.WriteLine("created guild\n");
+            guild.SelectionRoom = newRoom;
+            await repo.UpdateGuild(guild);
 
             foreach (var role in guild.Roles)
             {
