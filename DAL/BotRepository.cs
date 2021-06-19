@@ -68,6 +68,16 @@ namespace DAL
             }
         }
 
+        public async Task<Role> FindRoleByGame(Model.Game game)
+        {
+            using (var db = new BotDbContext())
+            {
+                return db.Roles.AsQueryable()
+                    .Where(r => r.Game == game)
+                    .FirstOrDefault();
+            }
+        }
+
         public async Task AddRoom(Room room)
         {
             using (var db = new BotDbContext())
@@ -82,6 +92,26 @@ namespace DAL
             using (var db = new BotDbContext())
             {
                 db.Rooms.Remove(room);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Room> FindRoom(IChannel channel)
+        {
+            using (var db = new BotDbContext())
+            {
+                return db.Rooms.AsQueryable()
+                    .Where(r => r.DiscordId == channel.Id)
+                    .FirstOrDefault();
+            }
+        }
+
+        public async Task UpdateRoom(Room room)
+        {
+            using (var db = new BotDbContext())
+            {
+                var currRoom = await db.Rooms.FirstAsync(r => r.DiscordId == room.DiscordId);
+                currRoom.IsSelectionRoom = room.IsSelectionRoom;
                 await db.SaveChangesAsync();
             }
         }
@@ -118,6 +148,28 @@ namespace DAL
             {
                 db.Games.Remove(game);
                 await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateGame(Model.Game game)
+        {
+            using (var db = new BotDbContext())
+            {
+                var currGame = await db.Games.FirstAsync(g => g.Id == game.Id);
+                currGame.Emote = game.Emote;
+                currGame.MessageId = game.MessageId;
+                currGame.Name = game.Name;
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Model.Game> FindGameByMessage(ulong messageId)
+        {
+            using (var db = new BotDbContext())
+            {
+                return db.Games.AsQueryable()
+                    .Where(g => g.MessageId == messageId)
+                    .FirstOrDefault();
             }
         }
     }
