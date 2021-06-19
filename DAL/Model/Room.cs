@@ -10,5 +10,6 @@ namespace DAL
     {
         public int Id { get; set; }
         public ulong DiscordId { get; set; }
+        public bool IsSelectionRoom { get; set; }
     }
 }
