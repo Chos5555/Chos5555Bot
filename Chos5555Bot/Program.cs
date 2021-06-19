@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Chos5555Bot;
 using Chos5555Bot.EventHandlers;
 using Microsoft.Extensions.DependencyInjection;
+using Chos5555Bot.Modules.Voice;
 
 public class Program
 {
@@ -54,7 +55,9 @@ public class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
-            .AddDbContext<DAL.BotDbContext>();
+            .AddDbContext<DAL.BotDbContext>()
+            .AddSingleton<DAL.BotRepository>()
+            .AddSingleton<Queue>();
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();
