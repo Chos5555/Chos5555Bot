@@ -40,7 +40,8 @@ public class Program
         await services.GetRequiredService<CommandHandler>().SetupAsync();    
 
         // React upond added emoji to message
-        client.ReactionAdded += Reactions.Handler;
+        client.ReactionAdded += Reactions.AddHandler;
+        client.ReactionRemoved += Reactions.RemoveHandler;
 
         // Block this task until the program is closed
         await Task.Delay(-1);

@@ -19,7 +19,13 @@ namespace Chos5555Bot.Modules
         {
             var guild = await CheckGuild();
 
-            var newRoom = new Room() { DiscordId = Context.Channel.Id };
+            if (guild.SelectionRoom.IsSelectionRoom)
+            {
+                guild.SelectionRoom.IsSelectionRoom = false;
+                await repo.UpdateRoom(guild.SelectionRoom);
+            }
+
+            var newRoom = new Room() { DiscordId = Context.Channel.Id, IsSelectionRoom = true };
             await repo.AddRoom(newRoom);
 
             guild.SelectionRoom = newRoom;
@@ -27,7 +33,7 @@ namespace Chos5555Bot.Modules
 
             foreach (var role in guild.Roles)
             {
-                await GameAnnouncer.AnnounceGame(role, guild.SelectionRoom);
+                await GameAnnouncer.AnnounceGame(role, guild.SelectionRoom, Context);
             }
         }
 
