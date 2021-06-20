@@ -11,9 +11,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Victoria" Version="4.0.17" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Config\Config.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
   </ItemGroup>
 

@@ -22,7 +22,7 @@ namespace Chos5555Bot.Modules.Voice
             if (remainingQueue.Count != 0)
             {
                 var guild = await repo.FindGuild(Context.Guild);
-                guild.Queue = remainingQueue;
+                //guild.Queue = remainingQueue;
                 await Context.Channel.SendMessageAsync("Saved your remaining queue, so you can play it next time");
             }
             queue.QueueMap.Remove(Context.Guild.Id);

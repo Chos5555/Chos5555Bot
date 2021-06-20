@@ -884,7 +884,7 @@
           }
         }
       },
-      "Newtonsoft.Json/12.0.2": {
+      "Newtonsoft.Json/13.0.1": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
@@ -1990,10 +1990,36 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
+      "Victoria/4.0.17": {
+        "type": "package",
+        "dependencies": {
+          "Discord.Net.WebSocket": "2.0.1"
+        },
+        "compile": {
+          "lib/netcoreapp3.0/Victoria.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.0/Victoria.dll": {}
+        }
+      },
+      "Config/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1"
+        },
+        "compile": {
+          "bin/placeholder/Config.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Config.dll": {}
+        }
+      },
       "DAL/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
+          "Config": "1.0.0",
           "Discord.Net": "2.4.0",
           "Microsoft.EntityFrameworkCore": "5.0.7",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.7",
@@ -3267,10 +3293,10 @@
         "version.txt"
       ]
     },
-    "Newtonsoft.Json/12.0.2": {
-      "sha512": "rTK0s2EKlfHsQsH6Yx2smvcTCeyoDNgCW7FEYyV01drPlh2T243PR2DiDXqtC5N4GDm4Ma/lkxfW5a/4793vbA==",
+    "Newtonsoft.Json/13.0.1": {
+      "sha512": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
       "type": "package",
-      "path": "newtonsoft.json/12.0.2",
+      "path": "newtonsoft.json/13.0.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3289,12 +3315,9 @@
         "lib/netstandard1.3/Newtonsoft.Json.xml",
         "lib/netstandard2.0/Newtonsoft.Json.dll",
         "lib/netstandard2.0/Newtonsoft.Json.xml",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/Newtonsoft.Json.dll",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/Newtonsoft.Json.xml",
-        "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.dll",
-        "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.xml",
-        "newtonsoft.json.12.0.2.nupkg.sha512",
-        "newtonsoft.json.nuspec"
+        "newtonsoft.json.13.0.1.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
       ]
     },
     "runtime.native.System/4.3.0": {
@@ -6827,6 +6850,26 @@
         "system.xml.xmlserializer.nuspec"
       ]
     },
+    "Victoria/4.0.17": {
+      "sha512": "GwhCWQ8E09qlLKecJD8tIdNUziZkCHVdLO4JRVTK7SOkgP0jZhjMM2aB0xeH1wCA4iQhaImlOinR85ySojTY9Q==",
+      "type": "package",
+      "path": "victoria/4.0.17",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netcoreapp3.0/Victoria.dll",
+        "lib/netcoreapp3.0/Victoria.xml",
+        "lib/netstandard2.0/Victoria.dll",
+        "lib/netstandard2.0/Victoria.xml",
+        "victoria.4.0.17.nupkg.sha512",
+        "victoria.nuspec"
+      ]
+    },
+    "Config/1.0.0": {
+      "type": "project",
+      "path": "../Config/Config.csproj",
+      "msbuildProject": "../Config/Config.csproj"
+    },
     "DAL/1.0.0": {
       "type": "project",
       "path": "../DAL/DAL.csproj",
@@ -6835,12 +6878,14 @@
   },
   "projectFileDependencyGroups": {
     "net5.0": [
+      "Config >= 1.0.0",
       "DAL >= 1.0.0",
       "Discord.Net >= 2.4.0",
       "Microsoft.AspNetCore.Hosting >= 2.2.7",
       "Microsoft.EntityFrameworkCore.SqlServer >= 5.0.7",
       "Microsoft.Extensions.DependencyInjection >= 5.0.1",
-      "Microsoft.Extensions.Hosting >= 5.0.0"
+      "Microsoft.Extensions.Hosting >= 5.0.0",
+      "Victoria >= 4.0.17"
     ]
   },
   "packageFolders": {
@@ -6870,6 +6915,9 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
+            "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
+              "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj"
+            },
             "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj": {
               "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj"
             }
@@ -6905,6 +6953,10 @@
           "Microsoft.Extensions.Hosting": {
             "target": "Package",
             "version": "[5.0.0, )"
+          },
+          "Victoria": {
+            "target": "Package",
+            "version": "[4.0.17, )"
           }
         },
         "imports": [

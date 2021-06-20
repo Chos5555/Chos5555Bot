@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -9,12 +10,14 @@ namespace Chos5555Bot
     {
         private readonly DiscordSocketClient client;
         private readonly CommandService commandService;
+        private readonly IServiceProvider services;
 
         // Retrieve client and CommandService instance via constructor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services)
         {
             this.client = client;
             this.commandService = commandService;
+            this.services = services;
         }
 
         public async Task SetupAsync()
@@ -23,7 +26,7 @@ namespace Chos5555Bot
             client.MessageReceived += HandleCommandAsync;
 
             // Here we discover all of the command modules in the entry assembly and load them
-            await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+            await commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: services);
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -44,7 +47,7 @@ namespace Chos5555Bot
             var context = new SocketCommandContext(client, message);
 
             // Execute the command with the command context we just created
-            await commandService.ExecuteAsync(context: context, argPos: argPos, services: null);
+            await commandService.ExecuteAsync(context: context, argPos: argPos, services: services);
         }
     }
 }

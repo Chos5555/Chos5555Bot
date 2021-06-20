@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DAL.Model;
 using Discord;
+using Microsoft.EntityFrameworkCore;
 
 namespace DAL
 {
@@ -32,7 +33,12 @@ namespace DAL
         {
             using (var db = new BotDbContext())
             {
-                return db.Guilds.AsQueryable()
+                return db.Guilds
+                    .Include(g => g.Roles)
+                    .ThenInclude(r => r.Game)
+                    .Include(g => g.SelectionRoom)
+                    .Include(g => g.Songs)
+                    .AsQueryable()
                     .Where(g => g.DiscordId == guild.Id)
                     .FirstOrDefault();
             }
@@ -42,14 +48,15 @@ namespace DAL
         {
             using (var db = new BotDbContext())
             {
-                var currGuild = await db.Guilds.FirstAsync(g => g.DiscordId == guild.DiscordId);
-                currGuild.Queue = guild.Queue;
-                currGuild.Roles = guild.Roles;
+                db.Guilds.Update(guild);
+                var currGuild = await db.Guilds
+                    .AsQueryable()
+                    .FirstAsync(g => g.DiscordId == guild.DiscordId);
                 currGuild.SelectionRoom = guild.SelectionRoom;
                 await db.SaveChangesAsync();
             }
         }
-
+        
         public async Task AddRole(Role role)
         {
             using (var db = new BotDbContext())
@@ -67,17 +74,31 @@ namespace DAL
                 await db.SaveChangesAsync();
             }
         }
+        
+        public async Task UpdateRole(Role role)
+        {
+            using (var db = new BotDbContext())
+            {
+                var currRole = await db.Roles.AsQueryable()
+                    .FirstAsync(r => r.DisordId == role.DisordId);
+                currRole.Game = role.Game;
+                await db.SaveChangesAsync();
+            }
+        }
 
         public async Task<Role> FindRoleByGame(Model.Game game)
         {
             using (var db = new BotDbContext())
             {
-                return db.Roles.AsQueryable()
+                return db.Roles
+                    .Include(r => r.Game)
+                    .Include(r => r.Rooms)
+                    .AsQueryable()
                     .Where(r => r.Game == game)
                     .FirstOrDefault();
             }
         }
-
+        
         public async Task AddRoom(Room room)
         {
             using (var db = new BotDbContext())
@@ -100,19 +121,10 @@ namespace DAL
         {
             using (var db = new BotDbContext())
             {
-                return db.Rooms.AsQueryable()
+                return db.Rooms
+                    .AsQueryable()
                     .Where(r => r.DiscordId == channel.Id)
                     .FirstOrDefault();
-            }
-        }
-
-        public async Task UpdateRoom(Room room)
-        {
-            using (var db = new BotDbContext())
-            {
-                var currRoom = await db.Rooms.FirstAsync(r => r.DiscordId == room.DiscordId);
-                currRoom.IsSelectionRoom = room.IsSelectionRoom;
-                await db.SaveChangesAsync();
             }
         }
 
@@ -155,7 +167,8 @@ namespace DAL
         {
             using (var db = new BotDbContext())
             {
-                var currGame = await db.Games.FirstAsync(g => g.Id == game.Id);
+                var currGame = await db.Games.AsQueryable()
+                    .FirstAsync(g => g.Id == game.Id);
                 currGame.Emote = game.Emote;
                 currGame.MessageId = game.MessageId;
                 currGame.Name = game.Name;
@@ -167,7 +180,8 @@ namespace DAL
         {
             using (var db = new BotDbContext())
             {
-                return db.Games.AsQueryable()
+                return db.Games
+                    .AsQueryable()
                     .Where(g => g.MessageId == messageId)
                     .FirstOrDefault();
             }

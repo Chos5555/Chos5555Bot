@@ -2,16 +2,22 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Chos5555Bot;
 using Chos5555Bot.EventHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Chos5555Bot.Modules.Voice;
+using Chos5555Bot.Modules;
+using DAL;
+using Victoria;
 
 public class Program
 {
-    public static DiscordSocketClient _client;
+    private DiscordSocketClient _client;
+    private CommandService _commands;
+    private Config.ConfigService _configService;
+    private Config.Config _config;
+
 
     static void Main(string[] args = null)
     {
@@ -20,25 +26,42 @@ public class Program
 
     public async Task MainAsync()
     {
-        var services = ConfigureServices();
+        // Setup config for caching
+        var socketConfig = new DiscordSocketConfig { MessageCacheSize = 100 };
 
-            var client = services.GetRequiredService<DiscordSocketClient>();
+        // Setup services
+        var services = ConfigureServices(socketConfig);
+
+        // Assign client and commands to local variables
+        var client = services.GetRequiredService<DiscordSocketClient>();
         _client = client;
+
+        var commands = services.GetRequiredService<CommandService>();
+        _commands = commands;
+
+        // Get token from config file
+        _configService = new();
+        _config = _configService.GetConfig();
+
+        Console.WriteLine($"{_config.ConnectionString}");
+
+        // Setup GameAnnouncer
+        GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>());
 
         // Log information to the console
         client.Log += Log;
 
-        // Read the token from file
-        var token = File.ReadAllText("token.txt");
-
         // Log in to Discord
-        await client.LoginAsync(TokenType.Bot, token);
+        await client.LoginAsync(TokenType.Bot, _config.Token);
 
         // Start connection logic
         await client.StartAsync();
 
         // Start CommandHandler
-        await services.GetRequiredService<CommandHandler>().SetupAsync();    
+        await services.GetRequiredService<CommandHandler>().SetupAsync();
+
+        // Initialize MusicService
+        await services.GetRequiredService<MusicService>().InitializeAsync();
 
         // React upond added emoji to message
         client.ReactionAdded += Reactions.AddHandler;
@@ -48,16 +71,19 @@ public class Program
         await Task.Delay(-1);
     }
 
-    private ServiceProvider ConfigureServices()
+    private ServiceProvider ConfigureServices(DiscordSocketConfig config)
     {
         // Setup services and dependency injection
         var services = new ServiceCollection()
-            .AddSingleton<DiscordSocketClient>()
+            .AddSingleton(new DiscordSocketClient(config))
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
-            .AddDbContext<DAL.BotDbContext>()
-            .AddSingleton<DAL.BotRepository>()
-            .AddSingleton<Queue>();
+            .AddDbContext<BotDbContext>()
+            .AddSingleton<BotRepository>()
+            .AddSingleton<Queue>()
+            .AddSingleton<LavaRestClient>()
+            .AddSingleton<LavaSocketClient>()
+            .AddSingleton<MusicService>();
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();

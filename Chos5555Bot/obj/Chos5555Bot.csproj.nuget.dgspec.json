@@ -28,6 +28,9 @@
           "net5.0": {
             "targetAlias": "net5.0",
             "projectReferences": {
+              "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
+                "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj"
+              },
               "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj": {
                 "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj"
               }
@@ -63,6 +66,70 @@
             "Microsoft.Extensions.Hosting": {
               "target": "Package",
               "version": "[5.0.0, )"
+            },
+            "Victoria": {
+              "target": "Package",
+              "version": "[4.0.17, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.301\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+        "projectName": "Config",
+        "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+        "packagesPath": "C:\\Users\\Honza\\.nuget\\packages\\",
+        "outputPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Honza\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
             }
           },
           "imports": [
@@ -107,7 +174,11 @@
         "frameworks": {
           "net5.0": {
             "targetAlias": "net5.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
+                "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
