@@ -1,0 +1,4 @@
+﻿{
+    "Token": "ODU1NDA3NTYzODM5MzczMzEy.YMyCXw.-ZurzLgg2c-OTe_l7R5DNwyPYOw",
+    "ConnectionString": "server=(localdb)\\MSSQLLocalDB; Initial Catalog=BotDB; Integrated Security=true"
+}

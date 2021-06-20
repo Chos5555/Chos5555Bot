@@ -1,5 +1,4 @@
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Chos5555Bot.exe
-S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\token.txt
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Chos5555Bot.deps.json
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Chos5555Bot.runtimeconfig.json
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Chos5555Bot.runtimeconfig.dev.json
@@ -107,3 +106,6 @@ S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\runtimes\win\lib\n
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
 S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Victoria.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Config.dll
+S:\Škola\MUNI\PV178\Chos5555Bot\Chos5555Bot\bin\Debug\net5.0\Config.pdb

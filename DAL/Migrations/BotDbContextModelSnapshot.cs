@@ -154,15 +154,15 @@ namespace DAL.Migrations
             modelBuilder.Entity("DAL.Song", b =>
                 {
                     b.HasOne("DAL.Guild", null)
-                        .WithMany("Queue")
+                        .WithMany("Songs")
                         .HasForeignKey("GuildId");
                 });
 
             modelBuilder.Entity("DAL.Guild", b =>
                 {
-                    b.Navigation("Queue");
-
                     b.Navigation("Roles");
+
+                    b.Navigation("Songs");
                 });
 
             modelBuilder.Entity("DAL.Role", b =>

@@ -8,12 +8,14 @@
     ".NETCoreApp,Version=v5.0": {
       "Chos5555Bot/1.0.0": {
         "dependencies": {
+          "Config": "1.0.0",
           "DAL": "1.0.0",
           "Discord.Net": "2.4.0",
           "Microsoft.AspNetCore.Hosting": "2.2.7",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.7",
           "Microsoft.Extensions.DependencyInjection": "5.0.1",
-          "Microsoft.Extensions.Hosting": "5.0.0"
+          "Microsoft.Extensions.Hosting": "5.0.0",
+          "Victoria": "4.0.17"
         },
         "runtime": {
           "Chos5555Bot.dll": {}
@@ -41,7 +43,7 @@
       },
       "Discord.Net.Core/2.4.0": {
         "dependencies": {
-          "Newtonsoft.Json": "12.0.2",
+          "Newtonsoft.Json": "13.0.1",
           "System.Collections.Immutable": "5.0.0",
           "System.Interactive.Async": "4.0.0"
         },
@@ -716,7 +718,7 @@
       "Microsoft.IdentityModel.JsonWebTokens/5.6.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Tokens": "5.6.0",
-          "Newtonsoft.Json": "12.0.2"
+          "Newtonsoft.Json": "13.0.1"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
@@ -748,7 +750,7 @@
       "Microsoft.IdentityModel.Protocols.OpenIdConnect/5.6.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Protocols": "5.6.0",
-          "Newtonsoft.Json": "12.0.2",
+          "Newtonsoft.Json": "13.0.1",
           "System.IdentityModel.Tokens.Jwt": "5.6.0"
         },
         "runtime": {
@@ -761,7 +763,7 @@
       "Microsoft.IdentityModel.Tokens/5.6.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Logging": "5.6.0",
-          "Newtonsoft.Json": "12.0.2",
+          "Newtonsoft.Json": "13.0.1",
           "System.Security.Cryptography.Cng": "4.5.0"
         },
         "runtime": {
@@ -810,11 +812,11 @@
           }
         }
       },
-      "Newtonsoft.Json/12.0.2": {
+      "Newtonsoft.Json/13.0.1": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
-            "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.2.23222"
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.1.25517"
           }
         }
       },
@@ -1070,7 +1072,7 @@
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "5.6.0",
           "Microsoft.IdentityModel.Tokens": "5.6.0",
-          "Newtonsoft.Json": "12.0.2"
+          "Newtonsoft.Json": "13.0.1"
         },
         "runtime": {
           "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.dll": {
@@ -1523,8 +1525,28 @@
           "System.Xml.XmlDocument": "4.3.0"
         }
       },
+      "Victoria/4.0.17": {
+        "dependencies": {
+          "Discord.Net.WebSocket": "2.4.0"
+        },
+        "runtime": {
+          "lib/netcoreapp3.0/Victoria.dll": {
+            "assemblyVersion": "4.0.17.0",
+            "fileVersion": "4.0.17.0"
+          }
+        }
+      },
+      "Config/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1"
+        },
+        "runtime": {
+          "Config.dll": {}
+        }
+      },
       "DAL/1.0.0": {
         "dependencies": {
+          "Config": "1.0.0",
           "Discord.Net": "2.4.0",
           "Microsoft.EntityFrameworkCore": "5.0.7",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.7",
@@ -1971,12 +1993,12 @@
       "path": "microsoft.win32.systemevents/4.7.0",
       "hashPath": "microsoft.win32.systemevents.4.7.0.nupkg.sha512"
     },
-    "Newtonsoft.Json/12.0.2": {
+    "Newtonsoft.Json/13.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rTK0s2EKlfHsQsH6Yx2smvcTCeyoDNgCW7FEYyV01drPlh2T243PR2DiDXqtC5N4GDm4Ma/lkxfW5a/4793vbA==",
-      "path": "newtonsoft.json/12.0.2",
-      "hashPath": "newtonsoft.json.12.0.2.nupkg.sha512"
+      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
+      "path": "newtonsoft.json/13.0.1",
+      "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
     "runtime.native.System/4.3.0": {
       "type": "package",
@@ -2488,6 +2510,18 @@
       "sha512": "sha512-MYoTCP7EZ98RrANESW05J5ZwskKDoN0AuZ06ZflnowE50LTpbR5yRg3tHckTVm5j/m47stuGgCrCHWePyHS70Q==",
       "path": "system.xml.xmlserializer/4.3.0",
       "hashPath": "system.xml.xmlserializer.4.3.0.nupkg.sha512"
+    },
+    "Victoria/4.0.17": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GwhCWQ8E09qlLKecJD8tIdNUziZkCHVdLO4JRVTK7SOkgP0jZhjMM2aB0xeH1wCA4iQhaImlOinR85ySojTY9Q==",
+      "path": "victoria/4.0.17",
+      "hashPath": "victoria.4.0.17.nupkg.sha512"
+    },
+    "Config/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "DAL/1.0.0": {
       "type": "project",

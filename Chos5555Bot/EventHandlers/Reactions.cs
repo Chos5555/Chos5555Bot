@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using DAL;
@@ -13,6 +9,9 @@ namespace Chos5555Bot.EventHandlers
     {
         public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            // TODO check if channel is selecction room
+            // TODO figure out dependency injection of repo
+
             BotRepository repo = new BotRepository();
             var game = await repo.FindGameByMessage(reaction.MessageId);
 
@@ -22,12 +21,19 @@ namespace Chos5555Bot.EventHandlers
             }
 
             var role = await repo.FindRoleByGame(game);
-            //TODO figure out how to get role from guild and assign role to user in reaction
-            
+
+
+            var message = await cachedMessage.GetOrDownloadAsync();
+            var discordGuild = (message.Channel as SocketGuildChannel).Guild;
+            IGuildUser user = discordGuild.GetUser(reaction.UserId);
+
+            await user.AddRoleAsync(role.DisordId);
         }
 
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            // TODO
+
             BotRepository repo = new BotRepository();
             var game = await repo.FindGameByMessage(reaction.MessageId);
 
@@ -38,7 +44,10 @@ namespace Chos5555Bot.EventHandlers
 
             var role = await repo.FindRoleByGame(game);
 
-            //TODO remove role from user
+            var message = await cachedMessage.GetOrDownloadAsync();
+            var discordGuild = (message.Channel as SocketGuildChannel).Guild;
+
+            await (reaction.User.Value as IGuildUser).RemoveRoleAsync(discordGuild.GetRole(role.DisordId));
         }
     }
 }

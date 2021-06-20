@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace DAL
 {
@@ -7,8 +6,8 @@ namespace DAL
     {
         public int Id { get; set; }
         public ulong DiscordId { get; set; }
-        public List<Role> Roles { get; set; } = new List<Role>();
-        public Room SelectionRoom { get; set; }
-        public List<Song> Queue { get; set; } = new List<Song>();
+        public virtual Room SelectionRoom { get; set; }
+        public virtual ICollection<Song> Songs { get; set; } = new List<Song>();
+        public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
     }
 }

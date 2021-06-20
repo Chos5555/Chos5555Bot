@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using DAL;
@@ -11,26 +7,37 @@ namespace Chos5555Bot.Modules
 {
     public class SetSelectionChannel : ModuleBase<SocketCommandContext>
     {
-        private BotRepository repo = new BotRepository();
+        private readonly BotRepository repo;
+
+        public SetSelectionChannel(BotRepository repo)
+        {
+            this.repo = repo;
+        }
 
         [RequireUserPermission(ChannelPermission.ManageChannels)]
         [Command("setSelectionChannel")]
         private async Task Command()
         {
             var guild = await CheckGuild();
+            Room oldRoom = null;
 
-            if (guild.SelectionRoom.IsSelectionRoom)
+            // TODO: Fix old room deleting
+            if (guild.SelectionRoom is not null)
             {
-                guild.SelectionRoom.IsSelectionRoom = false;
-                await repo.UpdateRoom(guild.SelectionRoom);
+                oldRoom = guild.SelectionRoom;
             }
 
-            var newRoom = new Room() { DiscordId = Context.Channel.Id, IsSelectionRoom = true };
+            var newRoom = new Room() { DiscordId = Context.Channel.Id };
             await repo.AddRoom(newRoom);
 
             guild.SelectionRoom = newRoom;
             await repo.UpdateGuild(guild);
 
+            if (oldRoom is not null)
+            {
+                await repo.RemoveRoom(oldRoom);
+            }
+            
             foreach (var role in guild.Roles)
             {
                 await GameAnnouncer.AnnounceGame(role, guild.SelectionRoom, Context);
