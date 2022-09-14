@@ -11,9 +11,9 @@ namespace DAL.Model
         public string Emote { get; set; }
         public ulong SelectionMessageId { get; set; } = 0;
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
-        public ICollection<Role> Roles { get; set; } = new List<Role>();
+        public Role GameRole { get; set; }
         public bool HaveActiveRole { get; set; }
-        public Role ActiveRole { get; set; }
+        public ICollection<Role> ActiveRoles { get; set; } = new List<Role>();
         public Room ActiveCheckRoom { get; set; }
         public Room ModAcceptRoom { get; set; }
         public ICollection<Role> ModAcceptRoles { get; set; } = new List<Role>();

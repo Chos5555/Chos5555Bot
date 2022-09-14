@@ -50,7 +50,7 @@ namespace DAL
                     .FirstOrDefault();
             }
         }
-        
+
         public async Task UpdateGuild(Guild guild)
         {
             using (var db = new BotDbContext())
@@ -69,7 +69,7 @@ namespace DAL
                 await db.SaveChangesAsync();
             }
         }
-        
+
         public async Task AddRole(Role role)
         {
             using (var db = new BotDbContext())
@@ -88,15 +88,33 @@ namespace DAL
             }
         }
 
-        public async Task<ICollection<Role>> FindRoleByGame(Model.Game game)
+        public async Task<Role> FindGameRoleByGame(Model.Game game)
         {
             await using (var db = new BotDbContext())
             {
                 return db.Games
                     .AsQueryable()
                     .Where(g => g == game)
-                    .Select(g => g.Roles)
+                    .Select(g => g.GameRole)
                     .FirstOrDefault();
+            }
+        }
+
+        public async Task<ICollection<Role>> FindAllRolesByGame(Model.Game game)
+        {
+            await using (var db = new BotDbContext())
+            {
+                var res = new List<Role>();
+                var roles = db.Games
+                    .AsQueryable()
+                    .Where(g => g == game)
+                    .FirstOrDefault();
+
+                res.Add(roles.GameRole);
+                res.AddRange(roles.ActiveRoles);
+                res.AddRange(roles.ModAcceptRoles);
+
+                return res;
             }
         }
         
@@ -175,8 +193,9 @@ namespace DAL
                 currGame.Emote = game.Emote;
                 currGame.SelectionMessageId = game.SelectionMessageId;
                 currGame.Rooms = game.Rooms;
+                currGame.GameRole = game.GameRole;
                 currGame.HaveActiveRole = game.HaveActiveRole;
-                currGame.ActiveRole = game.ActiveRole;
+                currGame.ActiveRoles = game.ActiveRoles;
                 currGame.ActiveCheckRoom = game.ActiveCheckRoom;
                 currGame.ModAcceptRoom = game.ModAcceptRoom;
                 currGame.ModAcceptRoles = game.ModAcceptRoles;

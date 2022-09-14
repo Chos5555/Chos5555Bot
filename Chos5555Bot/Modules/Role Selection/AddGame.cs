@@ -49,7 +49,7 @@ namespace Chos5555Bot.Modules
 
             await repo.AddRole(role);
 
-            game.Roles.Add(role);
+            game.GameRole = role;
             await repo.UpdateGuild(guild);
 
             var selectionRoom = guild.SelectionRoom;

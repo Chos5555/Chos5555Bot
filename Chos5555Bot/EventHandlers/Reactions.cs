@@ -33,7 +33,7 @@ namespace Chos5555Bot.EventHandlers
 
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
-            // TODO
+            // TODO remove ALL roles of a game
 
             BotRepository repo = new BotRepository();
             var game = await repo.FindGameByMessage(reaction.MessageId);
