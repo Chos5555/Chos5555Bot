@@ -18,16 +18,25 @@ namespace Chos5555Bot.Modules
             this.repo = repo;
         }
 
-        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        /* 
+         * Add command for basic games (without active role)
+         */
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
         private async Task Command(IRole discordRole, [Remainder] string name)
         {
             // TODO: parse emote
             string emote = "<:heart:856258639177842708>";
 
-            DAL.Model.Game game = new() { Name = name, Emote = emote };
+            var guild = await repo.FindGuild(Context.Guild);
+            Role role = new() { DisordId = discordRole.Id, Guild = guild };
 
-            Role role = new() { DisordId = discordRole.Id, Game = game };
+            DAL.Model.Game game = new()
+            {
+                Name = name,
+                Emote = emote,
+                Guild = guild
+            };
 
             var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name);
             var discordVoiceRoom = await Context.Guild.CreateVoiceChannelAsync(name);
@@ -35,19 +44,21 @@ namespace Chos5555Bot.Modules
             Room textRoom = new() { DiscordId = discordTextRoom.Id };
             Room voiceRoom = new() { DiscordId = discordVoiceRoom.Id };
 
-            role.Rooms.Add(textRoom);
-            role.Rooms.Add(voiceRoom);
+            game.Rooms.Add(textRoom);
+            game.Rooms.Add(voiceRoom);
 
             await repo.AddRole(role);
 
-            var guild = await repo.FindGuild(Context.Guild);
-
-            guild.Roles.Add(role);
+            game.Roles.Add(role);
             await repo.UpdateGuild(guild);
 
             var selectionRoom = guild.SelectionRoom;
 
-            await GameAnnouncer.AnnounceGame(role, selectionRoom, Context);
+            await GameAnnouncer.AnnounceGame(game, selectionRoom, Context);
         }
+
+        /* TODO: Add extended command
+         * Extended command for games with active roles
+         */
     }
 }

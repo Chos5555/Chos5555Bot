@@ -7,8 +7,6 @@ namespace Chos5555Bot.Modules
 {
     public static class GameAnnouncer
     {
-        private static readonly IEmote reactEmote = new Emoji("\U0001f495");
-
         private static BotRepository repo = null;
 
         public static void InitAnnouncer(BotRepository repo)
@@ -17,10 +15,12 @@ namespace Chos5555Bot.Modules
         }
 
         public static async Task AnnounceGame(DAL.Model.Game game, Room selectionRoom, SocketCommandContext context)
-        {            
+        {
+            IEmote reactEmote = Emote.Parse(game.Emote);
+
             var discordSelectionRoom = context.Guild.GetTextChannel(selectionRoom.DiscordId);
 
-            var message = await discordSelectionRoom.SendMessageAsync($"{game.Name} {Emote.Parse(game.Emote)}");
+            var message = await discordSelectionRoom.SendMessageAsync($"{game.Name} {reactEmote}");
 
             game.SelectionMessageId = message.Id;
 

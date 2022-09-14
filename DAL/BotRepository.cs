@@ -39,6 +39,17 @@ namespace DAL
                     .FirstOrDefault();
             }
         }
+
+        public async Task<Guild> FindGuildById(ulong id)
+        {
+            await using (var db = new BotDbContext())
+            {
+                return db.Guilds
+                    .AsQueryable()
+                    .Where(g => g.DiscordId == id)
+                    .FirstOrDefault();
+            }
+        }
         
         public async Task UpdateGuild(Guild guild)
         {
