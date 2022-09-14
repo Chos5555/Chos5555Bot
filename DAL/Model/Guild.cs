@@ -6,8 +6,12 @@ namespace DAL
     {
         public int Id { get; set; }
         public ulong DiscordId { get; set; }
-        public virtual Room SelectionRoom { get; set; }
-        public virtual ICollection<Song> Songs { get; set; } = new List<Song>();
-        public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
+        public Room SelectionRoom { get; set; }
+        public ulong GameCategoryId { get; set; }
+        public ulong ArchiveCategoryId { get; set; }
+        public Room RuleRoom { get; set; }
+        public string RuleMessageText { get; set; }
+        public ulong RuleMessageId { get; set; }
+        public ICollection<Song> Songs { get; set; } = new List<Song>();
     }
 }

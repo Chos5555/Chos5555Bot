@@ -53,11 +53,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+      "projectUniqueName": "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj",
       "projectName": "Config",
-      "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+      "projectPath": "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj",
       "packagesPath": "C:\\Users\\Honza\\.nuget\\packages\\",
-      "outputPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\obj\\",
+      "outputPath": "S:\\Coding\\Chos5555Bot\\Config\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Honza\\AppData\\Roaming\\NuGet\\NuGet.Config",

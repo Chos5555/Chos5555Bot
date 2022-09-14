@@ -7,7 +7,8 @@ namespace Chos5555Bot.EventHandlers
 {
     public class Reactions
     {
-        public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        //TODO: Add handler for mod room, rule room
+        public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             // TODO check if channel is selecction room
             // TODO figure out dependency injection of repo
@@ -30,7 +31,7 @@ namespace Chos5555Bot.EventHandlers
             await user.AddRoleAsync(role.DisordId);
         }
 
-        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             // TODO
 

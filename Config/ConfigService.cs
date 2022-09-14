@@ -7,7 +7,7 @@ namespace Config
     {
         public Config GetConfig()
         {
-            var file = "../../../Config.json";
+            var file = "../../../../Chos5555Bot/Config.json";
             var data = File.ReadAllText(file);
             var result =  JsonConvert.DeserializeObject<Config>(data);
             return result;

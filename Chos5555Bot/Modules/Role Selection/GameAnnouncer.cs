@@ -16,15 +16,15 @@ namespace Chos5555Bot.Modules
             GameAnnouncer.repo ??= repo;
         }
 
-        public static async Task AnnounceGame(Role role, Room selectionRoom, SocketCommandContext context)
+        public static async Task AnnounceGame(DAL.Model.Game game, Room selectionRoom, SocketCommandContext context)
         {            
             var discordSelectionRoom = context.Guild.GetTextChannel(selectionRoom.DiscordId);
 
-            var message = await discordSelectionRoom.SendMessageAsync($"{role.Game.Name} {Emote.Parse(role.Game.Emote)}");
+            var message = await discordSelectionRoom.SendMessageAsync($"{game.Name} {Emote.Parse(game.Emote)}");
 
-            role.Game.MessageId = message.Id;
+            game.SelectionMessageId = message.Id;
 
-            await repo.UpdateGame(role.Game);
+            await repo.UpdateGame(game);
 
             await message.AddReactionAsync(reactEmote);
         }

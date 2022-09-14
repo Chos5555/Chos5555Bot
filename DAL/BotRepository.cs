@@ -31,13 +31,9 @@ namespace DAL
 
         public async Task<Guild> FindGuild(IGuild guild)
         {
-            using (var db = new BotDbContext())
+            await using (var db = new BotDbContext())
             {
                 return db.Guilds
-                    .Include(g => g.Roles)
-                    .ThenInclude(r => r.Game)
-                    .Include(g => g.SelectionRoom)
-                    .Include(g => g.Songs)
                     .AsQueryable()
                     .Where(g => g.DiscordId == guild.Id)
                     .FirstOrDefault();
@@ -53,6 +49,12 @@ namespace DAL
                     .AsQueryable()
                     .FirstAsync(g => g.DiscordId == guild.DiscordId);
                 currGuild.SelectionRoom = guild.SelectionRoom;
+                currGuild.GameCategoryId = guild.GameCategoryId;
+                currGuild.ArchiveCategoryId = guild.ArchiveCategoryId;
+                currGuild.RuleRoom = guild.RuleRoom;
+                currGuild.RuleMessageText = guild.RuleMessageText;
+                currGuild.RuleMessageId = guild.RuleMessageId;
+                currGuild.Songs = guild.Songs;
                 await db.SaveChangesAsync();
             }
         }
@@ -74,27 +76,15 @@ namespace DAL
                 await db.SaveChangesAsync();
             }
         }
-        
-        public async Task UpdateRole(Role role)
-        {
-            using (var db = new BotDbContext())
-            {
-                var currRole = await db.Roles.AsQueryable()
-                    .FirstAsync(r => r.DisordId == role.DisordId);
-                currRole.Game = role.Game;
-                await db.SaveChangesAsync();
-            }
-        }
 
-        public async Task<Role> FindRoleByGame(Model.Game game)
+        public async Task<ICollection<Role>> FindRoleByGame(Model.Game game)
         {
-            using (var db = new BotDbContext())
+            await using (var db = new BotDbContext())
             {
-                return db.Roles
-                    .Include(r => r.Game)
-                    .Include(r => r.Rooms)
+                return db.Games
                     .AsQueryable()
-                    .Where(r => r.Game == game)
+                    .Where(g => g == game)
+                    .Select(g => g.Roles)
                     .FirstOrDefault();
             }
         }
@@ -119,7 +109,7 @@ namespace DAL
 
         public async Task<Room> FindRoom(IChannel channel)
         {
-            using (var db = new BotDbContext())
+            await using (var db = new BotDbContext())
             {
                 return db.Rooms
                     .AsQueryable()
@@ -169,20 +159,38 @@ namespace DAL
             {
                 var currGame = await db.Games.AsQueryable()
                     .FirstAsync(g => g.Id == game.Id);
-                currGame.Emote = game.Emote;
-                currGame.MessageId = game.MessageId;
                 currGame.Name = game.Name;
+                currGame.Guild = game.Guild;
+                currGame.Emote = game.Emote;
+                currGame.SelectionMessageId = game.SelectionMessageId;
+                currGame.Rooms = game.Rooms;
+                currGame.HaveActiveRole = game.HaveActiveRole;
+                currGame.ActiveRole = game.ActiveRole;
+                currGame.ActiveCheckRoom = game.ActiveCheckRoom;
+                currGame.ModAcceptRoom = game.ModAcceptRoom;
+                currGame.ModAcceptRoles = game.ModAcceptRoles;
                 await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<ICollection<Model.Game>> FingGamesByGuild(Guild guild)
+        {
+            await using (var db = new BotDbContext())
+            {
+                return db.Games
+                    .AsQueryable()
+                    .Where(g => g.Guild.DiscordId == guild.DiscordId)
+                    .ToList();
             }
         }
 
         public async Task<Model.Game> FindGameByMessage(ulong messageId)
         {
-            using (var db = new BotDbContext())
+            await using (var db = new BotDbContext())
             {
                 return db.Games
                     .AsQueryable()
-                    .Where(g => g.MessageId == messageId)
+                    .Where(g => g.SelectionMessageId == messageId)
                     .FirstOrDefault();
             }
         }

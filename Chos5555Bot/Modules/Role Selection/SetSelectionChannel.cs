@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using DAL;
+using System.Collections.Generic;
 
 namespace Chos5555Bot.Modules
 {
@@ -37,10 +38,11 @@ namespace Chos5555Bot.Modules
             {
                 await repo.RemoveRoom(oldRoom);
             }
-            
-            foreach (var role in guild.Roles)
+
+            ICollection<DAL.Model.Game> Games = await repo.FingGamesByGuild(guild);
+            foreach (var game in Games)
             {
-                await GameAnnouncer.AnnounceGame(role, guild.SelectionRoom, Context);
+                await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
             }
         }
 

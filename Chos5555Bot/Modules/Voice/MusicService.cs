@@ -151,9 +151,10 @@ namespace Chos5555Bot.Modules.Voice
             await player.PlayAsync(nextTrack);
         }
 
-        private async Task LogAsync(LogMessage logMessage)
+        private static Task LogAsync(LogMessage logMessage)
         {
             Console.WriteLine(logMessage.ToString());
+            return Task.CompletedTask;
         }
     }
 }

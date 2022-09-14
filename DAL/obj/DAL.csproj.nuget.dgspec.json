@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj": {}
+    "S:\\Coding\\Chos5555Bot\\DAL\\DAL.csproj": {}
   },
   "projects": {
-    "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
+    "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+        "projectUniqueName": "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj",
         "projectName": "Config",
-        "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj",
+        "projectPath": "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj",
         "packagesPath": "C:\\Users\\Honza\\.nuget\\packages\\",
-        "outputPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\obj\\",
+        "outputPath": "S:\\Coding\\Chos5555Bot\\Config\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Honza\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -64,14 +64,14 @@
         }
       }
     },
-    "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj": {
+    "S:\\Coding\\Chos5555Bot\\DAL\\DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj",
+        "projectUniqueName": "S:\\Coding\\Chos5555Bot\\DAL\\DAL.csproj",
         "projectName": "DAL",
-        "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\DAL.csproj",
+        "projectPath": "S:\\Coding\\Chos5555Bot\\DAL\\DAL.csproj",
         "packagesPath": "C:\\Users\\Honza\\.nuget\\packages\\",
-        "outputPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\DAL\\obj\\",
+        "outputPath": "S:\\Coding\\Chos5555Bot\\DAL\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Honza\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -88,8 +88,8 @@
           "net5.0": {
             "targetAlias": "net5.0",
             "projectReferences": {
-              "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj": {
-                "projectPath": "S:\\Škola\\MUNI\\PV178\\Chos5555Bot\\Config\\Config.csproj"
+              "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj": {
+                "projectPath": "S:\\Coding\\Chos5555Bot\\Config\\Config.csproj"
               }
             }
           }
@@ -106,7 +106,7 @@
           "dependencies": {
             "Discord.Net": {
               "target": "Package",
-              "version": "[2.4.0, )"
+              "version": "[3.8.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
