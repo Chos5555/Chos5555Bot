@@ -21,7 +21,7 @@ namespace Chos5555Bot.EventHandlers
                 return;
             }
 
-            var role = await repo.FindRoleByGame(game);
+            var role = await repo.FindGameRoleByGame(game);
 
 
             var message = await cachedMessage.GetOrDownloadAsync();
@@ -43,12 +43,9 @@ namespace Chos5555Bot.EventHandlers
                 return;
             }
 
-            var role = await repo.FindRoleByGame(game);
+            var roles = await repo.FindAllRoleIdsByGame(game);
 
-            var message = await cachedMessage.GetOrDownloadAsync();
-            var discordGuild = (message.Channel as SocketGuildChannel).Guild;
-
-            await (reaction.User.Value as IGuildUser).RemoveRoleAsync(discordGuild.GetRole(role.DisordId));
+            await (reaction.User.Value as IGuildUser).RemoveRolesAsync(roles);
         }
     }
 }

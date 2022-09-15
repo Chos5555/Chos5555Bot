@@ -117,6 +117,19 @@ namespace DAL
                 return res;
             }
         }
+
+        public async Task<ICollection<ulong>> FindAllRoleIdsByGame(Model.Game game)
+        {
+            await using (var db = new BotDbContext())
+            {
+                var res = new List<ulong>();
+                foreach (Role role in await FindAllRolesByGame(game))
+                {
+                    res.Add(role.DisordId);
+                }
+                return res;
+            }
+        }
         
         public async Task AddRoom(Room room)
         {
