@@ -16,7 +16,7 @@ namespace Chos5555Bot.Modules
 
         public static async Task AnnounceGame(DAL.Model.Game game, Room selectionRoom, SocketCommandContext context)
         {
-            IEmote reactEmote = Emote.Parse(game.Emote);
+            IEmote reactEmote = Emote.Parse(game.ActiveEmote);
 
             var discordSelectionRoom = context.Guild.GetTextChannel(selectionRoom.DiscordId);
 

@@ -90,6 +90,7 @@ public class Program
         return serviceProvider;
     }
 
+    //TODO: Improve log, log errors into a file, log successes to console
     private static Task Log(LogMessage message)
     {
         Console.WriteLine(message.ToString());

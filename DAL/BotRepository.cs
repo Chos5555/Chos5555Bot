@@ -60,6 +60,7 @@ namespace DAL
                     .AsQueryable()
                     .FirstAsync(g => g.DiscordId == guild.DiscordId);
                 currGuild.SelectionRoom = guild.SelectionRoom;
+                currGuild.MemberRole = guild.MemberRole;
                 currGuild.GameCategoryId = guild.GameCategoryId;
                 currGuild.ArchiveCategoryId = guild.ArchiveCategoryId;
                 currGuild.RuleRoom = guild.RuleRoom;
@@ -131,6 +132,18 @@ namespace DAL
             }
         }
         
+        public async Task<Role> FindRoleByGameAndGuild (IEmote emote, ulong guildId)
+        {
+            await using (var db = new BotDbContext())
+            {
+                return db.Roles
+                    .AsQueryable()
+                    .Where(r => r.Guild.DiscordId == guildId)
+                    .Where(r => r.Emote == emote)
+                    .FirstOrDefault();
+            }
+        }
+
         public async Task AddRoom(Room room)
         {
             using (var db = new BotDbContext())
@@ -203,11 +216,11 @@ namespace DAL
                     .FirstAsync(g => g.Id == game.Id);
                 currGame.Name = game.Name;
                 currGame.Guild = game.Guild;
-                currGame.Emote = game.Emote;
+                currGame.ActiveEmote = game.ActiveEmote;
                 currGame.SelectionMessageId = game.SelectionMessageId;
                 currGame.Rooms = game.Rooms;
                 currGame.GameRole = game.GameRole;
-                currGame.HaveActiveRole = game.HaveActiveRole;
+                currGame.HasActiveRole = game.HasActiveRole;
                 currGame.ActiveRoles = game.ActiveRoles;
                 currGame.ActiveCheckRoom = game.ActiveCheckRoom;
                 currGame.ModAcceptRoom = game.ModAcceptRoom;
@@ -227,13 +240,24 @@ namespace DAL
             }
         }
 
-        public async Task<Model.Game> FindGameByMessage(ulong messageId)
+        public async Task<Model.Game> FindGameBySelectionMessage(ulong messageId)
         {
             await using (var db = new BotDbContext())
             {
                 return db.Games
                     .AsQueryable()
                     .Where(g => g.SelectionMessageId == messageId)
+                    .FirstOrDefault();
+            }
+        }
+
+        public async Task<Model.Game> FindGameByModRoom(ulong channelId)
+        {
+            await using (var db = new BotDbContext())
+            {
+                return db.Games
+                    .AsQueryable()
+                    .Where(g => g.ModAcceptRoom.DiscordId == channelId)
                     .FirstOrDefault();
             }
         }

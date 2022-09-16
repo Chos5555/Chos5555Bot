@@ -7,6 +7,7 @@ namespace DAL
         public int Id { get; set; }
         public ulong DiscordId { get; set; }
         public Room SelectionRoom { get; set; }
+        public Role MemberRole { get; set; }
         public ulong GameCategoryId { get; set; }
         public ulong ArchiveCategoryId { get; set; }
         public Room RuleRoom { get; set; }
