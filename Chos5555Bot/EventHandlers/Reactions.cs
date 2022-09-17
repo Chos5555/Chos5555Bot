@@ -2,6 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 using DAL;
+using System.Linq;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -10,6 +11,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cacheChannel, SocketReaction reaction)
         {
             // TODO figure out dependency injection of repo
+            // TODO: remove reactions that are not correct in rule and selection rooms
 
             BotRepository repo = new BotRepository();
 
@@ -35,11 +37,15 @@ namespace Chos5555Bot.EventHandlers
                 await AddedSelectionRoomReaction(selectionRoomGame, reaction.User.Value);
             }
 
-            //TODO: Add active check room handler, which posts to mod room
+            if (activeCheckRoomGame is not null)
+            {
+                await AddedActiveCheckRoomReaction(activeCheckRoomGame, reaction.User.Value, channel.Guild);
+            }
         }
 
         public static async Task AddedRuleRoomReaction(IUser user, Guild guild)
         {
+            // TODO: add check if emote is checkmark
             await (user as SocketGuildUser).AddRoleAsync(guild.MemberRole.DisordId);
         }
 
@@ -48,7 +54,7 @@ namespace Chos5555Bot.EventHandlers
             //TODO: remove, add dependency injection
             BotRepository repo = new BotRepository();
 
-            var userId = message.MentionedUserIds.GetEnumerator().Current;
+            var userId = message.MentionedUserIds.FirstOrDefault();
             var user = await guild.GetUserAsync(userId);
             var role = await repo.FindRoleByGameAndGuild(emote, guild.Id);
 
@@ -57,16 +63,35 @@ namespace Chos5555Bot.EventHandlers
 
         public static async Task AddedSelectionRoomReaction(DAL.Model.Game game, IUser user)
         {
+            // TODO: add check if emote is game.Emote
             await (user as SocketGuildUser).AddRoleAsync(game.GameRole.DisordId);
         }
 
-        public static async Task AddedActiveCheckRoomReaction(DAL.Model.Game game)
+        public static async Task AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild)
         {
-            //TODO: check if game has mod room, if not add active role/s, if it has, post to mod room, with all active role emotes for mod to choose
+            if (game.ModAcceptRoles.Count == 0)
+            {
+                await (user as SocketGuildUser).AddRolesAsync(
+                    game.ActiveRoles
+                    .Select(r => r.DisordId));
+            } else
+            {
+                var message = $"{user} wants to join you in {game.Name}, select the role you want to give them:\n";
+                foreach (var role in game.ActiveRoles)
+                {
+                    message += $"{role.Emote} for role {guild.GetRole(role.DisordId).Name}\n";
+                }
+
+                var sentMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(message);
+
+                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.Emote));
+            }
         }
 
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
+            // TODO: add dependency injection
+            // TODO: add handlers for removing role when in rule room, selection room or active room
             BotRepository repo = new BotRepository();
             var game = await repo.FindGameBySelectionMessage(reaction.MessageId);
 
