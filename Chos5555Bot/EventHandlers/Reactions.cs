@@ -16,8 +16,9 @@ namespace Chos5555Bot.EventHandlers
             var channel = cacheChannel
                 .GetOrDownloadAsync().Result as SocketGuildChannel;
             var guild = await repo.FindGuildById(channel.Guild.Id);
-            var game = await repo.FindGameBySelectionMessage(reaction.MessageId);
+            var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
             var modRoomGame = await repo.FindGameByModRoom(channel.Id);
+            var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
 
             if (channel.Id == guild.RuleRoom.DiscordId)
             {
@@ -26,23 +27,15 @@ namespace Chos5555Bot.EventHandlers
 
             if (modRoomGame is not null)
             {
-                await AddedModRoomReaction(cachedMessage.GetOrDownloadAsync().Result, game, channel.Guild, reaction.Emote);
+                await AddedModRoomReaction(cachedMessage.GetOrDownloadAsync().Result, channel.Guild, reaction.Emote);
             }
 
-            //TODO: Add selection room handler, which posts to mod room
-            if (game is null)
+            if (selectionRoomGame is not null)
             {
-                return;
+                await AddedSelectionRoomReaction(selectionRoomGame, reaction.User.Value);
             }
 
-            var role = await repo.FindGameRoleByGame(game);
-
-
-            var message = await cachedMessage.GetOrDownloadAsync();
-            var discordGuild = (message.Channel as SocketGuildChannel).Guild;
-            IGuildUser user = discordGuild.GetUser(reaction.UserId);
-
-            await user.AddRoleAsync(role.DisordId);
+            //TODO: Add active check room handler, which posts to mod room
         }
 
         public static async Task AddedRuleRoomReaction(IUser user, Guild guild)
@@ -50,7 +43,7 @@ namespace Chos5555Bot.EventHandlers
             await (user as SocketGuildUser).AddRoleAsync(guild.MemberRole.DisordId);
         }
 
-        public static async Task AddedModRoomReaction(IUserMessage message, DAL.Model.Game game, IGuild guild, IEmote emote)
+        public static async Task AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote)
         {
             //TODO: remove, add dependency injection
             BotRepository repo = new BotRepository();
@@ -60,6 +53,16 @@ namespace Chos5555Bot.EventHandlers
             var role = await repo.FindRoleByGameAndGuild(emote, guild.Id);
 
             await (user as SocketGuildUser).AddRoleAsync(role.DisordId);
+        }
+
+        public static async Task AddedSelectionRoomReaction(DAL.Model.Game game, IUser user)
+        {
+            await (user as SocketGuildUser).AddRoleAsync(game.GameRole.DisordId);
+        }
+
+        public static async Task AddedActiveCheckRoomReaction(DAL.Model.Game game)
+        {
+            //TODO: check if game has mod room, if not add active role/s, if it has, post to mod room, with all active role emotes for mod to choose
         }
 
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)

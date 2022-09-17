@@ -261,5 +261,16 @@ namespace DAL
                     .FirstOrDefault();
             }
         }
+
+        public async Task<Model.Game> FindGameByActiveCheckRoom(ulong channelId)
+        {
+            await using (var db = new BotDbContext())
+            {
+                return db.Games
+                    .AsQueryable()
+                    .Where(g => g.ActiveCheckRoom.DiscordId == channelId)
+                    .FirstOrDefault();
+            }
+        }
     }
 }

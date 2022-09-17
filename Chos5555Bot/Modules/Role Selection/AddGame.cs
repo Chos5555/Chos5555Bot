@@ -38,6 +38,7 @@ namespace Chos5555Bot.Modules
                 Guild = guild
             };
 
+            // TODO: Make rooms only accessible with game role
             var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name);
             var discordVoiceRoom = await Context.Guild.CreateVoiceChannelAsync(name);
 
