@@ -1,4 +1,5 @@
 ﻿
+using Discord;
 using System.Collections.Generic;
 
 namespace DAL.Model
@@ -8,7 +9,7 @@ namespace DAL.Model
         public int Id { get; set; }
         public string Name { get; set; }
         public Guild Guild { get; set; }
-        public string ActiveEmote { get; set; }
+        public IEmote ActiveEmote { get; set; }
         public ulong SelectionMessageId { get; set; } = 0;
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public Role GameRole { get; set; }

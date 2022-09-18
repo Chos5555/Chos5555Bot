@@ -34,7 +34,7 @@ namespace Chos5555Bot.Modules
             DAL.Model.Game game = new()
             {
                 Name = name,
-                ActiveEmote = emote,
+                ActiveEmote = Emote.Parse(emote),
                 Guild = guild
             };
 
