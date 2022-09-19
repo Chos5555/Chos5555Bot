@@ -3,19 +3,21 @@ using Discord;
 using Discord.WebSocket;
 using DAL;
 using System.Linq;
+using DAL.Model;
+using System.Runtime.Serialization;
 
 namespace Chos5555Bot.EventHandlers
 {
     public class Reactions
     {
         // TODO: Add comments
-        public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cacheChannel, SocketReaction reaction)
+        public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
         {
             // TODO figure out dependency injection of repo
 
             BotRepository repo = new BotRepository();
 
-            var channel = cacheChannel
+            var channel = cachedChannel
                 .GetOrDownloadAsync().Result as SocketGuildChannel;
             var guild = await repo.FindGuildById(channel.Guild.Id);
             var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
@@ -68,7 +70,7 @@ namespace Chos5555Bot.EventHandlers
                 return true;
             }
 
-            //TODO: remove, add dependency injection
+            //TODO: add dependency injection
             BotRepository repo = new BotRepository();
 
             var userId = message.MentionedUserIds.FirstOrDefault();
@@ -119,21 +121,51 @@ namespace Chos5555Bot.EventHandlers
             }
         }
 
-        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
         {
             // TODO: add dependency injection
-            // TODO: add handlers for removing role when in rule room, selection room or active room
             BotRepository repo = new BotRepository();
-            var game = await repo.FindGameBySelectionMessage(reaction.MessageId);
 
-            if (game is null)
+            var channel = cachedChannel
+                .GetOrDownloadAsync().Result as SocketGuildChannel;
+            var guild = await repo.FindGuildById(channel.Guild.Id);
+            var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
+            var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
+
+            if (channel.Id == guild.RuleRoom.DiscordId)
             {
-                return;
+                await RemovedRuleRoomReaction(reaction.User.Value);
             }
+
+            if (selectionRoomGame is not null)
+            {
+                await RemoveSelectionRoomReaction(selectionRoomGame, reaction.User.Value);
+            }
+
+            if (activeCheckRoomGame is not null)
+            {
+                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction.User.Value);
+            }
+        }
+
+        public static async Task RemovedRuleRoomReaction(IUser user)
+        {
+            await (user as SocketGuildUser).RemoveRolesAsync((user as SocketGuildUser).Roles);
+        }
+
+        public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user)
+        {
+            //TODO: add dependency injection
+            BotRepository repo = new BotRepository();
 
             var roles = await repo.FindAllRoleIdsByGame(game);
 
-            await (reaction.User.Value as IGuildUser).RemoveRolesAsync(roles);
+            await (user as IGuildUser).RemoveRolesAsync(roles);
+        }
+
+        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, IUser user)
+        {
+            await (user as IGuildUser).RemoveRolesAsync(game.ActiveRoles.Select(r => r.DisordId));
         }
     }
 }
