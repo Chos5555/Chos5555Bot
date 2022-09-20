@@ -8,9 +8,19 @@ using System.Runtime.Serialization;
 
 namespace Chos5555Bot.EventHandlers
 {
+    /// <summary>
+    /// Class <c>Reactions</c> contains handlers for adding/removing reactions and other helper methods
+    /// </summary>
     public class Reactions
     {
-        // TODO: Add comments
+        /// <summary>
+        /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
+        /// Removes the reaction if a wrong reaction was added to a selection message.
+        /// </summary>
+        /// <param name="cachedMessage">cCached message</param>
+        /// <param name="cachedChannel">Cached channel</param>
+        /// <param name="reaction">Reaction</param>
+        /// <returns>Task</returns>
         public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
         {
             // TODO figure out dependency injection of repo
@@ -52,8 +62,18 @@ namespace Chos5555Bot.EventHandlers
             }
         }
 
+        /// <summary>
+        /// Handles reaction added to the rule room message. If the Emote reacted with was correct, gives member role to the user.
+        /// </summary>
+        /// <param name="user">User that reacted to rule room message.</param>
+        /// <param name="guild">Guild in which the reaction was added.</param>
+        /// <param name="emote">Emote with which was reacted.</param>
+        /// <returns>
+        /// True if the reaction should be removed, false otherwise.
+        /// </returns>
         public static async Task<bool> AddedRuleRoomReaction(IUser user, Guild guild, IEmote emote)
         {
+            // Check if right emote was used
             if (emote.Name != ":white_check_mark:")
             {
                 return true;
@@ -63,8 +83,20 @@ namespace Chos5555Bot.EventHandlers
             return false;
         }
 
+        /// <summary>
+        /// Handles reaction added to a message in the mod room. Gives user mentioned in the message the role selected by mod.
+        /// </summary>
+        /// <param name="message">Message to which the reaction was added.</param>
+        /// <param name="guild">Guild in which the reaction was added.</param>
+        /// <param name="emote">Emote with which was reacted.</param>
+        /// <returns>
+        /// True if the reaction should be removed, false otherwise.
+        /// </returns>
         public static async Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote)
         {
+            // TODO: Test if bot reacts to itself, if so, fix so he doesn't remove reactions from itself (check if user is bot)
+
+            // If there is only 1 of the new emote, it was not given by the bot, thus is not a valid role emote
             if (message.Reactions[emote].ReactionCount == 1)
             {
                 return true;
@@ -77,12 +109,23 @@ namespace Chos5555Bot.EventHandlers
             var user = await guild.GetUserAsync(userId);
             var role = await repo.FindRoleByGameAndGuild(emote, guild.Id);
 
+            // Add role designated by reacted emote
             await (user as SocketGuildUser).AddRoleAsync(role.DisordId);
             return false;
         }
 
+        /// <summary>
+        /// Handles reaction added to a message in the game selection room. Gives user the appropriate game role.
+        /// </summary>
+        /// <param name="game">Game to which message was reacted.</param>
+        /// <param name="user">User that reacted to the game selection message.</param>
+        /// <param name="emote">Emote with which was reacted.</param>
+        /// <returns>
+        /// True if the reaction should be removed, false otherwise.
+        /// </returns>
         public static async Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
         {
+            // Check if right emote was used
             if (emote != game.ActiveEmote)
             {
                 return true;
@@ -92,13 +135,26 @@ namespace Chos5555Bot.EventHandlers
             return false;
         }
 
+        /// <summary>
+        /// Handles reaction added to a message in the active check room. Gives all of the games active roles if there is no designated mod room.
+        /// If there is a mod room, posts a message to mod room and adds all possible active role reactions.
+        /// </summary>
+        /// <param name="game">Game in which active room was reacted.</param>
+        /// <param name="user">User that reacted to the game active room message.</param>
+        /// <param name="guild">Guild in which the reaction was added.</param>
+        /// <param name="emote">Emote with which was reacted.</param>
+        /// <returns>
+        /// True if the reaction should be removed, false otherwise.
+        /// </returns>
         public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IEmote emote)
         {
+            // Check if right emote was used
             if (emote != game.ActiveEmote)
             {
                 return true;
             }
 
+            // If there are no mod role, add all active roles
             if (game.ModAcceptRoles.Count == 0)
             {
                 await (user as SocketGuildUser).AddRolesAsync(
@@ -106,6 +162,7 @@ namespace Chos5555Bot.EventHandlers
                     .Select(r => r.DisordId));
                 return false;
             } else
+            // If there is a mod role, post into mod room and react with all active role emotes for that game
             {
                 var message = $"{user} wants to join you in {game.Name}, select the role you want to give them:\n";
                 foreach (var role in game.ActiveRoles)
@@ -121,6 +178,13 @@ namespace Chos5555Bot.EventHandlers
             }
         }
 
+        /// <summary>
+        /// This method is the main handler for removing reactions. Checks in which room the reaction was added and calls the appropriate handler.
+        /// </summary>
+        /// <param name="cachedMessage">Cached message</param>
+        /// <param name="cachedChannel">Cached channel</param>
+        /// <param name="reaction">Reaction</param>
+        /// <returns>Nothing</returns>
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
         {
             // TODO: add dependency injection
@@ -148,11 +212,22 @@ namespace Chos5555Bot.EventHandlers
             }
         }
 
+        /// <summary>
+        /// Handles reaction removed for a message in the rule room. Removes all of the servers roles.
+        /// </summary>
+        /// <param name="user">User that removed the reaction</param>
+        /// <returns>Nothing</returns>
         public static async Task RemovedRuleRoomReaction(IUser user)
         {
             await (user as SocketGuildUser).RemoveRolesAsync((user as SocketGuildUser).Roles);
         }
 
+        /// <summary>
+        /// Handles reaction removed for a message in the selection room. Removes all of the game roles.
+        /// </summary>
+        /// <param name="game">Game whose reaction was removed from the selection message.</param>
+        /// <param name="user">User that removed the reaction.</param>
+        /// <returns>Nothing</returns>
         public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user)
         {
             //TODO: add dependency injection
@@ -163,6 +238,12 @@ namespace Chos5555Bot.EventHandlers
             await (user as IGuildUser).RemoveRolesAsync(roles);
         }
 
+        /// <summary>
+        /// Handles reaction removed for a message in the game active room. Removes all of the game active roles.
+        /// </summary>
+        /// <param name="game">Game whose reaction was removed from the active message.</param>
+        /// <param name="user">User that removed the reaction.</param>
+        /// <returns>Nothing</returns>
         public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, IUser user)
         {
             await (user as IGuildUser).RemoveRolesAsync(game.ActiveRoles.Select(r => r.DisordId));
