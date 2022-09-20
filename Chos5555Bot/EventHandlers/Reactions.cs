@@ -3,8 +3,6 @@ using Discord;
 using Discord.WebSocket;
 using DAL;
 using System.Linq;
-using DAL.Model;
-using System.Runtime.Serialization;
 
 namespace Chos5555Bot.EventHandlers
 {
