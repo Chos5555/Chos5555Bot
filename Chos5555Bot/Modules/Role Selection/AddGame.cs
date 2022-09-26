@@ -25,6 +25,7 @@ namespace Chos5555Bot.Modules
         [Command("addGame")]
         private async Task Command(IRole discordRole, [Remainder] string name)
         {
+            Console.Write(name);
             // TODO: parse emote
             string emote = "<:heart:856258639177842708>";
 

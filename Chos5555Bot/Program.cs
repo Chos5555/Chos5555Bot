@@ -81,8 +81,7 @@ public class Program
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
             .AddSingleton<Queue>()
-            .AddSingleton<LavaRestClient>()
-            .AddSingleton<LavaSocketClient>()
+            .AddLavaNode(x => { x.SelfDeaf = false; })
             .AddSingleton<MusicService>();
 
         // Setup provider

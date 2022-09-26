@@ -4,54 +4,53 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Victoria;
-using Victoria.Entities;
+using Victoria.EventArgs;
+using Victoria.Responses.Search;
+using Victoria.Enums;
 
 namespace Chos5555Bot.Modules.Voice
 {
     public class MusicService
     {
-        private readonly LavaRestClient _lavaRestClient;
-        private readonly LavaSocketClient _lavaSocketClient;
+        private readonly LavaNode _lavaNode;
         private readonly DiscordSocketClient _client;
 
-        public MusicService(LavaRestClient lavaRestClient, DiscordSocketClient client,
-            LavaSocketClient lavaSocketClient)
+        public MusicService(LavaNode lavaNode, DiscordSocketClient client)
         {
             _client = client;
-            _lavaRestClient = lavaRestClient;
-            _lavaSocketClient = lavaSocketClient;
-
+            _lavaNode = lavaNode;
         }
 
         public Task InitializeAsync()
         {
             _client.Ready += ClientReadyAsync;
-            _lavaSocketClient.Log += LogAsync;
-            _lavaSocketClient.OnTrackFinished += TrackFinished;
+            _lavaNode.OnLog += LogAsync;
+            _lavaNode.OnTrackEnded += TrackFinished;
+
             return Task.CompletedTask;
         }
 
         public async Task ConnectAsync(SocketVoiceChannel voiceChannel, ITextChannel textChannel)
         {
-            await _lavaSocketClient.ConnectAsync(voiceChannel, textChannel);
+            await _lavaNode.JoinAsync(voiceChannel, textChannel);
         }
 
         public async Task LeaveAsync(SocketVoiceChannel voiceChannel)
-            => await _lavaSocketClient.DisconnectAsync(voiceChannel);
+            => await _lavaNode.LeaveAsync(voiceChannel);
 
-        public async Task<string> PlayAsync(string query, ulong guildId)
+        public async Task<string> PlayAsync(string query, IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
-            var results = await _lavaRestClient.SearchYouTubeAsync(query);
+            var _player = _lavaNode.GetPlayer(guild);
+            var results = await _lavaNode.SearchYouTubeAsync(query);
 
-            if (results.LoadType == LoadType.NoMatches || results.LoadType == LoadType.LoadFailed)
+            if (results.Status == SearchStatus.NoMatches || results.Status == SearchStatus.LoadFailed)
             {
                 return "No matches found.";
             }
 
             var track = results.Tracks.FirstOrDefault();
 
-            if (_player.IsPlaying)
+            if (_player.PlayerState == PlayerState.Playing)
             {
                 _player.Queue.Enqueue(track);
                 return $"{track.Title} has been added to the queue.";
@@ -63,29 +62,29 @@ namespace Chos5555Bot.Modules.Voice
             }
         }
 
-        public async Task<string> StopAsync(ulong guildId)
+        public async Task<string> StopAsync(IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
+            var _player = _lavaNode.GetPlayer(guild);
             if (_player is null)
                 return "Error with Player";
             await _player.StopAsync();
             return "Music Playback Stopped.";
         }
 
-        public async Task<string> SkipAsync(ulong guildId)
+        public async Task<string> SkipAsync(IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
-            if (_player is null || _player.Queue.Items.Count() is 0)
+            var _player = _lavaNode.GetPlayer(guild);
+            if (_player is null || _player.Queue.Count == 0)
                 return "Nothing in queue.";
 
-            var oldTrack = _player.CurrentTrack;
+            var oldTrack = _player.Track;
             await _player.SkipAsync();
-            return $"Skiped: {oldTrack.Title} \nNow Playing: {_player.CurrentTrack.Title}";
+            return $"Skiped: {oldTrack.Title} \nNow Playing: {_player.Track.Title}";
         }
 
-        public async Task<string> SetVolumeAsync(int vol, ulong guildId)
+        public async Task<string> SetVolumeAsync(ushort vol, IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
+            var _player = _lavaNode.GetPlayer(guild);
             if (_player is null)
                 return "Player isn't playing.";
 
@@ -94,17 +93,17 @@ namespace Chos5555Bot.Modules.Voice
                 return "Please use a number between 2 - 150";
             }
 
-            await _player.SetVolumeAsync(vol);
+            await _player.UpdateVolumeAsync(vol);
             return $"Volume set to: {vol}";
         }
 
-        public async Task<string> PauseOrResumeAsync(ulong guildId)
+        public async Task<string> PauseOrResumeAsync(IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
+            var _player = _lavaNode.GetPlayer(guild);
             if (_player is null)
                 return "Player isn't playing.";
 
-            if (!_player.IsPaused)
+            if (_player.PlayerState != PlayerState.Paused)
             {
                 await _player.PauseAsync();
                 return "Player is Paused.";
@@ -116,13 +115,13 @@ namespace Chos5555Bot.Modules.Voice
             }
         }
 
-        public async Task<string> ResumeAsync(ulong guildId)
+        public async Task<string> ResumeAsync(IGuild guild)
         {
-            var _player = _lavaSocketClient.GetPlayer(guildId);
+            var _player = _lavaNode.GetPlayer(guild);
             if (_player is null)
                 return "Player isn't playing.";
 
-            if (_player.IsPaused)
+            if (_player.PlayerState == PlayerState.Paused)
             {
                 await _player.ResumeAsync();
                 return "Playback resumed.";
@@ -134,14 +133,20 @@ namespace Chos5555Bot.Modules.Voice
 
         private async Task ClientReadyAsync()
         {
-            await _lavaSocketClient.StartAsync(_client);
+            // Avoid calling ConnectAsync again if it's already connected 
+            // (It throws InvalidOperationException if it's already connected).
+            if (!_lavaNode.IsConnected)
+            {
+                await _lavaNode.ConnectAsync();
+            }
         }
 
-        private async Task TrackFinished(LavaPlayer player, LavaTrack track, TrackEndReason reason)
+        private async Task TrackFinished(TrackEndedEventArgs args)
         {
-            if (!reason.ShouldPlayNext())
+            if (args.Reason != TrackEndReason.Finished)
                 return;
 
+            var player = args.Player;
             if (!player.Queue.TryDequeue(out var item) || !(item is LavaTrack nextTrack))
             {
                 await player.TextChannel.SendMessageAsync("There are no more tracks in the queue.");
