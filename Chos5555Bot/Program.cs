@@ -14,7 +14,6 @@ using Victoria;
 public class Program
 {
     private DiscordSocketClient _client;
-    private CommandService _commands;
     private Config.ConfigService _configService;
     private Config.Config _config;
 
@@ -23,11 +22,15 @@ public class Program
     {
         new Program().MainAsync().GetAwaiter().GetResult();
     }
-
+    
     public async Task MainAsync()
     {
         // Setup config for caching
-        var socketConfig = new DiscordSocketConfig { MessageCacheSize = 100 };
+        var socketConfig = new DiscordSocketConfig()
+        {
+            MessageCacheSize = 100,
+            GatewayIntents = GatewayIntents.All
+        };
 
         // Setup services
         var services = ConfigureServices(socketConfig);
@@ -35,9 +38,6 @@ public class Program
         // Assign client and commands to local variables
         var client = services.GetRequiredService<DiscordSocketClient>();
         _client = client;
-
-        var commands = services.GetRequiredService<CommandService>();
-        _commands = commands;
 
         // Get token from config file
         _configService = new();
@@ -86,6 +86,7 @@ public class Program
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();
+
         return serviceProvider;
     }
 
