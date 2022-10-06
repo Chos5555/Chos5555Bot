@@ -11,7 +11,7 @@ namespace Chos5555Bot.Modules
 {
     public class AddGame : ModuleBase<SocketCommandContext>
     {
-        private BotRepository repo;
+        private readonly BotRepository repo;
 
         public AddGame(BotRepository repo)
         {
@@ -25,7 +25,7 @@ namespace Chos5555Bot.Modules
         [Command("addGame")]
         private async Task Command(IRole discordRole, [Remainder] string name)
         {
-            Console.Write(name);
+            Console.Write($"Add game command with role: {discordRole} and remainder: {name}\n");
             // TODO: parse emote
             string emote = "<:heart:856258639177842708>";
 
@@ -40,8 +40,17 @@ namespace Chos5555Bot.Modules
             };
 
             // TODO: Make rooms only accessible with game role
-            var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name);
-            var discordVoiceRoom = await Context.Guild.CreateVoiceChannelAsync(name);
+            var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name, p => {
+                // TODO: Add permission overwrites
+            });
+            var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name, p => {
+                p.CategoryId = gameCategory.Id;
+                p.Topic = $"General channel for {name}.";
+            });
+            var discordVoiceRoom = await Context.Guild.CreateVoiceChannelAsync(name, p =>
+            {
+                p.CategoryId = gameCategory.Id;
+            });
 
             Room textRoom = new() { DiscordId = discordTextRoom.Id };
             Room voiceRoom = new() { DiscordId = discordVoiceRoom.Id };
