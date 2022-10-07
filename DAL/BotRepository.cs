@@ -61,7 +61,6 @@ namespace DAL
                     .FirstAsync(g => g.DiscordId == guild.DiscordId);
                 currGuild.SelectionRoom = guild.SelectionRoom;
                 currGuild.MemberRole = guild.MemberRole;
-                currGuild.GameCategoryId = guild.GameCategoryId;
                 currGuild.ArchiveCategoryId = guild.ArchiveCategoryId;
                 currGuild.RuleRoom = guild.RuleRoom;
                 currGuild.RuleMessageText = guild.RuleMessageText;
