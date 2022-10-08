@@ -5,6 +5,5 @@ namespace DAL
     {
         public int Id { get; set; }
         public ulong DiscordId { get; set; }
-        public Guild Guild { get; set; }
     }
 }
