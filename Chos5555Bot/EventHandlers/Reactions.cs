@@ -41,7 +41,7 @@ namespace Chos5555Bot.EventHandlers
 
             if (modRoomGame is not null)
             {
-                removeReaction = await AddedModRoomReaction(cachedMessage.GetOrDownloadAsync().Result, channel.Guild, reaction.Emote);
+                removeReaction = await AddedModRoomReaction(cachedMessage.GetOrDownloadAsync().Result, channel.Guild, reaction.Emote, modRoomGame);
             }
 
             if (selectionRoomGame is not null)
@@ -90,7 +90,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote)
+        public static async Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
         {
             // TODO: Test if bot reacts to itself, if so, fix so he doesn't remove reactions from itself (check if user is bot)
 
@@ -105,7 +105,7 @@ namespace Chos5555Bot.EventHandlers
 
             var userId = message.MentionedUserIds.FirstOrDefault();
             var user = await guild.GetUserAsync(userId);
-            var role = await repo.FindRoleByGameAndGuild(emote, guild.Id);
+            var role = await repo.FindRoleByEmoteAndGame(emote, game);
 
             // Add role designated by reacted emote
             await (user as SocketGuildUser).AddRoleAsync(role.DisordId);
