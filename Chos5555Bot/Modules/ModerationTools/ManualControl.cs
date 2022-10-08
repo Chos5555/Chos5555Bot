@@ -26,6 +26,8 @@ namespace Chos5555Bot.Modules.ModerationTools
             if (guild is not null)
                 return;
             guild = new Guild() { DiscordId = Context.Guild.Id };
+            await repo.AddGuild(guild);
+            Console.WriteLine($"Added guild {Context.Guild.Name} to the DB.");
         }
 
         // TODO Guild.GameCategoryId command

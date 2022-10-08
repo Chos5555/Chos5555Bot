@@ -30,19 +30,24 @@ namespace Chos5555Bot.Modules
             string emote = "<:heart:856258639177842708>";
 
             var guild = await repo.FindGuild(Context.Guild);
-            Role role = new() { DisordId = discordRole.Id, Guild = guild };
+            Role role = new() { DisordId = discordRole.Id };
 
             DAL.Model.Game game = new()
             {
                 Name = name,
                 ActiveEmote = Emote.Parse(emote),
                 Guild = guild
-            };
+            };            
 
             // TODO: Make rooms only accessible with game role
-            var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name, p => {
-                // TODO: Add permission overwrites
-            });
+            var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
+            // Deny viewing channel for everyone role
+            await gameCategory.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole,
+                OverwritePermissions.DenyAll(gameCategory).Modify(viewChannel: PermValue.Deny));
+            // Allow viewing channel for game role
+            await gameCategory.AddPermissionOverwriteAsync(discordRole,
+                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
+
             var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name, p => {
                 p.CategoryId = gameCategory.Id;
                 p.Topic = $"General channel for {name}.";
@@ -63,9 +68,7 @@ namespace Chos5555Bot.Modules
             game.GameRole = role;
             await repo.UpdateGuild(guild);
 
-            var selectionRoom = guild.SelectionRoom;
-
-            await GameAnnouncer.AnnounceGame(game, selectionRoom, Context);
+            await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
         }
 
         /* TODO: Add extended command
