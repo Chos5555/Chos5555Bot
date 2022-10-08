@@ -11,52 +11,50 @@ namespace DAL
 {
     public class BotRepository
     {
+        private readonly BotDbContext context;
+        
+        public BotRepository()
+        {
+            context = new BotDbContext(new DbContextOptions<BotDbContext>());
+        }
+        // TODO: Add context in dependency injection?? (research)
+        public BotRepository(BotDbContext ctx)
+        {
+            context = ctx;
+        }
+
         public async Task AddGuild(Guild guild)
         {
-            using (var db = new BotDbContext())
-            {
-                await db.Guilds.AddAsync(guild);
-                await db.SaveChangesAsync();
-            }
+                await context.Guilds.AddAsync(guild);
+                await context.SaveChangesAsync();
         }
 
         public async Task RemoveGuild(Guild guild)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Guilds.Remove(guild);
-                await db.SaveChangesAsync();
-            }
+                context.Guilds.Remove(guild);
+                await context.SaveChangesAsync();
         }
 
         public async Task<Guild> FindGuild(IGuild guild)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Guilds
+                return context.Guilds
                     .AsQueryable()
                     .Where(g => g.DiscordId == guild.Id)
                     .FirstOrDefault();
-            }
         }
 
         public async Task<Guild> FindGuildById(ulong id)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Guilds
+                return context.Guilds
                     .AsQueryable()
                     .Where(g => g.DiscordId == id)
                     .FirstOrDefault();
-            }
         }
 
         public async Task UpdateGuild(Guild guild)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Guilds.Update(guild);
-                var currGuild = await db.Guilds
+                context.Guilds.Update(guild);
+                var currGuild = await context.Guilds
                     .AsQueryable()
                     .FirstAsync(g => g.DiscordId == guild.DiscordId);
                 currGuild.SelectionRoom = guild.SelectionRoom;
@@ -66,46 +64,34 @@ namespace DAL
                 currGuild.RuleMessageText = guild.RuleMessageText;
                 currGuild.RuleMessageId = guild.RuleMessageId;
                 currGuild.Songs = guild.Songs;
-                await db.SaveChangesAsync();
-            }
+                await context.SaveChangesAsync();
         }
 
         public async Task AddRole(Role role)
         {
-            using (var db = new BotDbContext())
-            {
-                await db.Roles.AddAsync(role);
-                await db.SaveChangesAsync();
-            }
+                await context.Roles.AddAsync(role);
+                await context.SaveChangesAsync();
         }
 
         public async Task RemoveRole(Role role)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Roles.Remove(role);
-                await db.SaveChangesAsync();
-            }
+                context.Roles.Remove(role);
+                await context.SaveChangesAsync();
         }
 
         public async Task<Role> FindGameRoleByGame(Model.Game game)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Games
+                return context.Games
                     .AsQueryable()
                     .Where(g => g == game)
                     .Select(g => g.GameRole)
                     .FirstOrDefault();
-            }
         }
 
         public async Task<ICollection<Role>> FindAllRolesByGame(Model.Game game)
         {
-            await using (var db = new BotDbContext())
-            {
                 var res = new List<Role>();
-                var roles = db.Games
+                var roles = context.Games
                     .AsQueryable()
                     .Where(g => g == game)
                     .FirstOrDefault();
@@ -115,103 +101,73 @@ namespace DAL
                 res.AddRange(roles.ModAcceptRoles);
 
                 return res;
-            }
         }
 
         public async Task<ICollection<ulong>> FindAllRoleIdsByGame(Model.Game game)
         {
-            await using (var db = new BotDbContext())
-            {
                 var res = new List<ulong>();
                 foreach (Role role in await FindAllRolesByGame(game))
                 {
                     res.Add(role.DisordId);
                 }
                 return res;
-            }
         }
         
         public async Task<Role> FindRoleByGameAndGuild (IEmote emote, ulong guildId)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Roles
+                return context.Roles
                     .AsQueryable()
                     .Where(r => r.Guild.DiscordId == guildId)
                     .Where(r => r.Emote == emote)
                     .FirstOrDefault();
-            }
         }
 
         public async Task AddRoom(Room room)
         {
-            using (var db = new BotDbContext())
-            {
-                await db.Rooms.AddAsync(room);
-                await db.SaveChangesAsync();
-            }
+                await context.Rooms.AddAsync(room);
+                await context.SaveChangesAsync();
         }
 
         public async Task RemoveRoom(Room room)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Rooms.Remove(room);
-                await db.SaveChangesAsync();
-            }
+                context.Rooms.Remove(room);
+                await context.SaveChangesAsync();
         }
 
         public async Task<Room> FindRoom(IChannel channel)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Rooms
+                return context.Rooms
                     .AsQueryable()
                     .Where(r => r.DiscordId == channel.Id)
                     .FirstOrDefault();
-            }
         }
 
         public async Task AddSong(Song song)
         {
-            using (var db = new BotDbContext())
-            {
-                await db.Songs.AddAsync(song);
-                await db.SaveChangesAsync();
-            }
+                await context.Songs.AddAsync(song);
+                await context.SaveChangesAsync();
         }
 
         public async Task RemoveSong(Song song)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Songs.Remove(song);
-                await db.SaveChangesAsync();
-            }
+                context.Songs.Remove(song);
+                await context.SaveChangesAsync();
         }
         public async Task AddGame(Model.Game game)
         {
-            using (var db = new BotDbContext())
-            {
-                await db.Games.AddAsync(game);
-                await db.SaveChangesAsync();
-            }
+                await context.Games.AddAsync(game);
+                await context.SaveChangesAsync();
         }
 
         public async Task RemoveGame(Model.Game game)
         {
-            using (var db = new BotDbContext())
-            {
-                db.Games.Remove(game);
-                await db.SaveChangesAsync();
-            }
+                context.Games.Remove(game);
+                await context.SaveChangesAsync();
         }
 
         public async Task UpdateGame(Model.Game game)
         {
-            using (var db = new BotDbContext())
-            {
-                var currGame = await db.Games.AsQueryable()
+                var currGame = await context.Games.AsQueryable()
                     .FirstAsync(g => g.Id == game.Id);
                 currGame.Name = game.Name;
                 currGame.Guild = game.Guild;
@@ -224,52 +180,39 @@ namespace DAL
                 currGame.ActiveCheckRoom = game.ActiveCheckRoom;
                 currGame.ModAcceptRoom = game.ModAcceptRoom;
                 currGame.ModAcceptRoles = game.ModAcceptRoles;
-                await db.SaveChangesAsync();
-            }
+                await context.SaveChangesAsync();
         }
 
         public async Task<ICollection<Model.Game>> FingGamesByGuild(Guild guild)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Games
+                return context.Games
                     .AsQueryable()
                     .Where(g => g.Guild.DiscordId == guild.DiscordId)
                     .ToList();
-            }
         }
 
         public async Task<Model.Game> FindGameBySelectionMessage(ulong messageId)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Games
+                return context.Games
                     .AsQueryable()
                     .Where(g => g.SelectionMessageId == messageId)
                     .FirstOrDefault();
-            }
         }
 
         public async Task<Model.Game> FindGameByModRoom(ulong channelId)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Games
+                return context.Games
                     .AsQueryable()
                     .Where(g => g.ModAcceptRoom.DiscordId == channelId)
                     .FirstOrDefault();
-            }
         }
 
         public async Task<Model.Game> FindGameByActiveCheckRoom(ulong channelId)
         {
-            await using (var db = new BotDbContext())
-            {
-                return db.Games
+                return context.Games
                     .AsQueryable()
                     .Where(g => g.ActiveCheckRoom.DiscordId == channelId)
                     .FirstOrDefault();
-            }
         }
     }
 }
