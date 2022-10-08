@@ -10,19 +10,20 @@ using Chos5555Bot.Modules.Voice;
 using Chos5555Bot.Modules;
 using DAL;
 using Victoria;
+using Chos5555Bot.Services;
 
 public class Program
 {
-    private DiscordSocketClient _client;
-    private Config.ConfigService _configService;
-    private Config.Config _config;
-
-
     static void Main(string[] args = null)
     {
         new Program().MainAsync().GetAwaiter().GetResult();
     }
-    
+
+    private DiscordSocketClient _client;
+    private Config.ConfigService _configService;
+    private Config.Config _config;
+
+    // TODO: Move Startup to it's own file
     public async Task MainAsync()
     {
         // Setup config for caching
@@ -48,11 +49,11 @@ public class Program
         // Setup GameAnnouncer
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>());
 
-        // Log information to the console
-        client.Log += Log;
-
         // Log in to Discord
         await client.LoginAsync(TokenType.Bot, _config.Token);
+
+        // Start log service
+        services.GetRequiredService<LogService>();
 
         // Start connection logic
         await client.StartAsync();
@@ -78,22 +79,19 @@ public class Program
             .AddSingleton(new DiscordSocketClient(config))
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
+            // TODO: Check if you should use AddDbContextPool
+            //.AddDbContext<BotDbContext>( options => options.UseSqlServer(_config.ConnectionString))
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
             .AddSingleton<Queue>()
             .AddLavaNode(x => { x.SelfDeaf = false; })
-            .AddSingleton<MusicService>();
+            .AddSingleton<MusicService>()
+            .AddSingleton<LogService>();
+
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();
 
         return serviceProvider;
-    }
-
-    //TODO: Improve log, log errors into a file, log successes to console
-    private static Task Log(LogMessage message)
-    {
-        Console.WriteLine(message.ToString());
-        return Task.CompletedTask;
     }
 }
