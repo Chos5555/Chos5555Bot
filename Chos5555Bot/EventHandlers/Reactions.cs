@@ -170,7 +170,7 @@ namespace Chos5555Bot.EventHandlers
 
                 var sentMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(message);
 
-                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.Emote));
+                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.Emote.Out()));
 
                 return false;
             }

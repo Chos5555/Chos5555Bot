@@ -1,4 +1,6 @@
-﻿using DAL;
+﻿using DAL.Misc;
+using Chos5555Bot.Services;
+using DAL;
 using Discord;
 using Discord.Commands;
 using System;
@@ -30,20 +32,19 @@ namespace Chos5555Bot.Modules
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
-        private async Task Command(IRole discordRole, [Remainder] string name)
+        private async Task Command(IRole discordRole, string emote, [Remainder] string name)
         {
             await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}.", LogSeverity.Verbose);
-            // TODO: parse emote
-            string emote = "<:heart:856258639177842708>";
+            
+            var parsedEmote = EmoteParser.ParseEmote(emote);
 
-            var guild = await repo.FindGuild(Context.Guild);
             var guild = await _repo.FindGuild(Context.Guild);
             Role role = new() { DisordId = discordRole.Id };
 
             DAL.Model.Game game = new()
             {
                 Name = name,
-                ActiveEmote = Emote.Parse(emote),
+                ActiveEmote = parsedEmote,
                 Guild = guild
             };            
 

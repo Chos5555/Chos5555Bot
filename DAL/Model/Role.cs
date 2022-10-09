@@ -9,6 +9,6 @@ namespace DAL
         public ulong DisordId { get; set; }
         public bool Resetable { get; set; } = true;
         public bool NeedsModApproval { get; set; } = true;
-        public Emote Emote { get; set; }
+        public EmoteEmoji Emote { get; set; }
     }
 }
