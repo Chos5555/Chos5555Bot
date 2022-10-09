@@ -11,25 +11,33 @@ namespace Chos5555Bot.Modules
 {
     public class AddGame : ModuleBase<SocketCommandContext>
     {
-        private readonly BotRepository repo;
+        private readonly BotRepository _repo;
+        private readonly LogService _log;
 
-        public AddGame(BotRepository repo)
+        public AddGame(BotRepository repo, LogService log)
         {
-            this.repo = repo;
+            _repo = repo;
+            _log = log;
         }
 
-        /* 
-         * Add command for basic games (without active role)
-         */
+        /// <summary>
+        /// Add command for basic games (without active role)
+        /// </summary>
+        /// <param name="discordRole">GameRole of the new game</param>
+        /// <param name="emote">Active Emote of the new game (Needs to have '\' in front when using this command)</param>
+        /// <param name="name">Name of the new game</param>
+        /// <returns></returns>
+
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
         private async Task Command(IRole discordRole, [Remainder] string name)
         {
-            Console.Write($"Add game command with role: {discordRole} and remainder: {name}\n");
+            await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}.", LogSeverity.Verbose);
             // TODO: parse emote
             string emote = "<:heart:856258639177842708>";
 
             var guild = await repo.FindGuild(Context.Guild);
+            var guild = await _repo.FindGuild(Context.Guild);
             Role role = new() { DisordId = discordRole.Id };
 
             DAL.Model.Game game = new()
@@ -63,10 +71,12 @@ namespace Chos5555Bot.Modules
             game.Rooms.Add(textRoom);
             game.Rooms.Add(voiceRoom);
 
-            await repo.AddRole(role);
+            await _repo.AddRole(role);
 
             game.GameRole = role;
-            await repo.UpdateGuild(guild);
+            await _repo.UpdateGuild(guild);
+
+            await _log.Log($"Added new game {name} with {discordRole.Name}and emote {emote}.", LogSeverity.Info);
 
             await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
         }
