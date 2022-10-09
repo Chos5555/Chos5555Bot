@@ -51,7 +51,7 @@ namespace Chos5555Bot.Modules
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
             // Deny viewing channel for everyone role
             await gameCategory.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole,
-                OverwritePermissions.DenyAll(gameCategory).Modify(viewChannel: PermValue.Deny));
+                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Deny));
             // Allow viewing channel for game role
             await gameCategory.AddPermissionOverwriteAsync(discordRole,
                 OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
