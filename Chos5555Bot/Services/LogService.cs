@@ -28,17 +28,33 @@ namespace Chos5555Bot.Services
 
         private async Task OnLogAsync(LogMessage message)
         {
-            if (!Directory.Exists(_logDir))
-                Directory.CreateDirectory(_logDir);
-
-            if (!File.Exists(_logFile))
-                File.Delete(_logFile);
+            EnsureLogFileExists();
 
             string textToLog = $"{DateTime.UtcNow.ToString("yyyy-MM-dd")} [{message.Severity}] {message.Source}: {message.Exception?.ToString() ?? message.Message}";
             await File.AppendAllTextAsync(_logFile, textToLog + "\n");
 
             Console.Out.WriteLine(textToLog);
             return;
+        }
+
+        public async Task Log(string message, LogSeverity severity)
+        {
+            EnsureLogFileExists();
+
+            string textToLog = $"{DateTime.UtcNow.ToString("yyyy-MM-dd")} [{severity}]: {message}";
+            await File.AppendAllTextAsync(_logFile, textToLog + "\n");
+
+            Console.Out.WriteLine(textToLog);
+            return;
+        }
+
+        private void EnsureLogFileExists()
+        {
+            if (!Directory.Exists(_logDir))
+                Directory.CreateDirectory(_logDir);
+
+            if (!File.Exists(_logFile))
+                File.Create(_logFile);
         }
     }
 }
