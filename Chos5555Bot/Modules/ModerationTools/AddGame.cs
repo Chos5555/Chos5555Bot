@@ -48,7 +48,6 @@ namespace Chos5555Bot.Modules
                 Guild = guild
             };            
 
-            // TODO: Make rooms only accessible with game role
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
             // Deny viewing channel for everyone role
             await gameCategory.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole,
