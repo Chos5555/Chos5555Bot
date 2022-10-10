@@ -34,5 +34,6 @@ namespace Chos5555Bot.Modules.ModerationTools
         // TODO Guild.MemberRole command
         // TODO Guild.RuleMessageText command
         // TODO Guild.RuleMessageId command
+        // TODO AddRoom to Game.Rooms with one of G.ActiveRoles, set perms for the role to view channel
     }
 }

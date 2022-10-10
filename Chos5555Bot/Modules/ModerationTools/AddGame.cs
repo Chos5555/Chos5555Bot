@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.Modules
 {
@@ -49,12 +50,8 @@ namespace Chos5555Bot.Modules
             };            
 
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
-            // Deny viewing channel for everyone role
-            await gameCategory.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole,
-                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Deny));
-            // Allow viewing channel for game role
-            await gameCategory.AddPermissionOverwriteAsync(discordRole,
-                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
+
+            PermissionSetter.SetOnlyViewableByRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
 
             var discordTextRoom = await Context.Guild.CreateTextChannelAsync(name, p => {
                 p.CategoryId = gameCategory.Id;
