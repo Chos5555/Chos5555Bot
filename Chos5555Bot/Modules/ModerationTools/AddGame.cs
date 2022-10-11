@@ -26,6 +26,8 @@ namespace Chos5555Bot.Modules
             _log = log;
         }
 
+        // TODO: Tell user if you couldn't match the command pattern
+
         /// <summary>
         /// Add command for basic games (without active role)
         /// </summary>
@@ -38,7 +40,7 @@ namespace Chos5555Bot.Modules
         [Command("addGame")]
         private async Task AddBaseGame(IRole discordRole, string emote, string name)
         {
-            await AddGameHelper(discordRole, emote, name, null);
+            await AddGameHelper(discordRole, emote, name, "");
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -148,6 +150,9 @@ namespace Chos5555Bot.Modules
                 .Where(r => r.Tags.BotId is null)
                 .ToArray();
 
+            // Hide room for people that can see the game category and show it only to admins
+            // (since the game has just been created, there are no more mod roles yet)
+            await PermissionSetter.SetHiddenForRole(discordGameRole, discordmodAcceptRoom);
             await PermissionSetter.SetShownForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
 
             var modAcceptRoom = new Room() { DiscordId = discordmodAcceptRoom.Id };
