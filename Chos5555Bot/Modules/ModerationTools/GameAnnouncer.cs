@@ -7,13 +7,14 @@ namespace Chos5555Bot.Modules
 {
     public static class GameAnnouncer
     {
-        private static BotRepository repo = null;
+        private static BotRepository repo;
 
         public static void InitAnnouncer(BotRepository repo)
         {
             GameAnnouncer.repo ??= repo;
         }
 
+        // TODO: Announce active roles in active selection channel
         public static async Task AnnounceGame(DAL.Model.Game game, Room selectionRoom, SocketCommandContext context)
         {
             IEmote reactEmote = game.ActiveEmote.Out();
