@@ -57,7 +57,7 @@ namespace DAL
                     e => EmoteParser.ParseEmote(e));
 
             modelBuilder.Entity<Role>()
-                .Property(r => r.Emote)
+                .Property(r => r.ChoiceEmote)
                 .HasConversion(
                     e => e.emote.ToString(),
                     e => EmoteParser.ParseEmote(e));

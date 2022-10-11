@@ -125,7 +125,7 @@ namespace DAL
         public async Task<Role> FindRoleByEmoteAndGame(IEmote emote, Model.Game game)
         {
             return (await FindActiveRolesByGame(game))
-                .Where(r => r.Emote == emote)
+                .Where(r => r.ChoiceEmote == emote)
                 .FirstOrDefault();
         }
 

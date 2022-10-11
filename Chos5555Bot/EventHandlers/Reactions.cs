@@ -61,11 +61,11 @@ namespace Chos5555Bot.EventHandlers
         }
 
         /// <summary>
-        /// Handles reaction added to the rule room message. If the Emote reacted with was correct, gives member role to the user.
+        /// Handles reaction added to the rule room message. If the ChoiceEmote reacted with was correct, gives member role to the user.
         /// </summary>
         /// <param name="user">User that reacted to rule room message.</param>
         /// <param name="guild">Guild in which the reaction was added.</param>
-        /// <param name="emote">Emote with which was reacted.</param>
+        /// <param name="emote">ChoiceEmote with which was reacted.</param>
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
@@ -82,11 +82,11 @@ namespace Chos5555Bot.EventHandlers
         }
 
         /// <summary>
-        /// Handles reaction added to a message in the mod room. Gives user mentioned in the message the role selected by mod.
+        /// Handles reaction added to a message in the mod room. Gives user mentioned in the message the role selected by mod. Administrators are allowed to accept members for all games, since they see all channels
         /// </summary>
         /// <param name="message">Message to which the reaction was added.</param>
         /// <param name="guild">Guild in which the reaction was added.</param>
-        /// <param name="emote">Emote with which was reacted.</param>
+        /// <param name="emote">ChoiceEmote with which was reacted.</param>
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
@@ -117,7 +117,7 @@ namespace Chos5555Bot.EventHandlers
         /// </summary>
         /// <param name="game">Game to which message was reacted.</param>
         /// <param name="user">User that reacted to the game selection message.</param>
-        /// <param name="emote">Emote with which was reacted.</param>
+        /// <param name="emote">ChoiceEmote with which was reacted.</param>
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
@@ -140,7 +140,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game in which active room was reacted.</param>
         /// <param name="user">User that reacted to the game active room message.</param>
         /// <param name="guild">Guild in which the reaction was added.</param>
-        /// <param name="emote">Emote with which was reacted.</param>
+        /// <param name="emote">ChoiceEmote with which was reacted.</param>
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
@@ -165,12 +165,12 @@ namespace Chos5555Bot.EventHandlers
                 var message = $"{user} wants to join you in {game.Name}, select the role you want to give them:\n";
                 foreach (var role in game.ActiveRoles)
                 {
-                    message += $"{role.Emote} for role {guild.GetRole(role.DisordId).Name}\n";
+                    message += $"{role.ChoiceEmote} for role {guild.GetRole(role.DisordId).Name}\n";
                 }
 
                 var sentMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(message);
 
-                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.Emote.Out()));
+                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.ChoiceEmote.Out()));
 
                 return false;
             }

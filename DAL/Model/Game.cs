@@ -10,7 +10,7 @@ namespace DAL.Model
         public string Name { get; set; }
         public Guild Guild { get; set; }
         public EmoteEmoji ActiveEmote { get; set; }
-        public ulong SelectionMessageId { get; set; } = 0;
+        public ulong SelectionMessageId { get; set; }
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public Role GameRole { get; set; }
         public bool HasActiveRole { get; set; }
