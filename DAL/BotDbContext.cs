@@ -50,6 +50,7 @@ namespace DAL
         {
             base.OnModelCreating(modelBuilder);
             
+            // Create conversions for EmoteEmoji type
             modelBuilder.Entity<Game>()
                 .Property(g => g.ActiveEmote)
                 .HasConversion(
@@ -61,6 +62,20 @@ namespace DAL
                 .HasConversion(
                     e => e.emote.ToString(),
                     e => EmoteParser.ParseEmote(e));
+
+            // Set auto includes for guilds properties in other tables
+            modelBuilder.Entity<Guild>().Navigation(g => g.SelectionRoom).AutoInclude();
+            modelBuilder.Entity<Guild>().Navigation(g => g.MemberRole).AutoInclude();
+            modelBuilder.Entity<Guild>().Navigation(g => g.RuleRoom).AutoInclude();
+
+            // Set auto includes for games properties in other tables
+            modelBuilder.Entity<Game>().Navigation(g => g.Guild).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.Rooms).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.GameRole).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.ActiveRoles).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.ActiveCheckRoom).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.ModAcceptRoom).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.ModAcceptRoles).AutoInclude();
         }
     }
 }
