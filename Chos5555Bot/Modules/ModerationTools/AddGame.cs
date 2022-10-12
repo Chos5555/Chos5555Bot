@@ -161,7 +161,7 @@ namespace Chos5555Bot.Modules
             var modAcceptRoom = new Room() { DiscordId = discordmodAcceptRoom.Id };
 
             game.Rooms.Add(modAcceptRoom);
-            game.ActiveCheckRoom = modAcceptRoom;
+            game.ModAcceptRoom = modAcceptRoom;
 
             // Create a default activeRole and 2 general rooms for it
             var discordActiveRole = await Context.Guild.CreateRoleAsync(
