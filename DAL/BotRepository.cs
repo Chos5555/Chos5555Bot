@@ -38,7 +38,7 @@ namespace DAL
 
         public async Task<Guild> FindGuild(Guild guild)
         {
-            return await context.Guilds.FindAsync(guild);
+            return await context.Guilds.FindAsync(guild.Id);
         }
 
         public async Task<Guild> FindGuild(IGuild guild)
@@ -85,7 +85,7 @@ namespace DAL
 
         public async Task<Role> FindRole(Role role)
         {
-            return await context.Roles.FindAsync(role);
+            return await context.Roles.FindAsync(role.Id);
         }
 
         public async Task UpdateRole(Role role)
@@ -209,7 +209,7 @@ namespace DAL
 
         public async Task<Game> FindGame(Game game)
         {
-            return await context.Games.FindAsync(game);
+            return await context.Games.FindAsync(game.Id);
         }
 
         public async Task<ICollection<Game>> FingGamesByGuild(Guild guild)
