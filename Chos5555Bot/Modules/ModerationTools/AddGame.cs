@@ -125,12 +125,15 @@ namespace Chos5555Bot.Modules
 
         private async Task SetupGameWithActiveRole (Game game, ulong categoryId, IRole discordGameRole)
         {
-            // Create ActiveCheckRoom (doesn't need to have permission set, the category is already hidden for everyone except GameRole)
+            // Create ActiveCheckRoom (doesn't need to have view permission set, the category is already hidden for everyone except GameRole)
             var discordActiveCheckRoom = await Context.Guild.CreateTextChannelAsync($"{game.Name} role choice",
                 p => {
                     p.CategoryId = categoryId;
                     p.Topic = $"Here you can choose roles for {game.Name}";
                 });
+
+            // Disable users from adding new reactions
+            await PermissionSetter.DenyAddReaction(Context.Guild.EveryoneRole, discordActiveCheckRoom);
 
             var activeCheckRoom = new Room() { DiscordId = discordActiveCheckRoom.Id };
 

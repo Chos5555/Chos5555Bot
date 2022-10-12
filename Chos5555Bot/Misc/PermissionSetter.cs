@@ -39,5 +39,12 @@ namespace Chos5555Bot.Misc
             await channel.AddPermissionOverwriteAsync(role,
                 OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
         }
+
+        public static async Task DenyAddReaction(IRole role, IGuildChannel channel)
+        {
+            // Stops users with role from adding new reactions, they can still react with the ones already there
+            await channel.AddPermissionOverwriteAsync(role,
+                OverwritePermissions.InheritAll.Modify(addReactions: PermValue.Deny));
+        }
     }
 }
