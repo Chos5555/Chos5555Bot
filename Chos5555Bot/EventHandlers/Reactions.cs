@@ -3,6 +3,8 @@ using Discord;
 using Discord.WebSocket;
 using DAL;
 using System.Linq;
+using DAL.Model;
+using DAL.Misc;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -79,7 +81,8 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedRuleRoomReaction(IUser user, Guild guild, IEmote emote)
         {
             // Check if right emote was used
-            if (emote.Name != ":white_check_mark:")
+            var checkmark = EmoteParser.ParseEmote("✅");
+            if (CompareEmoteToEmoteEmoji(emote, checkmark))
             {
                 return true;
             }
@@ -129,8 +132,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
         {
             // Check if right emote was used
-            // TODO: fix EmojiEmote compare to Emote
-            if (emote != game.ActiveEmote)
+            if (CompareEmoteToEmoteEmoji(emote, game.ActiveEmote))
             {
                 return true;
             }
@@ -153,8 +155,8 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IEmote emote)
         {
             // Check if right emote was used
-            // TODO: fix EmojiEmote compare to Emote
-            if (emote != game.ActiveEmote)
+            // TODO: Rework, so user selects what messages he wants, mods only confirm
+            if (CompareEmoteToEmoteEmoji(emote, game.ActiveEmote))
             {
                 return true;
             }
@@ -256,6 +258,12 @@ namespace Chos5555Bot.EventHandlers
         public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, IUser user)
         {
             await (user as IGuildUser).RemoveRolesAsync(game.ActiveRoles.Select(r => r.DisordId));
+        }
+
+        private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
+        {
+            var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
+            return emoteEmoji1 == emoteEmoji2;
         }
     }
 }
