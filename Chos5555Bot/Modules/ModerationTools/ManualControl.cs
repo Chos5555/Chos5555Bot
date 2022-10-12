@@ -6,28 +6,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Chos5555Bot.Services;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
     public class ModerationTools : ModuleBase<SocketCommandContext>
     {
-        private readonly BotRepository repo;
+        private readonly BotRepository _repo;
+        private readonly LogService _log;
 
-        public ModerationTools(BotRepository repo)
+        public ModerationTools(BotRepository repo, LogService log)
         {
-            this.repo = repo;
+            _repo = repo;
+            _log = log;
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGuild")]
         private async Task AddGuildCommand()
         {
-            var guild = await repo.FindGuildById(Context.Guild.Id);
+            var guild = await _repo.FindGuild(Context.Guild);
             if (guild is not null)
                 return;
             guild = new Guild() { DiscordId = Context.Guild.Id };
-            await repo.AddGuild(guild);
-            Console.WriteLine($"Added guild {Context.Guild.Name} to the DB.");
+            await _repo.AddGuild(guild);
+
+            await _log.Log($"Added guild {Context.Guild.Name} to the DB.", LogSeverity.Info);
         }
 
         // TODO Guild.GameCategoryId command
