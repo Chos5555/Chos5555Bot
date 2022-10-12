@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DAL.Model;
 using Discord;
 using Microsoft.EntityFrameworkCore;
+using Game = DAL.Model.Game;
 
 namespace DAL
 {
@@ -35,28 +36,31 @@ namespace DAL
             await context.SaveChangesAsync();
         }
 
-        public async Task<Guild> FindGuild(IGuild guild)
+        public async Task<Guild> FindGuild(Guild guild)
         {
-            return context.Guilds
-                .AsQueryable()
-                .Where(g => g.DiscordId == guild.Id)
-                .FirstOrDefault();
+            return await context.Guilds.FindAsync(guild);
         }
 
-        public async Task<Guild> FindGuildById(ulong id)
+        public async Task<Guild> FindGuild(IGuild guild)
         {
-            return context.Guilds
+            return await context.Guilds
+                .AsQueryable()
+                .Where(g => g.DiscordId == guild.Id)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Guild> FindGuild(ulong id)
+        {
+            return await context.Guilds
                 .AsQueryable()
                 .Where(g => g.DiscordId == id)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
 
         public async Task UpdateGuild(Guild guild)
         {
             context.Guilds.Update(guild);
-            var currGuild = await context.Guilds
-                .AsQueryable()
-                .FirstAsync(g => g.DiscordId == guild.DiscordId);
+            var currGuild = await FindGuild(guild);
             currGuild.SelectionRoom = guild.SelectionRoom;
             currGuild.MemberRole = guild.MemberRole;
             currGuild.ArchiveCategoryId = guild.ArchiveCategoryId;
@@ -79,40 +83,54 @@ namespace DAL
             await context.SaveChangesAsync();
         }
 
-        public async Task<Role> FindGameRoleByGame(Model.Game game)
+        public async Task<Role> FindRole(Role role)
         {
-            return context.Games
+            return await context.Roles.FindAsync(role);
+        }
+
+        public async Task UpdateRole(Role role)
+        {
+            context.Roles.Update(role);
+            var currRole = await FindRole(role);
+            currRole.DisordId = role.DisordId;
+            currRole.Resetable = role.Resetable;
+            currRole.NeedsModApproval = role.NeedsModApproval;
+            currRole.ChoiceEmote = role.ChoiceEmote;
+            currRole.Description = role.Description;
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<Role> FindGameRoleByGame(Game game)
+        {
+            return await context.Games
                 .AsQueryable()
                 .Where(g => g == game)
                 .Select(g => g.GameRole)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
 
-        public async Task<ICollection<Role>> FindActiveRolesByGame(Model.Game game)
+        public async Task<ICollection<Role>> FindActiveRolesByGame(Game game)
         {
-            return context.Games
+            return (await context.Games
                 .AsQueryable()
                 .Where(g => g == game)
-                .FirstOrDefault()
+                .SingleOrDefaultAsync())
                 .ActiveRoles;
         }
 
-        public async Task<ICollection<Role>> FindAllRolesByGame(Model.Game game)
+        public async Task<ICollection<Role>> FindAllRolesByGame(Game game)
         {
             var res = new List<Role>();
-            var roles = context.Games
-                .AsQueryable()
-                .Where(g => g == game)
-                .FirstOrDefault();
+            game = await FindGame(game);
 
-            res.Add(roles.GameRole);
-            res.AddRange(roles.ActiveRoles);
-            res.AddRange(roles.ModAcceptRoles);
+            res.Add(game.GameRole);
+            res.AddRange(game.ActiveRoles);
+            res.AddRange(game.ModAcceptRoles);
 
             return res;
         }
 
-        public async Task<ICollection<ulong>> FindAllRoleIdsByGame(Model.Game game)
+        public async Task<ICollection<ulong>> FindAllRoleIdsByGame(Game game)
         {
             var res = new List<ulong>();
             foreach (Role role in await FindAllRolesByGame(game))
@@ -122,11 +140,11 @@ namespace DAL
             return res;
         }
 
-        public async Task<Role> FindRoleByEmoteAndGame(IEmote emote, Model.Game game)
+        public async Task<Role> FindRoleByEmoteAndGame(IEmote emote, Game game)
         {
             return (await FindActiveRolesByGame(game))
                 .Where(r => r.ChoiceEmote == emote)
-                .FirstOrDefault();
+                .SingleOrDefault();
         }
 
         public async Task AddRoom(Room room)
@@ -143,10 +161,10 @@ namespace DAL
 
         public async Task<Room> FindRoom(IChannel channel)
         {
-            return context.Rooms
+            return await context.Rooms
                 .AsQueryable()
                 .Where(r => r.DiscordId == channel.Id)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
 
         public async Task AddSong(Song song)
@@ -160,22 +178,21 @@ namespace DAL
             context.Songs.Remove(song);
             await context.SaveChangesAsync();
         }
-        public async Task AddGame(Model.Game game)
+        public async Task AddGame(Game game)
         {
             await context.Games.AddAsync(game);
             await context.SaveChangesAsync();
         }
 
-        public async Task RemoveGame(Model.Game game)
+        public async Task RemoveGame(Game game)
         {
             context.Games.Remove(game);
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateGame(Model.Game game)
+        public async Task UpdateGame(Game game)
         {
-            var currGame = await context.Games.AsQueryable()
-                .FirstAsync(g => g.Id == game.Id);
+            var currGame = await FindGame(game);
             currGame.Name = game.Name;
             currGame.Guild = game.Guild;
             currGame.ActiveEmote = game.ActiveEmote;
@@ -190,7 +207,12 @@ namespace DAL
             await context.SaveChangesAsync();
         }
 
-        public async Task<ICollection<Model.Game>> FingGamesByGuild(Guild guild)
+        public async Task<Game> FindGame(Game game)
+        {
+            return await context.Games.FindAsync(game);
+        }
+
+        public async Task<ICollection<Game>> FingGamesByGuild(Guild guild)
         {
             return context.Games
                 .AsQueryable()
@@ -198,28 +220,30 @@ namespace DAL
                 .ToList();
         }
 
-        public async Task<Model.Game> FindGameBySelectionMessage(ulong messageId)
+        public async Task<Game> FindGameBySelectionMessage(ulong messageId)
         {
-            return context.Games
+            return await context.Games
                 .AsQueryable()
                 .Where(g => g.SelectionMessageId == messageId)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
 
-        public async Task<Model.Game> FindGameByModRoom(ulong channelId)
+        public async Task<Game> FindGameByModRoom(ulong channelId)
         {
-            return context.Games
+            return await context.Games
                 .AsQueryable()
                 .Where(g => g.ModAcceptRoom.DiscordId == channelId)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
 
-        public async Task<Model.Game> FindGameByActiveCheckRoom(ulong channelId)
+        public async Task<Game> FindGameByActiveCheckRoom(ulong channelId)
         {
-            return context.Games
+            return await context.Games
                 .AsQueryable()
                 .Where(g => g.ActiveCheckRoom.DiscordId == channelId)
-                .FirstOrDefault();
+                .SingleOrDefaultAsync();
         }
+
+        // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
     }
 }
