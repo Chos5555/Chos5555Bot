@@ -99,8 +99,6 @@ namespace Chos5555Bot.EventHandlers
         /// </returns>
         public static async Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
         {
-            // TODO: Test if bot reacts to itself, if so, fix so he doesn't remove reactions from itself (check if user is bot)
-
             // If there is only 1 of the new emote, it was not given by the bot, thus is not a valid role emote
             if (message.Reactions[emote].ReactionCount == 1)
             {
