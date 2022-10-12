@@ -15,33 +15,40 @@ namespace Chos5555Bot.EventHandlers
         /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// Removes the reaction if a wrong reaction was added to a selection message.
         /// </summary>
-        /// <param name="cachedMessage">cCached message</param>
-        /// <param name="cachedChannel">Cached channel</param>
+        /// <param name="cachedMessage">Uncached message</param>
+        /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Task</returns>
-        public static async Task AddHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
+        public static async Task AddHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             // TODO figure out dependency injection of repo
 
+
+
             BotRepository repo = new BotRepository();
 
-            var channel = cachedChannel
-                .GetOrDownloadAsync().Result as SocketGuildChannel;
-            var guild = await repo.FindGuildById(channel.Guild.Id);
+            var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
+
+            // Ignore if reactions was added by bot
+            if (channel.Guild.GetUser(reaction.UserId).IsBot)
+                return;
+
+            var guild = await repo.FindGuild(channel.Guild.Id);
             var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
             var modRoomGame = await repo.FindGameByModRoom(channel.Id);
             var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
+            var message = await uncachedMessage.GetOrDownloadAsync();
 
             var removeReaction = false;
 
-            if (channel.Id == guild.RuleRoom.DiscordId)
+            if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
                 removeReaction = await AddedRuleRoomReaction(reaction.User.Value, guild, reaction.Emote);
             }
 
             if (modRoomGame is not null)
             {
-                removeReaction = await AddedModRoomReaction(cachedMessage.GetOrDownloadAsync().Result, channel.Guild, reaction.Emote, modRoomGame);
+                removeReaction = await AddedModRoomReaction(message, channel.Guild, reaction.Emote, modRoomGame);
             }
 
             if (selectionRoomGame is not null)
@@ -56,7 +63,7 @@ namespace Chos5555Bot.EventHandlers
 
             if (removeReaction)
             {
-                await cachedMessage.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
             }
         }
 
@@ -124,6 +131,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
         {
             // Check if right emote was used
+            // TODO: fix EmojiEmote compare to Emote
             if (emote != game.ActiveEmote)
             {
                 return true;
@@ -147,6 +155,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IEmote emote)
         {
             // Check if right emote was used
+            // TODO: fix EmojiEmote compare to Emote
             if (emote != game.ActiveEmote)
             {
                 return true;
@@ -179,22 +188,26 @@ namespace Chos5555Bot.EventHandlers
         /// <summary>
         /// This method is the main handler for removing reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// </summary>
-        /// <param name="cachedMessage">Cached message</param>
-        /// <param name="cachedChannel">Cached channel</param>
+        /// <param name="uncachedMessage">Uncached message</param>
+        /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
+        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             // TODO: add dependency injection
             BotRepository repo = new BotRepository();
 
-            var channel = cachedChannel
-                .GetOrDownloadAsync().Result as SocketGuildChannel;
-            var guild = await repo.FindGuildById(channel.Guild.Id);
+            var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
+
+            // Ignore if reactions was added by bot
+            if (channel.Guild.GetUser(reaction.UserId).IsBot)
+                return;
+
+            var guild = await repo.FindGuild(channel.Guild.Id);
             var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
             var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
 
-            if (channel.Id == guild.RuleRoom.DiscordId)
+            if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
                 await RemovedRuleRoomReaction(reaction.User.Value);
             }
