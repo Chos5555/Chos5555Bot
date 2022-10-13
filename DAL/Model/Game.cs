@@ -13,7 +13,10 @@ namespace DAL.Model
         public EmoteEmoji ActiveEmote { get; set; }
         public ulong SelectionMessageId { get; set; }
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
+        [ForeignKey("GameRoleGameId")]
         public Role GameRole { get; set; }
+        [ForeignKey("MainActiveRoleGameId")]
+        public Role MainActiveRole { get; set; }
         public bool HasActiveRole { get; set; }
         [ForeignKey("ActiveRoleGameId")]
         public ICollection<Role> ActiveRoles { get; set; } = new List<Role>();

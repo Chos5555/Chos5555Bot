@@ -180,9 +180,11 @@ namespace Chos5555Bot.Modules
                 ChoiceEmote = game.ActiveEmote
             };
 
+            game.MainActiveRole = activeRole;
             game.ActiveRoles.Add(activeRole);
 
-            var discordGeneralTextRoom = await Context.Guild.CreateTextChannelAsync($"{game.Name} General", p => {
+            var discordGeneralTextRoom = await Context.Guild.CreateTextChannelAsync($"{game.Name} General", p =>
+            {
                 p.CategoryId = categoryId;
                 p.Topic = $"General channel for {game.Name}.";
             });

@@ -211,6 +211,7 @@ namespace DAL
             currGame.Rooms = game.Rooms;
             currGame.GameRole = game.GameRole;
             currGame.HasActiveRole = game.HasActiveRole;
+            currGame.MainActiveRole = game.MainActiveRole;
             currGame.ActiveRoles = game.ActiveRoles;
             currGame.ActiveCheckRoom = game.ActiveCheckRoom;
             currGame.ModAcceptRoom = game.ModAcceptRoom;
