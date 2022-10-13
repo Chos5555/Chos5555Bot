@@ -174,7 +174,7 @@ namespace Chos5555Bot.EventHandlers
                 var message = $"{user} wants to join you in {game.Name}, select the role you want to give them:\n";
                 foreach (var role in game.ActiveRoles)
                 {
-                    message += $"{role.ChoiceEmote} for role {guild.GetRole(role.DisordId).Name}\n";
+                    message += $"{role.ChoiceEmote} for role {role.Name}\n";
                 }
 
                 var sentMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(message);

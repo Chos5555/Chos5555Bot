@@ -93,6 +93,7 @@ namespace DAL
             context.Roles.Update(role);
             var currRole = await FindRole(role);
             currRole.DisordId = role.DisordId;
+            currRole.Name = role.Name;
             currRole.Resetable = role.Resetable;
             currRole.NeedsModApproval = role.NeedsModApproval;
             currRole.ChoiceEmote = role.ChoiceEmote;
