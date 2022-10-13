@@ -207,7 +207,7 @@ namespace Chos5555Bot.Modules
             await _repo.AddRoom(generalVoiceRoom);
 
             // Anounce active roles to games ActiveCheckRoom
-            await GameAnnouncer.AnnounceActiveRoles(game, discordActiveCheckRoom, Context);
+            await GameAnnouncer.AnnounceActiveRole(activeRole, game, discordActiveCheckRoom, Context, discordActiveRole);
         }
     }
 }

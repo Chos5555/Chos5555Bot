@@ -46,18 +46,25 @@ namespace Chos5555Bot.Modules
 
         public static async Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
         {
+            // TODO: Divide announcement into 3 categories: GameRole, other need approval roles, and the rest as instant get roles
             foreach(var role in game.ActiveRoles)
             {
                 await AnnounceActiveRole(role, game, channel, context);
             }
         }
 
-        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context)
+        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context, IRole discordRole= null)
+        {
             // If role doesn't have an emote, don't post it
             if (role.ChoiceEmote is null)
                 return;
-        {
-            var message = await channel.SendMessageAsync($"{role.Name} {role.ChoiceEmote.Out()} {role.Description}");
+            
+            // If discordRole is not passed, find it
+            if (discordRole is null)
+            {
+                discordRole = context.Guild.GetRole(role.DisordId);
+            }
+            var message = await channel.SendMessageAsync($"{discordRole.Mention} {role.ChoiceEmote.Out()} {role.Description}");
 
             await message.AddReactionAsync(role.ChoiceEmote.Out());
 
