@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Chos5555Bot.Services;
+using Discord.WebSocket;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -39,6 +40,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task DeleteGameCommand(string gameName, IRole discordRole)
         {
             var game = await _repo.FindGameByNameAndGameRole(gameName, discordRole.Id);
+            var guild = await _repo.FindGuild(game.Guild);
 
             if (game is null)
                 await Context.Channel.SendMessageAsync($"Couldn't find game named {gameName} with role {discordRole}");
@@ -49,13 +51,27 @@ namespace Chos5555Bot.Modules.ModerationTools
                 await Context.Guild.GetRole(role.DisordId).DeleteAsync();
             }
 
-            foreach (var room in game.Rooms)
+            ulong? categoryId = 0;
+            foreach (var room in game.Rooms.ToArray())
             {
                 await _repo.RemoveRoom(await _repo.FindRoom(room));
-                await Context.Guild.GetChannel(room.DiscordId).DeleteAsync();
+                var discordChannel = Context.Guild.GetChannel(room.DiscordId);
+                await discordChannel.DeleteAsync();
+
+                categoryId = (discordChannel as INestedChannel).CategoryId;
+                if (categoryId.HasValue)
+                    categoryId = categoryId.Value;
             }
 
+            var categoryChannel = Context.Guild.GetChannel(categoryId.Value);
+            await categoryChannel.DeleteAsync();
+
+            var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
+            await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+
             await _repo.RemoveGame(game);
+
+            await _log.Log($"Deleted game {game.Name} from server {Context.Guild.Name}", LogSeverity.Info);
         }
 
         // TODO Guild.GameCategoryId command
