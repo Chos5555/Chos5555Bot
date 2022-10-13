@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(BotDbContext))]
-    [Migration("20221012220723_20221012Update_2")]
-    partial class _20221012Update_2
+    [Migration("20221013144803_UpdatedInitialCreate")]
+    partial class UpdatedInitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -131,6 +131,9 @@ namespace DAL.Migrations
 
                     b.Property<int?>("ModAcceptRoleGameId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("NeedsModApproval")
                         .HasColumnType("bit");

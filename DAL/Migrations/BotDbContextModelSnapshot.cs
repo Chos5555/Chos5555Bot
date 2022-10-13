@@ -115,6 +115,9 @@ namespace DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int?>("ActiveRoleGameId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ChoiceEmote")
                         .HasColumnType("nvarchar(max)");
 
@@ -124,11 +127,11 @@ namespace DAL.Migrations
                     b.Property<decimal>("DisordId")
                         .HasColumnType("decimal(20,0)");
 
-                    b.Property<int?>("GameId")
+                    b.Property<int?>("ModAcceptRoleGameId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GameId1")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("NeedsModApproval")
                         .HasColumnType("bit");
@@ -138,9 +141,9 @@ namespace DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GameId");
+                    b.HasIndex("ActiveRoleGameId");
 
-                    b.HasIndex("GameId1");
+                    b.HasIndex("ModAcceptRoleGameId");
 
                     b.ToTable("Roles");
                 });
@@ -236,11 +239,11 @@ namespace DAL.Migrations
                 {
                     b.HasOne("DAL.Model.Game", null)
                         .WithMany("ActiveRoles")
-                        .HasForeignKey("GameId");
+                        .HasForeignKey("ActiveRoleGameId");
 
                     b.HasOne("DAL.Model.Game", null)
                         .WithMany("ModAcceptRoles")
-                        .HasForeignKey("GameId1");
+                        .HasForeignKey("ModAcceptRoleGameId");
                 });
 
             modelBuilder.Entity("DAL.Room", b =>
