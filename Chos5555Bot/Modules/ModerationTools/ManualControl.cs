@@ -44,7 +44,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             if (game is null)
                 await Context.Channel.SendMessageAsync($"Couldn't find game named {gameName} with role {discordRole}");
-
+            
             foreach (var role in await _repo.FindAllRolesByGame(game))
             {
                 await _repo.RemoveRole(await _repo.FindRole(role));
@@ -74,8 +74,31 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _log.Log($"Deleted game {game.Name} from server {Context.Guild.Name}", LogSeverity.Info);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addModRole")]
+        private async Task AddModRoleCommand(IRole role, string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+            var modRole = await _repo.FindRole(role.Id);
+
+            if (modRole is null)
+            {
+                modRole = new Role()
+                {
+                    DisordId = role.Id,
+                    Name = role.Name,
+                    Resetable = false,
+                    NeedsModApproval = true,
+                };
+            }
+
+            // TODO: If you're gonna be sending messages to activeRoom only after modRole exists, call game announcer here
+
+            game.ModAcceptRoles.Add(modRole);
+            await _repo.UpdateGame(game);
+        }
+
         // TODO Guild.GameCategoryId command
-        // TODO Guild.MemberRole command
         // TODO Guild.RuleMessageText command
         // TODO Guild.RuleMessageId command
         // TODO AddRoom to Game.Rooms with one of G.ActiveRoles, set perms for the role to view channel
