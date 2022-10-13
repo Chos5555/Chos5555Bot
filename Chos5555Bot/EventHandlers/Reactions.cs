@@ -13,6 +13,8 @@ namespace Chos5555Bot.EventHandlers
     /// </summary>
     public class Reactions
     {
+        // TODO: Add logging
+
         /// <summary>
         /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// Removes the reaction if a wrong reaction was added to a selection message.
@@ -24,8 +26,6 @@ namespace Chos5555Bot.EventHandlers
         public static async Task AddHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             // TODO figure out dependency injection of repo
-
-
 
             BotRepository repo = new BotRepository();
 
@@ -60,7 +60,7 @@ namespace Chos5555Bot.EventHandlers
 
             if (activeCheckRoomGame is not null)
             {
-                removeReaction = await AddedActiveCheckRoomReaction(activeCheckRoomGame, reaction.User.Value, channel.Guild, reaction.Emote);
+                removeReaction = await AddedActiveCheckRoomReaction(activeCheckRoomGame, reaction.User.Value, channel.Guild, message, reaction.Emote);
             }
 
             if (removeReaction)
@@ -111,13 +111,38 @@ namespace Chos5555Bot.EventHandlers
             //TODO: add dependency injection
             BotRepository repo = new BotRepository();
 
-            var userId = message.MentionedUserIds.FirstOrDefault();
+            var userId = message.MentionedUserIds.SingleOrDefault();
             var user = await guild.GetUserAsync(userId);
-            var role = await repo.FindRoleByEmoteAndGame(emote, game);
+            var roleId = message.MentionedRoleIds.SingleOrDefault();
+            var role = guild.GetRole(roleId);
 
-            // Add role designated by reacted emote
-            await (user as SocketGuildUser).AddRoleAsync(role.DisordId);
-            return false;
+            // Find activeCheckRoom message to which the original reaction was added, remove it, PM user, delete message in modRoom
+            if (emote == new Emoji("❎"))
+            {
+                var activeCheckRoom = await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId) as IMessageChannel;
+                var messages = await activeCheckRoom.GetMessagesAsync().FlattenAsync();
+                var messageWithReaction = messages.Where(m => m.MentionedRoleIds.Contains(roleId)).SingleOrDefault();
+                await messageWithReaction.RemoveReactionAsync(emote, user);
+
+                await user.SendMessageAsync($"Unfortunately your request to get role {role.Name} on server {guild.Name}" +
+                    $" has been rejected. Please contact a moderator for reason of the rejection. Thanks.");
+                await message.Channel.SendMessageAsync($"You have rejected {user.Mention}'s request for role {role.Mention}.");
+                await message.DeleteAsync();
+                return false;
+            }
+
+            if (emote == new Emoji("✅"))
+            {
+                // Add role designated by reacted emote, PM user, delete message in modRoom
+                await (user as SocketGuildUser).AddRoleAsync(role);
+
+                await user.SendMessageAsync($"You have been given role {role.Name} on server {guild.Name}. Enjoy!");
+                await message.Channel.SendMessageAsync($"Given user {user.Mention} role {role.Mention}.");
+                await message.DeleteAsync();
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -152,14 +177,28 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IEmote emote)
+        public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IUserMessage message, IEmote emote)
         {
-            // Check if right emote was used
-            // TODO: Rework, so user selects what messages he wants, mods only confirm
-            if (CompareEmoteToEmoteEmoji(emote, game.ActiveEmote))
-            {
+            //TODO: add dependency injection
+            BotRepository repo = new BotRepository();
+
+            // Find mentioned role in message
+            var roleId = message.MentionedRoleIds.SingleOrDefault();
+            var role = await repo.FindRole(roleId);
+            var discordRole = guild.GetRole(roleId);
+
+            if (!CompareEmoteToEmoteEmoji(emote, role.ChoiceEmote))
                 return true;
-            }
+
+            // If user doesn't have games mainActiveRole and the role doesn't need mod approval, remove reaction
+            // (a.k.a. it's a secondary role that will only unlock channels if you have mainActiveRole)
+            if (!(user as SocketGuildUser).Roles
+                .Contains(guild.GetRole(game.MainActiveRole.DisordId))
+                && !role.NeedsModApproval)
+                return true;
+
+            // TODO: Check if there's any way to hide other role messages if no modAcceptRoles are set
+            // (Or send optional role messages only after modRole has been set?)
 
             // If there are no mod role, add all active roles
             if (game.ModAcceptRoles.Count == 0)
@@ -168,21 +207,25 @@ namespace Chos5555Bot.EventHandlers
                     game.ActiveRoles
                     .Select(r => r.DisordId));
                 return false;
-            } else
-            // If there is a mod role, post into mod room and react with all active role emotes for that game
+            }
+
+            // If there is a mod role, post into mod room and react with yes or no emotes
+            if (role.NeedsModApproval)
             {
-                var message = $"{user} wants to join you in {game.Name}, select the role you want to give them:\n";
-                foreach (var role in game.ActiveRoles)
-                {
-                    message += $"{role.ChoiceEmote} for role {role.Name}\n";
-                }
+                var messageText = $"{user.Mention} wants the role {discordRole.Mention}, should I give it to them?";
 
-                var sentMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(message);
+                var modMessage = await (guild as SocketGuild).GetTextChannel(game.ModAcceptRoom.DiscordId).SendMessageAsync(messageText);
 
-                await sentMessage.AddReactionsAsync(game.ActiveRoles.Select(r => r.ChoiceEmote.Out()));
+                await modMessage.AddReactionAsync(new Emoji("✅"));
+                await modMessage.AddReactionAsync(new Emoji("❎"));
 
                 return false;
             }
+
+            // If role doesn't need mod approval, give it to the user
+            await (user as SocketGuildUser).AddRoleAsync(roleId);
+
+            return false;
         }
 
         /// <summary>
@@ -241,7 +284,8 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>Nothing</returns>
         public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user)
         {
-            //TODO: add dependency injection
+            // TODO: remove reactions of user in game.activeCheckRoom
+            // TODO: add dependency injection
             BotRepository repo = new BotRepository();
 
             var roles = await repo.FindAllRoleIdsByGame(game);
@@ -257,6 +301,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>Nothing</returns>
         public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, IUser user)
         {
+            // TODO: Remove only the role which was unselected
             await (user as IGuildUser).RemoveRolesAsync(game.ActiveRoles.Select(r => r.DisordId));
         }
 
