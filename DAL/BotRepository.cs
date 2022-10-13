@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DAL.Model;
 using Discord;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Game = DAL.Model.Game;
 
 namespace DAL
@@ -101,6 +102,14 @@ namespace DAL
             await context.SaveChangesAsync();
         }
 
+        public async Task<Role> FindRoleById(ulong id)
+        {
+            return await context.Roles
+                .AsQueryable()
+                .Where(r => r.DisordId == id)
+                .SingleOrDefaultAsync();
+        }
+
         public async Task<Role> FindGameRoleByGame(Game game)
         {
             return await context.Games
@@ -112,11 +121,7 @@ namespace DAL
 
         public async Task<ICollection<Role>> FindActiveRolesByGame(Game game)
         {
-            return (await context.Games
-                .AsQueryable()
-                .Where(g => g == game)
-                .SingleOrDefaultAsync())
-                .ActiveRoles;
+            return (await FindGame(game)).ActiveRoles;
         }
 
         public async Task<ICollection<Role>> FindAllRolesByGame(Game game)
@@ -158,6 +163,11 @@ namespace DAL
         {
             context.Rooms.Remove(room);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<Room> FindRoom(Room room)
+        {
+            return await context.Rooms.FindAsync(room);
         }
 
         public async Task<Room> FindRoom(IChannel channel)
@@ -215,10 +225,10 @@ namespace DAL
 
         public async Task<ICollection<Game>> FingGamesByGuild(Guild guild)
         {
-            return context.Games
+            return await context.Games
                 .AsQueryable()
                 .Where(g => g.Guild.DiscordId == guild.DiscordId)
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task<Game> FindGameBySelectionMessage(ulong messageId)
@@ -242,6 +252,14 @@ namespace DAL
             return await context.Games
                 .AsQueryable()
                 .Where(g => g.ActiveCheckRoom.DiscordId == channelId)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Game> FindGameByNameAndGameRole(string name, ulong roleId)
+        {
+            return await context.Games
+                .AsQueryable()
+                .Where(g => g.Name == name && g.GameRole.DisordId == roleId)
                 .SingleOrDefaultAsync();
         }
 

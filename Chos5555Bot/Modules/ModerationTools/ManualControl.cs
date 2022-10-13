@@ -34,6 +34,30 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _log.Log($"Added guild {Context.Guild.Name} to the DB.", LogSeverity.Info);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("deleteGame")]
+        private async Task DeleteGameCommand(string gameName, IRole discordRole)
+        {
+            var game = await _repo.FindGameByNameAndGameRole(gameName, discordRole.Id);
+
+            if (game is null)
+                await Context.Channel.SendMessageAsync($"Couldn't find game named {gameName} with role {discordRole}");
+
+            foreach (var role in await _repo.FindAllRolesByGame(game))
+            {
+                await _repo.RemoveRole(await _repo.FindRole(role));
+                await Context.Guild.GetRole(role.DisordId).DeleteAsync();
+            }
+
+            foreach (var room in game.Rooms)
+            {
+                await _repo.RemoveRoom(await _repo.FindRoom(room));
+                await Context.Guild.GetChannel(room.DiscordId).DeleteAsync();
+            }
+
+            await _repo.RemoveGame(game);
+        }
+
         // TODO Guild.GameCategoryId command
         // TODO Guild.MemberRole command
         // TODO Guild.RuleMessageText command
