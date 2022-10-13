@@ -47,7 +47,8 @@ public class Program
         Console.WriteLine($"{_config.ConnectionString}");
 
         // Setup GameAnnouncer
-        GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(), services.GetRequiredService<LogService>());
+        GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
 
         // Log in to Discord
         await client.LoginAsync(TokenType.Bot, _config.Token);
