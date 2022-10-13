@@ -167,7 +167,7 @@ namespace DAL
 
         public async Task<Room> FindRoom(Room room)
         {
-            return await context.Rooms.FindAsync(room);
+            return await context.Rooms.FindAsync(room.Id);
         }
 
         public async Task<Room> FindRoom(IChannel channel)
