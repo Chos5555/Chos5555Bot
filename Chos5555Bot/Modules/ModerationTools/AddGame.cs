@@ -107,6 +107,7 @@ namespace Chos5555Bot.Modules
             Role role = new()
             {
                 DisordId = discordRole.Id,
+                Name = discordRole.Name,
                 ChoiceEmote = parsedEmote,
                 NeedsModApproval = true
             };
@@ -173,6 +174,7 @@ namespace Chos5555Bot.Modules
             var activeRole = new Role()
             {
                 DisordId = discordActiveRole.Id,
+                Name = discordActiveRole.Name,
                 Resetable = true,
                 NeedsModApproval = true,
                 ChoiceEmote = game.ActiveEmote
@@ -203,6 +205,9 @@ namespace Chos5555Bot.Modules
             await _repo.AddRole(activeRole);
             await _repo.AddRoom(generalTextRoom);
             await _repo.AddRoom(generalVoiceRoom);
+
+            // Anounce active roles to games ActiveCheckRoom
+            await GameAnnouncer.AnnounceActiveRoles(game, discordActiveCheckRoom, Context);
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Chos5555Bot.Services;
 using DAL;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules
@@ -42,22 +44,21 @@ namespace Chos5555Bot.Modules
             await log.Log($"Announced game {game.Name} in guild {context.Guild.Id}({context.Guild.Name})", LogSeverity.Info);
         }
 
-        public static async Task AnnounceActiveRoles(Game game, SocketCommandContext context)
+        public static async Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
         {
             foreach(var role in game.ActiveRoles)
             {
-                await AnnounceActiveRole(role, game, context);
+                await AnnounceActiveRole(role, game, channel, context);
             }
         }
 
-        public static async Task AnnounceActiveRole(Role role, Game game, SocketCommandContext context)
+        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context)
         {
-            var message = await context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId)
-                .SendMessageAsync($"{context.Guild.GetRole(role.DisordId).Name} {role.ChoiceEmote} {role.Description}");
+            var message = await channel.SendMessageAsync($"{role.Name} {role.ChoiceEmote.Out()} {role.Description}");
 
             await message.AddReactionAsync(role.ChoiceEmote.Out());
 
-            await log.Log($"Announced role {context.Guild.GetRole(role.DisordId).Name} into {game.Name}'s active channel.", LogSeverity.Info);
+            await log.Log($"Announced role {role.Name} into {game.Name}'s active channel.", LogSeverity.Info);
         }
     }
 }
