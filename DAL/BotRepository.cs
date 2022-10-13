@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,6 +90,11 @@ namespace DAL
             return await context.Roles.FindAsync(role.Id);
         }
 
+        public async Task<Role> FindRole(ulong id)
+        {
+            return await context.Roles.FindAsync(id);
+        }
+
         public async Task UpdateRole(Role role)
         {
             context.Roles.Update(role);
@@ -100,14 +106,6 @@ namespace DAL
             currRole.ChoiceEmote = role.ChoiceEmote;
             currRole.Description = role.Description;
             await context.SaveChangesAsync();
-        }
-
-        public async Task<Role> FindRoleById(ulong id)
-        {
-            return await context.Roles
-                .AsQueryable()
-                .Where(r => r.DisordId == id)
-                .SingleOrDefaultAsync();
         }
 
         public async Task<Role> FindGameRoleByGame(Game game)
@@ -261,6 +259,13 @@ namespace DAL
             return await context.Games
                 .AsQueryable()
                 .Where(g => g.Name == name && g.GameRole.DisordId == roleId)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<Game> FindGame(string name)
+        {
+            return await context.Games
+                .Where(g => g.Name == name)
                 .SingleOrDefaultAsync();
         }
 
