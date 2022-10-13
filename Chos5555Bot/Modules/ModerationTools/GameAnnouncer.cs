@@ -53,6 +53,9 @@ namespace Chos5555Bot.Modules
         }
 
         public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context)
+            // If role doesn't have an emote, don't post it
+            if (role.ChoiceEmote is null)
+                return;
         {
             var message = await channel.SendMessageAsync($"{role.Name} {role.ChoiceEmote.Out()} {role.Description}");
 

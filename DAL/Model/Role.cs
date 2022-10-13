@@ -10,7 +10,7 @@ namespace DAL
         public string Name { get; set; }
         public bool Resetable { get; set; } = true;
         public bool NeedsModApproval { get; set; } = false;
-        public EmoteEmoji ChoiceEmote { get; set; }
+        public EmoteEmoji ChoiceEmote { get; set; } = null;
         public string Description { get; set; } = "";
     }
 }
