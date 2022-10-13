@@ -36,6 +36,12 @@ namespace Chos5555Bot.Modules
         /// <param name="name">Name of the new game</param>
         /// <returns></returns>
 
+        // TODO: change to take just role, emote and string and make game name from role name
+        // Add one that takes name as string, emote and string, create role from name
+        // try is hasActiveEmote = 0 would allow to only have 1 overload taking care of 2 options
+
+        // TODO: check for duplicate games, role can only have one game, only one game with name is possible
+
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
         private async Task AddBaseGame(IRole discordRole, string emote, string name)
@@ -67,7 +73,8 @@ namespace Chos5555Bot.Modules
 
             var remainder = game.HasActiveRole ? "Recruit" : "General";
 
-            var discordTextRoom = await Context.Guild.CreateTextChannelAsync($"{name} {remainder}", p => {
+            var discordTextRoom = await Context.Guild.CreateTextChannelAsync($"{name} {remainder}", p =>
+            {
                 p.CategoryId = gameCategory.Id;
                 p.Topic = $"{remainder} channel for {name}.";
             });
@@ -193,6 +200,7 @@ namespace Chos5555Bot.Modules
                 p.CategoryId = categoryId;
             });
 
+            // Set general rooms only viewable for users with active role
             await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralTextRoom);
             await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralVoiceRoom);
 
