@@ -67,10 +67,6 @@ namespace Chos5555Bot.Modules
 
             await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
 
-            // Setup ActiveRole part of game
-            if (game.HasActiveRole)
-                await SetupGameWithActiveRole(game, gameCategory.Id, discordRole);
-
             var remainder = game.HasActiveRole ? "Recruit" : "General";
 
             var discordTextRoom = await Context.Guild.CreateTextChannelAsync($"{name} {remainder}", p =>
@@ -90,6 +86,10 @@ namespace Chos5555Bot.Modules
             game.Rooms.Add(voiceRoom);
 
             game.GameRole = role;
+
+            // Setup ActiveRole part of game
+            if (game.HasActiveRole)
+                await SetupGameWithActiveRole(game, gameCategory.Id, discordRole);
 
             await _repo.AddRole(role);
 
@@ -141,6 +141,7 @@ namespace Chos5555Bot.Modules
                 });
 
             // Disable users from adding new reactions
+            await discordActiveCheckRoom.SyncPermissionsAsync();
             await PermissionSetter.DenyAddReaction(Context.Guild.EveryoneRole, discordActiveCheckRoom);
 
             var activeCheckRoom = new Room() { DiscordId = discordActiveCheckRoom.Id };
@@ -210,14 +211,14 @@ namespace Chos5555Bot.Modules
             game.Rooms.Add(generalTextRoom);
             game.Rooms.Add(generalVoiceRoom);
 
+            // Anounce active roles to games ActiveCheckRoom
+            await GameAnnouncer.AnnounceActiveRole(activeRole, game, discordActiveCheckRoom, Context, discordActiveRole);
+
             await _repo.AddRoom(activeCheckRoom);
             await _repo.AddRoom(modAcceptRoom);
             await _repo.AddRole(activeRole);
             await _repo.AddRoom(generalTextRoom);
             await _repo.AddRoom(generalVoiceRoom);
-
-            // Anounce active roles to games ActiveCheckRoom
-            await GameAnnouncer.AnnounceActiveRole(activeRole, game, discordActiveCheckRoom, Context, discordActiveRole);
         }
     }
 }
