@@ -190,6 +190,11 @@ namespace Chos5555Bot.EventHandlers
             if (!CompareEmoteToEmoteEmoji(emote, role.ChoiceEmote))
                 return true;
 
+            // If user doesn't have gameRole he shouldn't even see the role choice room, but check anyways
+            if (!(user as SocketGuildUser).Roles
+                .Contains(guild.GetRole(game.GameRole.DisordId)))
+                return true;
+
             // If user doesn't have games mainActiveRole and the role doesn't need mod approval, remove reaction
             // (a.k.a. it's a secondary role that will only unlock channels if you have mainActiveRole)
             if (!(user as SocketGuildUser).Roles
@@ -308,7 +313,7 @@ namespace Chos5555Bot.EventHandlers
         private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
         {
             var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
-            return emoteEmoji1 == emoteEmoji2;
+            return emoteEmoji1.Equals(emoteEmoji2);
         }
     }
 }
