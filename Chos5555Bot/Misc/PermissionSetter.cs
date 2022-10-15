@@ -10,17 +10,19 @@ namespace Chos5555Bot.Misc
 {
     internal class PermissionSetter
     {
-        public static async Task SetShownOnlyForRole(IRole role, IRole everyoneRole, IGuildChannel channel)
+        public static async Task SetShownOnlyForRole(IRole showRole, IRole hideRole, IGuildChannel channel)
         {
-            await SetHiddenForRole(everyoneRole, channel);
-            await SetShownForRole(role, channel);
+            var perms = channel.PermissionOverwrites;
+
+            await SetHiddenForRole(hideRole, channel);
+            await SetShownForRole(showRole, channel);
         }
 
-        public static async Task SetShownForRoles(ICollection<IRole> roles, IRole everyoneRole, IGuildChannel channel)
+        public static async Task SetShownForRoles(ICollection<IRole> showRoles, IRole hideRole, IGuildChannel channel)
         {
-            await SetHiddenForRole(everyoneRole, channel);
+            await SetHiddenForRole(hideRole, channel);
 
-            foreach (var role in roles)
+            foreach (var role in showRoles)
             {
                 await SetShownForRole(role, channel);
             }
@@ -42,9 +44,15 @@ namespace Chos5555Bot.Misc
 
         public static async Task DenyAddReaction(IRole role, IGuildChannel channel)
         {
+            var rolePerms = channel.GetPermissionOverwrite(role);
+
+            if (rolePerms is null)
+                rolePerms = OverwritePermissions.InheritAll;
+
+            await channel.RemovePermissionOverwriteAsync(role);
+
             // Stops users with role from adding new reactions, they can still react with the ones already there
-            await channel.AddPermissionOverwriteAsync(role,
-                OverwritePermissions.InheritAll.Modify(addReactions: PermValue.Deny));
+            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(addReactions: PermValue.Deny));
         }
     }
 }
