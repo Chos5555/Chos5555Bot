@@ -32,5 +32,16 @@ namespace DAL.Model
                 return (Emote) emote;
             return (Emoji) emote;
         }
+
+        public bool Equals(EmoteEmoji emoteEmoji)
+        {
+            if (type != emoteEmoji.type)
+                return false;
+
+            if (type == EmoteType.Emote)
+                return ((Emote)emote).Id == ((Emote)emoteEmoji.emote).Id;
+
+            return ((Emoji)emote).Name == ((Emoji)emoteEmoji.emote).Name;
+        }
     }
 }
