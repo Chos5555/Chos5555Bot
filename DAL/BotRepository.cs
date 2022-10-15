@@ -92,7 +92,9 @@ namespace DAL
 
         public async Task<Role> FindRole(ulong id)
         {
-            return await context.Roles.FindAsync(id);
+            return await context.Roles.AsQueryable()
+                .Where(r => r.DisordId == id)
+                .SingleOrDefaultAsync();
         }
 
         public async Task UpdateRole(Role role)
