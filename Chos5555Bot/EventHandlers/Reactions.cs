@@ -5,6 +5,7 @@ using DAL;
 using System.Linq;
 using DAL.Model;
 using DAL.Misc;
+using Chos5555Bot.Services;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -14,6 +15,14 @@ namespace Chos5555Bot.EventHandlers
     public class Reactions
     {
         // TODO: Add logging
+        private static BotRepository _repo;
+        private static LogService _log;
+
+        public static void InitReactions(BotRepository repo, LogService log)
+        {
+            _repo = repo;
+            _log = log;
+        }
 
         /// <summary>
         /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
@@ -25,20 +34,16 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>Task</returns>
         public static async Task AddHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
-            // TODO figure out dependency injection of repo
-
-            BotRepository repo = new BotRepository();
-
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
             // Ignore if reactions was added by bot
             if (channel.Guild.GetUser(reaction.UserId).IsBot)
                 return;
 
-            var guild = await repo.FindGuild(channel.Guild.Id);
-            var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
-            var modRoomGame = await repo.FindGameByModRoom(channel.Id);
-            var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
+            var guild = await _repo.FindGuild(channel.Guild.Id);
+            var selectionRoomGame = await _repo.FindGameBySelectionMessage(reaction.MessageId);
+            var modRoomGame = await _repo.FindGameByModRoom(channel.Id);
+            var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
             var message = await uncachedMessage.GetOrDownloadAsync();
 
             var removeReaction = false;
@@ -108,9 +113,6 @@ namespace Chos5555Bot.EventHandlers
                 return true;
             }
 
-            //TODO: add dependency injection
-            BotRepository repo = new BotRepository();
-
             var userId = message.MentionedUserIds.SingleOrDefault();
             var user = await guild.GetUserAsync(userId);
             var roleId = message.MentionedRoleIds.SingleOrDefault();
@@ -157,7 +159,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
         {
             // Check if right emote was used
-            if (CompareEmoteToEmoteEmoji(emote, game.ActiveEmote))
+            if (!CompareEmoteToEmoteEmoji(emote, game.ActiveEmote))
             {
                 return true;
             }
@@ -179,12 +181,9 @@ namespace Chos5555Bot.EventHandlers
         /// </returns>
         public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IUserMessage message, IEmote emote)
         {
-            //TODO: add dependency injection
-            BotRepository repo = new BotRepository();
-
             // Find mentioned role in message
             var roleId = message.MentionedRoleIds.SingleOrDefault();
-            var role = await repo.FindRole(roleId);
+            var role = await _repo.FindRole(roleId);
             var discordRole = guild.GetRole(roleId);
 
             if (!CompareEmoteToEmoteEmoji(emote, role.ChoiceEmote))
@@ -242,18 +241,15 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>Nothing</returns>
         public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
-            // TODO: add dependency injection
-            BotRepository repo = new BotRepository();
-
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
             // Ignore if reactions was added by bot
             if (channel.Guild.GetUser(reaction.UserId).IsBot)
                 return;
 
-            var guild = await repo.FindGuild(channel.Guild.Id);
-            var selectionRoomGame = await repo.FindGameBySelectionMessage(reaction.MessageId);
-            var activeCheckRoomGame = await repo.FindGameByActiveCheckRoom(channel.Id);
+            var guild = await _repo.FindGuild(channel.Guild.Id);
+            var selectionRoomGame = await _repo.FindGameBySelectionMessage(reaction.MessageId);
+            var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
 
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
@@ -290,10 +286,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user)
         {
             // TODO: remove reactions of user in game.activeCheckRoom
-            // TODO: add dependency injection
-            BotRepository repo = new BotRepository();
-
-            var roles = await repo.FindAllRoleIdsByGame(game);
+            var roles = await _repo.FindAllRoleIdsByGame(game);
 
             await (user as IGuildUser).RemoveRolesAsync(roles);
         }

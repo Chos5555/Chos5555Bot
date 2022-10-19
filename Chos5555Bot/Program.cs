@@ -46,8 +46,12 @@ public class Program
 
         Console.WriteLine($"{_config.ConnectionString}");
 
-        // Setup GameAnnouncer
+        // Initialize GameAnnouncer
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Reactions
+        Reactions.InitReactions(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
         // Log in to Discord
@@ -87,7 +91,8 @@ public class Program
             .AddSingleton<Queue>()
             .AddLavaNode(x => { x.SelfDeaf = false; })
             .AddSingleton<MusicService>()
-            .AddSingleton<LogService>();
+            .AddSingleton<LogService>()
+            .AddSingleton<Reactions>();
 
 
         // Setup provider
