@@ -11,6 +11,7 @@ using Chos5555Bot.Modules;
 using DAL;
 using Victoria;
 using Chos5555Bot.Services;
+using System.Runtime.InteropServices;
 
 public class Program
 {
@@ -50,8 +51,12 @@ public class Program
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
-        // Initialize Reactions
+        // Initialize Reaction handler
         Reactions.InitReactions(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Role handler
+        Roles.InitRoles(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
         // Log in to Discord
@@ -69,9 +74,12 @@ public class Program
         // Initialize MusicService
         await services.GetRequiredService<MusicService>().InitializeAsync();
 
-        // React upond added emoji to message
+        // Handle added/removed emote to message
         client.ReactionAdded += Reactions.AddHandler;
         client.ReactionRemoved += Reactions.RemoveHandler;
+
+        // Handle role updates
+        client.RoleUpdated += Roles.UpdateHandler;
 
         // Block this task until the program is closed
         await Task.Delay(-1);
@@ -92,7 +100,8 @@ public class Program
             .AddLavaNode(x => { x.SelfDeaf = false; })
             .AddSingleton<MusicService>()
             .AddSingleton<LogService>()
-            .AddSingleton<Reactions>();
+            .AddSingleton<Reactions>()
+            .AddSingleton<Roles>();
 
 
         // Setup provider
