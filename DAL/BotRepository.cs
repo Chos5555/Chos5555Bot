@@ -271,6 +271,14 @@ namespace DAL
                 .SingleOrDefaultAsync();
         }
 
+        public bool FindDuplicateGame(string name, ulong roleId)
+        {
+            return context.Games
+                .AsQueryable()
+                .Where(g => g.Name == name || g.GameRole.DisordId == roleId)
+                .Any();
+        }
+
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
     }
 }

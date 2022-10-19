@@ -34,8 +34,6 @@ namespace Chos5555Bot.Modules
         /// <param name="name">Name of the new game</param>
         /// <returns></returns>
 
-        // TODO: check for duplicate games, role can only have one game, only one game with name is possible
-
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
         private async Task AddBaseGame(IRole discordRole, string emote, [Remainder] string name)
@@ -67,6 +65,12 @@ namespace Chos5555Bot.Modules
 
         private async Task AddGameHelper(IRole discordRole, string emote, string name, bool hasActiveRole)
         {
+            if (_repo.FindDuplicateGame(name, discordRole.Id))
+            {
+                await Context.Channel.SendMessageAsync("A game with this name or role is already created, please choose a different one.");
+                await _log.Log($"User {Context.User.Username} tried to create game {name} with role {discordRole.Name}, but it already exists", LogSeverity.Verbose);
+            }
+
             await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}, active: {hasActiveRole}.",
                 LogSeverity.Verbose);
 
