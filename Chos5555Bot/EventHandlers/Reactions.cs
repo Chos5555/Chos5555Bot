@@ -305,7 +305,7 @@ namespace Chos5555Bot.EventHandlers
                 }
                 await _log.Log($"Removing {reaction.User.Value.Username} " +
                     $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
-                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction.User.Value);
+                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction);
             }
         }
 
@@ -333,17 +333,8 @@ namespace Chos5555Bot.EventHandlers
 
             // Removes all reactions of user in games activeCheckRoom
             var discordActiveRoom = (ITextChannel) await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId);
-            var messages = await discordActiveRoom.GetMessagesAsync().FlattenAsync();
-            foreach (var message in messages)
-            {
-                var reactedEmotes = message.Reactions.Keys;
-                foreach(var emote in reactedEmotes)
-                {
-                    var users = await message.GetReactionUsersAsync(emote, int.MaxValue).FlattenAsync();
-                    if (users.Where(u => u.Id == user.Id).Any())
-                        await message.RemoveReactionAsync(emote, user);
-                }
-            }
+
+            await RemoveReactionsByUserInChannel(discordActiveRoom, user);
         }
 
         /// <summary>
@@ -352,16 +343,50 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the active message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, IUser user)
+        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction)
         {
-            // TODO: Remove only the role which was unselected
-            await (user as IGuildUser).RemoveRolesAsync(game.ActiveRoles.Select(r => r.DisordId));
+            var role = reaction.Message.Value.MentionedRoles.SingleOrDefault();
+            var user = reaction.User.Value as IGuildUser;
+
+            // If MainActiveRole is removed, also remove all roles that don't need mod approval
+            if (game.MainActiveRole.DisordId == role.Id)
+            {
+                var roleIds = game.ActiveRoles.Where(r => !r.NeedsModApproval).Select(r => r.DisordId);
+                await user.RemoveRolesAsync(roleIds);
+
+                // Remove reactions to removed roles
+                await RemoveReactionsByUserInChannel(reaction.Channel as ITextChannel, user, roleIds);
+            }
+
+            await user.RemoveRoleAsync(role.Id);
         }
 
         private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
         {
             var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
             return emoteEmoji1.Equals(emoteEmoji2);
+        }
+
+        private static async Task RemoveReactionsByUserInChannel(ITextChannel channel, IUser user, IEnumerable<ulong> roleIds = null)
+        {
+            var messages = await channel.GetMessagesAsync().FlattenAsync();
+            foreach (var message in messages)
+            {
+                // Check if mentioned role in message is in roleIds
+                if (roleIds is not null)
+                {
+                    if (!roleIds.Where(id => id == message.MentionedRoleIds.SingleOrDefault()).Any())
+                        continue;
+                }
+
+                var reactedEmotes = message.Reactions.Keys;
+                foreach (var emote in reactedEmotes)
+                {
+                    var users = await message.GetReactionUsersAsync(emote, int.MaxValue).FlattenAsync();
+                    if (users.Where(u => u.Id == user.Id).Any())
+                        await message.RemoveReactionAsync(emote, user);
+                }
+            }
         }
     }
 }
