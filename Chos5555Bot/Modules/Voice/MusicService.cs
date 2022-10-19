@@ -10,6 +10,7 @@ using Victoria.Enums;
 
 namespace Chos5555Bot.Modules.Voice
 {
+    // TODO: Change Victoria to Lavalink4NET as per Discord.net dev discord trusted extensions 
     public class MusicService
     {
         private readonly LavaNode _lavaNode;

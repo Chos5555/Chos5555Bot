@@ -9,6 +9,7 @@ using Chos5555Bot.Services;
 using System.Threading.Channels;
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -292,12 +293,18 @@ namespace Chos5555Bot.EventHandlers
             if (selectionRoomGame is not null)
             {
                 await _log.Log($"Removing {reaction.User.Value.Username} gameRole of {selectionRoomGame.Name} in {channel.Guild.Name} and reaction in activeRoom.", LogSeverity.Info);
-                await RemoveSelectionRoomReaction(selectionRoomGame, reaction.User.Value);
+                await RemoveSelectionRoomReaction(selectionRoomGame, reaction.User.Value, channel.Guild);
             }
 
             if (activeCheckRoomGame is not null)
             {
-                await _log.Log($"Removing {reaction.User.Value.Username} activeRole of {selectionRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
+                // If user is not specified, the reaction has been already deleted
+                if (!reaction.User.IsSpecified)
+                {
+                    return;
+                }
+                await _log.Log($"Removing {reaction.User.Value.Username} " +
+                    $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
                 await RemoveActiveRoomReaction(activeCheckRoomGame, reaction.User.Value);
             }
         }
@@ -318,12 +325,25 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the selection message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user)
+        public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user, IGuild guild)
         {
-            // TODO: remove reactions of user in game.activeCheckRoom
             var roles = await _repo.FindAllRoleIdsByGame(game);
 
             await (user as IGuildUser).RemoveRolesAsync(roles);
+
+            // Removes all reactions of user in games activeCheckRoom
+            var discordActiveRoom = (ITextChannel) await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId);
+            var messages = await discordActiveRoom.GetMessagesAsync().FlattenAsync();
+            foreach (var message in messages)
+            {
+                var reactedEmotes = message.Reactions.Keys;
+                foreach(var emote in reactedEmotes)
+                {
+                    var users = await message.GetReactionUsersAsync(emote, int.MaxValue).FlattenAsync();
+                    if (users.Where(u => u.Id == user.Id).Any())
+                        await message.RemoveReactionAsync(emote, user);
+                }
+            }
         }
 
         /// <summary>

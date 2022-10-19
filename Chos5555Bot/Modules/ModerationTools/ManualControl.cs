@@ -92,6 +92,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 };
             }
 
+            // TODO: Set modChannel viewable for new modRole
             // TODO: If you're gonna be sending messages to activeRoom only after modRole exists, call game announcer here
 
             game.ModAcceptRoles.Add(modRole);
