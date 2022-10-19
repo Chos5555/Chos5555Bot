@@ -44,6 +44,7 @@ namespace Chos5555Bot.Misc
 
         public static async Task DenyAddReaction(IRole role, IGuildChannel channel)
         {
+            // TODO: Try in situ edit
             var rolePerms = channel.GetPermissionOverwrite(role);
 
             if (rolePerms is null)
@@ -54,5 +55,18 @@ namespace Chos5555Bot.Misc
             // Stops users with role from adding new reactions, they can still react with the ones already there
             await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(addReactions: PermValue.Deny));
         }
+
+        public static async Task UpdateViewChannel(IRole role, IGuildChannel channel, PermValue value)
+        {
+            var rolePerms = channel.GetPermissionOverwrite(role);
+
+            if (rolePerms is null)
+                rolePerms = OverwritePermissions.InheritAll;
+
+            await channel.RemovePermissionOverwriteAsync(role);
+
+            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(viewChannel: value));
+        }
+
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Chos5555Bot.Services;
 using Discord.WebSocket;
+using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -92,7 +93,8 @@ namespace Chos5555Bot.Modules.ModerationTools
                 };
             }
 
-            // TODO: Set modChannel viewable for new modRole
+            // Set modRoom viewable for new mod role
+            await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Allow);
             // TODO: If you're gonna be sending messages to activeRoom only after modRole exists, call game announcer here
 
             game.ModAcceptRoles.Add(modRole);
