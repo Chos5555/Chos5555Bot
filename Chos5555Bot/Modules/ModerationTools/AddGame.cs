@@ -26,8 +26,6 @@ namespace Chos5555Bot.Modules
             _log = log;
         }
 
-        // TODO: Tell user if you couldn't match the command pattern
-
         /// <summary>
         /// Add command for basic games (without active role)
         /// </summary>
@@ -36,32 +34,43 @@ namespace Chos5555Bot.Modules
         /// <param name="name">Name of the new game</param>
         /// <returns></returns>
 
-        // TODO: change to take just role, emote and string and make game name from role name
-        // Add one that takes name as string, emote and string, create role from name
-        // try is hasActiveEmote = 0 would allow to only have 1 overload taking care of 2 options
-
         // TODO: check for duplicate games, role can only have one game, only one game with name is possible
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
-        private async Task AddBaseGame(IRole discordRole, string emote, string name)
+        private async Task AddBaseGame(IRole discordRole, string emote, [Remainder] string name)
         {
-            await AddGameHelper(discordRole, emote, name, "");
+            await AddGameHelper(discordRole, emote, name, false);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGame")]
-        private async Task AddGameWithActiveRole(IRole discordRole, string emote, string name, string hasActiveRole)
+        private async Task AddGameByRole(IRole discordRole, string emote, bool hasActiveRole = false)
         {
+            await AddGameHelper(discordRole, emote, discordRole.Name, hasActiveRole);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addGame")]
+        private async Task AddGameByName(string emote, bool hasActiveRole, [Remainder] string name)
+        {
+            var discordRole = await Context.Guild.CreateRoleAsync(name);
             await AddGameHelper(discordRole, emote, name, hasActiveRole);
         }
 
-        private async Task AddGameHelper(IRole discordRole, string emote, string name, string hasActiveRoleString)
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addActiveGame")]
+        private async Task AddActiveGame(IRole discordRole, string emote, [Remainder] string name)
         {
-            await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}, active: {hasActiveRoleString}.",
+            await AddGameHelper(discordRole, emote, name, true);
+        }
+
+        private async Task AddGameHelper(IRole discordRole, string emote, string name, bool hasActiveRole)
+        {
+            await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}, active: {hasActiveRole}.",
                 LogSeverity.Verbose);
 
-            var (guild, role, game, hasActiveRole) = await SetupNewGame(discordRole, emote, name, hasActiveRoleString);
+            var (guild, role, game) = await SetupNewGame(discordRole, emote, name, hasActiveRole);
 
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
 
@@ -103,11 +112,9 @@ namespace Chos5555Bot.Modules
             await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
         }
 
-        private async Task<(Guild, Role, Game, bool)> SetupNewGame (IRole discordRole, string emote, string name, string hasActiveRoleString)
+        private async Task<(Guild, Role, Game)> SetupNewGame (IRole discordRole, string emote, string name, bool hasActiveRole)
         {
             var parsedEmote = EmoteParser.ParseEmote(emote);
-
-            var hasActiveRole = hasActiveRoleString.Equals("yes");
 
             var guild = await _repo.FindGuild(Context.Guild);
 
@@ -128,7 +135,7 @@ namespace Chos5555Bot.Modules
                 HasActiveRole = hasActiveRole
             };
 
-            return (guild, role, game, hasActiveRole);
+            return (guild, role, game);
         }
 
         private async Task SetupGameWithActiveRole (Game game, ulong categoryId, IRole discordGameRole)
