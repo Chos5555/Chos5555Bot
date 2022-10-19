@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Chos5555Bot.Services;
+using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Reflection;
@@ -11,13 +12,15 @@ namespace Chos5555Bot
         private readonly DiscordSocketClient client;
         private readonly CommandService commandService;
         private readonly IServiceProvider services;
+        private readonly LogService log;
 
         // Retrieve client and CommandService instance via constructor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log)
         {
             this.client = client;
             this.commandService = commandService;
             this.services = services;
+            this.log = log;
         }
 
         public async Task SetupAsync()
@@ -49,7 +52,13 @@ namespace Chos5555Bot
             var context = new SocketCommandContext(client, message);
 
             // Execute the command with the command context we just created
-            await commandService.ExecuteAsync(context: context, argPos: argPos, services: services);
+            var res = await commandService.ExecuteAsync(context: context, argPos: argPos, services: services);
+
+            if (!res.IsSuccess)
+            {
+                await context.Channel.SendMessageAsync($"I couldn't recognize that command, type !help if you need help.");
+                await log.Log("Couldn't recognize command.", Discord.LogSeverity.Error);
+            }
         }
     }
 }
