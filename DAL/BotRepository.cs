@@ -256,6 +256,14 @@ namespace DAL
                 .SingleOrDefaultAsync();
         }
 
+        public async Task<Game> FindGameByRole(Role role)
+        {
+            return await context.Games
+                .AsQueryable()
+                .Where(g => (g.ActiveRoles.Where(r => r.Id == role.Id)).Any())
+                .SingleOrDefaultAsync();
+        }
+
         public async Task<Game> FindGameByNameAndGameRole(string name, ulong roleId)
         {
             return await context.Games

@@ -1,11 +1,15 @@
 ﻿using DAL;
 using Chos5555Bot.Services;
 using Discord.Commands;
+using Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DAL.Misc;
+using Discord.Rest;
+using Discord.WebSocket;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -20,6 +24,55 @@ namespace Chos5555Bot.Modules.ModerationTools
             _log = log;
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setRoleDescription")]
+        private async Task setRoleDescriptionCommand(IRole discordRole, [Remainder] string desc)
+        {
+            var role = await _repo.FindRole(discordRole.Id);
+
+            var oldDesc = role.Description;
+
+            role.Description = desc;
+            await _repo.UpdateRole(role);
+
+            // Update text on announce message
+            var message = await FindAnnouncedMessage(role);
+
+            var newMessageContent = message.Content.Replace(oldDesc, role.Description);
+
+            await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setRoleEmote")]
+        private async Task setRoleEmoteCommand(IRole discordRole, string emote)
+        {
+            var role = await _repo.FindRole(discordRole.Id);
+
+            var parsedEmote = EmoteParser.ParseEmote(emote);
+
+            var oldEmote = role.ChoiceEmote.Out();
+
+            role.ChoiceEmote = parsedEmote;
+            await _repo.UpdateRole(role);
+
+            // Update emote on announce message
+            var message = await FindAnnouncedMessage(role);
+
+            var newMessageContent = message.Content.Replace(oldEmote.ToString(), role.ChoiceEmote.Out().ToString());
+
+            await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+        }
+
+        private async Task<IMessage> FindAnnouncedMessage(Role role)
+        {
+            var game = await _repo.FindGameByRole(role);
+            return (await Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId)
+                .GetMessagesAsync()
+                .FlattenAsync())
+                .Where(m => m.MentionedRoleIds.Contains(role.DisordId))
+                .SingleOrDefault();
+        }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRoleResettable")]
@@ -30,8 +83,5 @@ namespace Chos5555Bot.Modules.ModerationTools
             role.Resettable = value;
             await _repo.UpdateRole(role);
         }
-        // TODO set Description (update in active room) role
-        // TODO set choiceEmote (update in active room) role
-        // TODO set resetable role
     }
 }
