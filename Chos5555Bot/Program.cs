@@ -81,6 +81,8 @@ public class Program
         // Handle role updates
         client.RoleUpdated += Roles.UpdateHandler;
 
+        // TODO: Handle channel deletion to delete from DB
+
         // Block this task until the program is closed
         await Task.Delay(-1);
     }

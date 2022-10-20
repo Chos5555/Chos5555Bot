@@ -68,5 +68,18 @@ namespace Chos5555Bot.Misc
             await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(viewChannel: value));
         }
 
+        private static async Task UpdateHelper(IRole role, IGuildChannel channel, ChannelPermission permission, PermValue value)
+        {
+            var rolePerms = channel.GetPermissionOverwrite(role);
+
+            if (rolePerms is null)
+                rolePerms = OverwritePermissions.InheritAll;
+
+            await channel.RemovePermissionOverwriteAsync(role);
+
+            // TODO: try to figure out if you can pass viewChannel: from permission
+            // Stops users with role from adding new reactions, they can still react with the ones already there
+            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(viewChannel: value));
+        }
     }
 }

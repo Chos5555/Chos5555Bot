@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
 using Chos5555Bot.Misc;
+using DAL.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -129,9 +130,30 @@ namespace Chos5555Bot.Modules.ModerationTools
             await PermissionSetter.SetShownForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setGameEmote")]
+        private async Task setGameEmoteCommand(string gameName, string emote)
+        {
+            var game = await _repo.FindGame(gameName);
+
+            var parsedEmote = EmoteParser.ParseEmote(emote);
+
+            var oldEmote = game.ActiveEmote.Out();
+
+            game.ActiveEmote = parsedEmote;
+            await _repo.UpdateGame(game);
+
+            // Update emote on announce message
+            var guildSelectionChannelId = (await _repo.FindGuild(Context.Guild)).SelectionRoom.DiscordId;
+            var message = await MessageFinder.FindAnnouncedMessage(game.GameRole, Context.Guild.GetTextChannel(guildSelectionChannelId));
+
+            var newMessageContent = message.Content.Replace(oldEmote.ToString(), game.ActiveEmote.Out().ToString());
+
+            await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+        }
+
         // TODO add channel to game, add channel to role, remove channel (with archive) game
         // TODO add role to game
-        // TODO set active emote (change emote in select message) game
         // TODO reset resettable roles
     }
 }

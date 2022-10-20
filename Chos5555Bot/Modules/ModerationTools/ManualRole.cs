@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using DAL.Misc;
 using Discord.Rest;
 using Discord.WebSocket;
+using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -36,7 +37,8 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateRole(role);
 
             // Update text on announce message
-            var message = await FindAnnouncedMessage(role);
+            var game = await _repo.FindGameByRole(role);
+            var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
 
             var newMessageContent = message.Content.Replace(oldDesc, role.Description);
 
@@ -57,21 +59,12 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateRole(role);
 
             // Update emote on announce message
-            var message = await FindAnnouncedMessage(role);
+            var game = await _repo.FindGameByRole(role);
+            var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
 
             var newMessageContent = message.Content.Replace(oldEmote.ToString(), role.ChoiceEmote.Out().ToString());
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
-        }
-
-        private async Task<IMessage> FindAnnouncedMessage(Role role)
-        {
-            var game = await _repo.FindGameByRole(role);
-            return (await Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId)
-                .GetMessagesAsync()
-                .FlattenAsync())
-                .Where(m => m.MentionedRoleIds.Contains(role.DisordId))
-                .SingleOrDefault();
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]

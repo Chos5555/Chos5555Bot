@@ -112,5 +112,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             guild.ArchiveCategoryId = channelId;
             await _repo.UpdateGuild(guild);
         }
+
+        // TODO delete channel command which archives channel
     }
 }
