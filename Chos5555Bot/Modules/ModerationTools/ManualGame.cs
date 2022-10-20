@@ -152,8 +152,96 @@ namespace Chos5555Bot.Modules.ModerationTools
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
 
-        // TODO add channel to game, add channel to role, remove channel (with archive) game
-        // TODO add role to game
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addChannelToGame")]
+        private async Task AddChannelToGameCommand([Remainder] string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+
+            var room = await _repo.FindRoom(Context.Channel);
+
+            if (room is null)
+            {
+                room = new Room()
+                {
+                    DiscordId = Context.Channel.Id
+                };
+                await _repo.AddRoom(room);
+            }
+
+            game.Rooms.Add(room);
+            await _repo.UpdateGame(game);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addChannelToRole")]
+        private async Task AddChannelToRoleCommand(IRole role, [Remainder] string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+
+            var room = await _repo.FindRoom(Context.Channel);
+
+            if (room is null)
+            {
+                room = new Room()
+                {
+                    DiscordId = Context.Channel.Id
+                };
+                await _repo.AddRoom(room);
+            }
+
+            game.Rooms.Add(room);
+
+            // Set only viewable by given role, hide for gameRole
+            await PermissionSetter.SetShownOnlyForRole(role, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
+
+            await _repo.UpdateGame(game);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addRoleToGame")]
+        private async Task AddRoleToGameCommand(IRole discordRole, bool resettable, bool needModApproval, IEmote emote, [Remainder] string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+
+            var role = await _repo.FindRole(discordRole);
+
+            if (role is null)
+            {
+                role = new Role()
+                {
+                    DisordId = discordRole.Id,
+                    Name = discordRole.Name,
+                    Resettable = resettable,
+                    NeedsModApproval = needModApproval,
+                    ChoiceEmote = EmoteParser.ParseEmote(emote.ToString())
+                };
+                await _repo.AddRole(role);
+            }
+
+            game.ActiveRoles.Add(role);
+
+            // Announce new active role
+            await GameAnnouncer.AnnounceActiveRole(role, game, Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel, Context);
+
+            await _repo.UpdateGame(game);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("removeChannel")]
+        private async Task AddChannelToRoleCommand()
+        {
+            var room = await _repo.FindRoom(Context.Channel);
+            var game = await _repo.FindGameByRoom(room);
+            var guild = await _repo.FindGuild(Context.Guild);
+
+            game.Rooms.Remove(room);
+            await _repo.UpdateGame(game);
+
+            // Put channel into archive category
+            await (Context.Channel as INestedChannel).ModifyAsync(c => { c.CategoryId = guild.ArchiveCategoryId; });
+        }
+
         // TODO reset resettable roles
     }
 }
