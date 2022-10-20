@@ -29,7 +29,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("setRoleDescription")]
         private async Task setRoleDescriptionCommand(IRole discordRole, [Remainder] string desc)
         {
-            var role = await _repo.FindRole(discordRole.Id);
+            var role = await _repo.FindRole(discordRole);
 
             var oldDesc = role.Description;
 
@@ -49,7 +49,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("setRoleEmote")]
         private async Task setRoleEmoteCommand(IRole discordRole, string emote)
         {
-            var role = await _repo.FindRole(discordRole.Id);
+            var role = await _repo.FindRole(discordRole);
 
             var parsedEmote = EmoteParser.ParseEmote(emote);
 
@@ -71,7 +71,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("setRoleResettable")]
         private async Task setRoleResettableCommand(IRole discordRole, bool value)
         {
-            var role = await _repo.FindRole(discordRole.Id);
+            var role = await _repo.FindRole(discordRole);
 
             role.Resettable = value;
             await _repo.UpdateRole(role);

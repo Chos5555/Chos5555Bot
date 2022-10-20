@@ -68,7 +68,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task AddModRoleCommand(IRole role, string gameName)
         {
             var game = await _repo.FindGame(gameName);
-            var modRole = await _repo.FindRole(role.Id);
+            var modRole = await _repo.FindRole(role);
 
             if (modRole is null)
             {
@@ -94,7 +94,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task RemoveModRoleCommand(IRole role, string gameName)
         {
             var game = await _repo.FindGame(gameName);
-            var modRole = await _repo.FindRole(role.Id);
+            var modRole = await _repo.FindRole(role);
 
             game.ModAcceptRoles.Remove(modRole);
             await _repo.UpdateGame(game);

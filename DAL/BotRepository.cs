@@ -97,6 +97,11 @@ namespace DAL
                 .SingleOrDefaultAsync();
         }
 
+        public async Task<Role> FindRole(IRole role)
+        {
+            return await FindRole(role.Id);
+        }
+
         public async Task UpdateRole(Role role)
         {
             context.Roles.Update(role);

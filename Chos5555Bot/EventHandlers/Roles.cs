@@ -23,7 +23,7 @@ namespace Chos5555Bot.EventHandlers
 
         public static async Task UpdateHandler(SocketRole oldRole, SocketRole newRole)
         {
-            var role = await _repo.FindRole(oldRole.Id);
+            var role = await _repo.FindRole(oldRole);
 
             // If role is null, it's not in the DB => nothing to update
             if (role is null)
