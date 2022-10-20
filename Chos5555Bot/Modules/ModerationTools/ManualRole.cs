@@ -20,6 +20,16 @@ namespace Chos5555Bot.Modules.ModerationTools
             _log = log;
         }
 
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setRoleResettable")]
+        private async Task setRoleResettableCommand(IRole discordRole, bool value)
+        {
+            var role = await _repo.FindRole(discordRole.Id);
+
+            role.Resettable = value;
+            await _repo.UpdateRole(role);
+        }
         // TODO set Description (update in active room) role
         // TODO set choiceEmote (update in active room) role
         // TODO set resetable role
