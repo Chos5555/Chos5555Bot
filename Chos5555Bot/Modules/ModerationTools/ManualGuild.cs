@@ -113,6 +113,19 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        // TODO delete channel command which archives channel
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("removeChannel")]
+        private async Task AddChannelToRoleCommand()
+        {
+            var room = await _repo.FindRoom(Context.Channel);
+            var game = await _repo.FindGameByRoom(room);
+            var guild = await _repo.FindGuild(Context.Guild);
+
+            game.Rooms.Remove(room);
+            await _repo.UpdateGame(game);
+
+            // Put channel into archive category
+            await (Context.Channel as INestedChannel).ModifyAsync(c => { c.CategoryId = guild.ArchiveCategoryId; });
+        }
     }
 }
