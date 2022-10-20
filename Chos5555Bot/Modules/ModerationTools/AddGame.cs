@@ -194,7 +194,7 @@ namespace Chos5555Bot.Modules
             {
                 DisordId = discordActiveRole.Id,
                 Name = discordActiveRole.Name,
-                Resetable = true,
+                Resettable = true,
                 NeedsModApproval = true,
                 ChoiceEmote = game.ActiveEmote
             };

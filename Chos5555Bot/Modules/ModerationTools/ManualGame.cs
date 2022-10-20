@@ -75,7 +75,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 {
                     DisordId = role.Id,
                     Name = role.Name,
-                    Resetable = false,
+                    Resettable = false,
                     NeedsModApproval = true,
                 };
             }
@@ -93,5 +93,6 @@ namespace Chos5555Bot.Modules.ModerationTools
         // TODO set active emote (change emote in select message) game
         // TODO set mod accept room (sets permission only for modaccept roles) game
         // TODO remove mod accept role game
+        // TODO reset resettable roles
     }
 }
