@@ -76,5 +76,30 @@ namespace Chos5555Bot.Modules.ModerationTools
             role.Resettable = value;
             await _repo.UpdateRole(role);
         }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("addChannelToRole")]
+        private async Task AddChannelToRoleCommand(IRole role, [Remainder] string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+
+            var room = await _repo.FindRoom(Context.Channel);
+
+            if (room is null)
+            {
+                room = new Room()
+                {
+                    DiscordId = Context.Channel.Id
+                };
+                await _repo.AddRoom(room);
+            }
+
+            game.Rooms.Add(room);
+
+            // Set only viewable by given role, hide for gameRole
+            await PermissionSetter.SetShownOnlyForRole(role, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
+
+            await _repo.UpdateGame(game);
+        }
     }
 }
