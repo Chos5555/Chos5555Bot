@@ -104,6 +104,13 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        // TODO set archive category id or create guild
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setArchiveCategory")]
+        private async Task setArchiveCategoryCommand(ulong channelId)
+        {
+            var guild = await _repo.FindGuild(Context.Guild.Id);
+            guild.ArchiveCategoryId = channelId;
+            await _repo.UpdateGuild(guild);
+        }
     }
 }
