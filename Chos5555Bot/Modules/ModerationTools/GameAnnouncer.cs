@@ -53,7 +53,7 @@ namespace Chos5555Bot.Modules
             }
         }
 
-        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context, IRole discordRole= null)
+        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context, IRole discordRole = null)
         {
             // If role doesn't have an emote, don't post it
             if (role.ChoiceEmote is null)
@@ -64,7 +64,7 @@ namespace Chos5555Bot.Modules
             {
                 discordRole = context.Guild.GetRole(role.DisordId);
             }
-            var message = await channel.SendMessageAsync($"{discordRole.Mention} {role.ChoiceEmote.Out()} {role.Description}");
+            var message = await channel.SendMessageAsync($"{discordRole.Mention} {role.ChoiceEmote.Out()} - {role.Description}");
 
             await message.AddReactionAsync(role.ChoiceEmote.Out());
 
