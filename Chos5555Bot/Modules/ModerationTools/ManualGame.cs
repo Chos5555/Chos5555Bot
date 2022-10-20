@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
 using Chos5555Bot.Misc;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -88,10 +89,37 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGame(game);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setModRoom")]
+        private async Task setMemberRoleCommand(IChannel discordChannel, string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+            var channel = await _repo.FindRoom(discordChannel);
+
+            if (channel is null)
+            {
+                channel = new Room()
+                {
+                    DiscordId = discordChannel.Id,
+                };
+                await _repo.AddRoom(channel);
+            }
+
+            game.ModAcceptRoom = channel;
+            await _repo.UpdateGame(game);
+
+            var modDiscordRoles = new List<IRole>();
+            foreach (var role in game.ModAcceptRoles)
+            {
+                modDiscordRoles.Add(Context.Guild.GetRole(role.DisordId));
+            }
+
+            await PermissionSetter.SetShownForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
+        }
+
         // TODO add channel to game, add channel to role, remove channel (with archive) game
         // TODO add role to game
         // TODO set active emote (change emote in select message) game
-        // TODO set mod accept room (sets permission only for modaccept roles) game
         // TODO remove mod accept role game
         // TODO reset resettable roles
     }
