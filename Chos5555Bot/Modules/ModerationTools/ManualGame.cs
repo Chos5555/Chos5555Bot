@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
 using Chos5555Bot.Misc;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -90,6 +89,19 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("removeModRole")]
+        private async Task RemoveModRoleCommand(IRole role, string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+            var modRole = await _repo.FindRole(role.Id);
+
+            game.ModAcceptRoles.Remove(modRole);
+            await _repo.UpdateGame(game);
+
+            await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Deny);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setModRoom")]
         private async Task setMemberRoleCommand(IChannel discordChannel, string gameName)
         {
@@ -120,7 +132,6 @@ namespace Chos5555Bot.Modules.ModerationTools
         // TODO add channel to game, add channel to role, remove channel (with archive) game
         // TODO add role to game
         // TODO set active emote (change emote in select message) game
-        // TODO remove mod accept role game
         // TODO reset resettable roles
     }
 }
