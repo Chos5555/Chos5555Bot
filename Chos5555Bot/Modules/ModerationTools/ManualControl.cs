@@ -101,6 +101,31 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGame(game);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setRuleText")]
+        private async Task setRuleTextCommand([Remainder] string text = null)
+        {
+            if (Context.Message.ReferencedMessage is not null)
+                text = Context.Message.ReferencedMessage.Content;
+
+            var guild = await _repo.FindGuild(Context.Guild.Id);
+            guild.RuleMessageText = text;
+
+            if (guild.RuleRoom is null)
+                return;
+
+            var ruleRoom = Context.Guild.GetChannel(guild.RuleRoom.DiscordId) as SocketTextChannel;
+
+            // Delete old message if one exists
+            if (guild.RuleMessageId != 0)
+            {
+                await (await ruleRoom.GetMessageAsync(guild.RuleMessageId)).DeleteAsync();
+            }
+            guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
+
+            await _repo.UpdateGuild(guild);
+        }
+
         // TODO Guild.GameCategoryId command
         // TODO Guild.RuleMessageText command
         // TODO Guild.RuleMessageId command
