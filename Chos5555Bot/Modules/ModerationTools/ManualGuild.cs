@@ -86,7 +86,24 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        // TODO set member role guild
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setMemberRole")]
+        private async Task setMemberRoleCommand(IRole discordRole)
+        {
+            var role = new Role()
+            {
+                DisordId = discordRole.Id,
+                Name = discordRole.Name,
+                Resettable = false
+            };
+
+            var guild = await _repo.FindGuild(Context.Guild.Id);
+            guild.MemberRole = role;
+
+            await _repo.AddRole(role);
+            await _repo.UpdateGuild(guild);
+        }
+
         // TODO set archive category id or create guild
     }
 }
