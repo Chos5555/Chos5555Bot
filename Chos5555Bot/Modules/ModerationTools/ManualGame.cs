@@ -83,10 +83,15 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             // Set modRoom viewable for new mod role
             await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Allow);
-            // TODO: If you're gonna be sending messages to activeRoom only after modRole exists, call game announcer here
 
             game.ModAcceptRoles.Add(modRole);
             await _repo.UpdateGame(game);
+
+            if (game.ModAcceptRoles.Count == 1)
+            {
+                var activeCheckChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId);
+                await GameAnnouncer.AnnounceNonMainActiveRoles(game, activeCheckChannel as ITextChannel, Context);
+            }
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]

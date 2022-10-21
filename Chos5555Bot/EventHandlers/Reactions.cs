@@ -228,9 +228,6 @@ namespace Chos5555Bot.EventHandlers
                 return true;
             }
 
-            // TODO: Check if there's any way to hide other role messages if no modAcceptRoles are set
-            // (Or send optional role messages only after modRole has been set?)
-
             // If there are no mod role, add all active roles
             if (game.ModAcceptRoles.Count == 0)
             {

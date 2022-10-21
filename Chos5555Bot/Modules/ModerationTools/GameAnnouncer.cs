@@ -54,8 +54,17 @@ namespace Chos5555Bot.Modules
 
             await AnnounceActiveRole(game.MainActiveRole, game, channel, context, mainDiscordRole);
 
+            // Do not announce other roles if there are no mod roles
+            if (game.ModAcceptRoles.Count == 0)
+                return;
+
             await channel.SendMessageAsync($"Other roles:");
 
+            await AnnounceNonMainActiveRoles(game, channel, context);
+        }
+
+        public static async Task AnnounceNonMainActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
+        {
             foreach (var role in game.ActiveRoles.Where(r => r.Id != game.MainActiveRole.Id))
             {
                 await AnnounceActiveRole(role, game, channel, context);
