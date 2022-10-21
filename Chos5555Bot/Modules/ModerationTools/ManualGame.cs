@@ -201,7 +201,5 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             await _repo.UpdateGame(game);
         }
-
-        // TODO reset resettable roles
     }
 }
