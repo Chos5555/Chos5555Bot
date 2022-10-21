@@ -15,6 +15,9 @@ using System.Runtime.InteropServices;
 
 public class Program
 {
+    // TODO: Add stage channel feature
+    // TODO: Add quest feature
+
     static void Main(string[] args = null)
     {
         new Program().MainAsync().GetAwaiter().GetResult();
@@ -81,7 +84,7 @@ public class Program
         // Handle role updates
         client.RoleUpdated += Roles.UpdateHandler;
 
-        // TODO: Handle channel deletion to delete from DB
+        // TODO: Handle channel/role deletion to delete from DB
 
         // Block this task until the program is closed
         await Task.Delay(-1);

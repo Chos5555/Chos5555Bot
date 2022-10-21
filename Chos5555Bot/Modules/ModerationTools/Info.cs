@@ -15,5 +15,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             var time = DateTimeOffset.Now - Context.Message.CreatedAt;
             await Context.Channel.SendMessageAsync($"🏓 **Pong!**\n**Latency:** {((int)time.TotalMilliseconds)} ms");
         }
+
+        // TODO: Add .help
     }
 }
