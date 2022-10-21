@@ -44,10 +44,19 @@ namespace Chos5555Bot.Modules
             await log.Log($"Announced game {game.Name} in guild {context.Guild.Id}({context.Guild.Name})", LogSeverity.Info);
         }
 
-        public static async Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
+        public static async Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context, IRole mainDiscordRole = null)
         {
-            // TODO: Divide announcement into 3 categories: GameRole, other need approval roles, and the rest as instant get roles
-            foreach(var role in game.ActiveRoles)
+            // Delete old messages
+            await channel.DeleteMessagesAsync(await channel.GetMessagesAsync().FlattenAsync());
+
+            // Post MainActiveRole separately, other roles afterwards
+            await channel.SendMessageAsync($"Main {game.Name} active role:");
+
+            await AnnounceActiveRole(game.MainActiveRole, game, channel, context, mainDiscordRole);
+
+            await channel.SendMessageAsync($"Other roles:");
+
+            foreach (var role in game.ActiveRoles.Where(r => r.Id != game.MainActiveRole.Id))
             {
                 await AnnounceActiveRole(role, game, channel, context);
             }
