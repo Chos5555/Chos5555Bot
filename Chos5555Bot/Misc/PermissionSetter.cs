@@ -3,8 +3,11 @@ using Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace Chos5555Bot.Misc
 {
@@ -42,44 +45,38 @@ namespace Chos5555Bot.Misc
                 OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
         }
 
-        public static async Task DenyAddReaction(IRole role, IGuildChannel channel)
+        public static async Task UpdateAddReaction(IRole role, IGuildChannel channel, PermValue value)
         {
-            // TODO: Try in situ edit
-            var rolePerms = channel.GetPermissionOverwrite(role);
-
-            if (rolePerms is null)
-                rolePerms = OverwritePermissions.InheritAll;
-
-            await channel.RemovePermissionOverwriteAsync(role);
-
             // Stops users with role from adding new reactions, they can still react with the ones already there
-            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(addReactions: PermValue.Deny));
+            await UpdateHelper(role, channel, "addReactions", value);
         }
 
         public static async Task UpdateViewChannel(IRole role, IGuildChannel channel, PermValue value)
         {
-            var rolePerms = channel.GetPermissionOverwrite(role);
-
-            if (rolePerms is null)
-                rolePerms = OverwritePermissions.InheritAll;
-
-            await channel.RemovePermissionOverwriteAsync(role);
-
-            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(viewChannel: value));
+            await UpdateHelper(role, channel, "viewChannel", value);
         }
 
-        private static async Task UpdateHelper(IRole role, IGuildChannel channel, ChannelPermission permission, PermValue value)
+        private static async Task UpdateHelper(IRole role, IGuildChannel channel, string permission, PermValue value)
         {
             var rolePerms = channel.GetPermissionOverwrite(role);
 
-            if (rolePerms is null)
+            if (!rolePerms.HasValue)
                 rolePerms = OverwritePermissions.InheritAll;
 
             await channel.RemovePermissionOverwriteAsync(role);
 
-            // TODO: try to figure out if you can pass viewChannel: from permission
-            // Stops users with role from adding new reactions, they can still react with the ones already there
-            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value.Modify(viewChannel: value));
+            switch (permission)
+            {
+                case "viewChannel":
+                    rolePerms.Value.Modify(viewChannel: value);
+                    break;
+                case "addReactions":
+                    rolePerms.Value.Modify(addReactions: value);
+                    break;
+            }
+
+            // Adds updated permissions for role
+            await channel.AddPermissionOverwriteAsync(role, rolePerms.Value);
         }
     }
 }

@@ -153,7 +153,7 @@ namespace Chos5555Bot.Modules
 
             // Disable users from adding new reactions
             await discordActiveCheckRoom.SyncPermissionsAsync();
-            await PermissionSetter.DenyAddReaction(Context.Guild.EveryoneRole, discordActiveCheckRoom);
+            await PermissionSetter.UpdateAddReaction(Context.Guild.EveryoneRole, discordActiveCheckRoom, PermValue.Deny);
 
             var activeCheckRoom = new Room() { DiscordId = discordActiveCheckRoom.Id };
 
