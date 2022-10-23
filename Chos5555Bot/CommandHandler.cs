@@ -1,4 +1,5 @@
 ﻿using Chos5555Bot.Services;
+using Config;
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
@@ -13,14 +14,16 @@ namespace Chos5555Bot
         private readonly CommandService commandService;
         private readonly IServiceProvider services;
         private readonly LogService log;
+        private readonly Configuration config;
 
         // Retrieve client and CommandService instance via constructor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log)
+        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config)
         {
             this.client = client;
             this.commandService = commandService;
             this.services = services;
             this.log = log;
+            this.config = config;
         }
 
         public async Task SetupAsync()
@@ -44,7 +47,7 @@ namespace Chos5555Bot
             int argPos = 0;
 
             // Determine if the message is a command based on the prefix and make sure no bots trigger commands
-            if (!message.HasStringPrefix(".", ref argPos) ||
+            if (!message.HasStringPrefix(config.Prefix.ToString(), ref argPos) ||
                 message.Author.IsBot)
                 return;
 
@@ -53,7 +56,8 @@ namespace Chos5555Bot
 
             // Execute the command with the command context we just created
             var res = await commandService.ExecuteAsync(context: context, argPos: argPos, services: services);
-
+            // TODO: Send different messages on different results, eg: Error vs command not found
+            // TODO: res.Error.Value == CommandError.Exception for errors, otherwise command has been probably typed wrong, handle multiple reasons, add method for it
             if (!res.IsSuccess)
             {
                 await context.Channel.SendMessageAsync($"I couldn't recognize that command, type !help if you need help.");

@@ -9,14 +9,13 @@ using DAL.Model;
 using Discord;
 using Game = DAL.Model.Game;
 using DAL.Misc;
+using Config;
 
 namespace DAL
 {
     public class BotDbContext : DbContext
     {
-
-        private readonly Config.ConfigService _configService;
-        private readonly Config.Config _config;
+        private readonly Configuration _config;
 
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -28,8 +27,7 @@ namespace DAL
         
         public BotDbContext() : base()
         {
-            _configService = new();
-            _config = _configService.GetConfig();
+            _config = Configuration.GetConfig();
             Database.EnsureCreated();
         }
         

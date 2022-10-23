@@ -11,7 +11,7 @@ using Chos5555Bot.Modules;
 using DAL;
 using Victoria;
 using Chos5555Bot.Services;
-using System.Runtime.InteropServices;
+using Config;
 
 public class Program
 {
@@ -24,8 +24,7 @@ public class Program
     }
 
     private DiscordSocketClient _client;
-    private Config.ConfigService _configService;
-    private Config.Config _config;
+    private Configuration _config;
 
     // TODO: Move Startup to it's own file
     public async Task MainAsync()
@@ -45,8 +44,7 @@ public class Program
         _client = client;
 
         // Get token from config file
-        _configService = new();
-        _config = _configService.GetConfig();
+        _config = services.GetRequiredService<Configuration>();
 
         Console.WriteLine($"{_config.ConnectionString}");
 
@@ -95,6 +93,7 @@ public class Program
         // Setup services and dependency injection
         var services = new ServiceCollection()
             .AddSingleton(new DiscordSocketClient(config))
+            .AddSingleton(Configuration.GetConfig())
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
             // TODO: Check if you should use AddDbContextPool
