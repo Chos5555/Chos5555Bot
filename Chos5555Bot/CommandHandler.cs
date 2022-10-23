@@ -56,12 +56,52 @@ namespace Chos5555Bot
 
             // Execute the command with the command context we just created
             var res = await commandService.ExecuteAsync(context: context, argPos: argPos, services: services);
-            // TODO: Send different messages on different results, eg: Error vs command not found
-            // TODO: res.Error.Value == CommandError.Exception for errors, otherwise command has been probably typed wrong, handle multiple reasons, add method for it
-            if (!res.IsSuccess)
+            if (res.IsSuccess)
             {
-                await context.Channel.SendMessageAsync($"I couldn't recognize that command, type !help if you need help.");
-                await log.Log("Couldn't recognize command.", Discord.LogSeverity.Error);
+                return;
+            }
+
+            switch (res.Error.Value)
+            {
+                case CommandError.Exception:
+                    await context.Channel.SendMessageAsync($"There was an error while executing command.");
+                    await log.Log("Exception thrown " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.Unsuccessful:
+                    await context.Channel.SendMessageAsync($"Execution of command was not successful.");
+                    await log.Log("Command execution unsuccessful " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.UnmetPrecondition:
+                    await context.Channel.SendMessageAsync($"You don't have permission to use this command.");
+                    await log.Log("Command unmet precondition " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.ParseFailed:
+                    await context.Channel.SendMessageAsync($"Command couldn't be parsed.");
+                    await log.Log("Command parse failed" + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.ObjectNotFound:
+                    await context.Channel.SendMessageAsync($"Couldn't convert one or more objects in your command.");
+                    await log.Log("Object was not found in command " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.MultipleMatches:
+                    await context.Channel.SendMessageAsync($"There were multiple command pattern matches found.");
+                    await log.Log("Multiple matches found for command " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.BadArgCount:
+                    await context.Channel.SendMessageAsync($"Wrong number of arguments for this command.");
+                    await log.Log("Wrong number of args for command " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
+
+                case CommandError.UnknownCommand:
+                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type !help if you need help.");
+                    await log.Log("Couldn't recognize command " + res.ErrorReason, Discord.LogSeverity.Error);
+                    break;
             }
         }
     }
