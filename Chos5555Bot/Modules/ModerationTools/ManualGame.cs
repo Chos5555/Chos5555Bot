@@ -180,7 +180,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addRoleToGame")]
-        private async Task AddRoleToGameCommand(IRole discordRole, bool resettable, bool needModApproval, IEmote emote, [Remainder] string gameName)
+        private async Task AddRoleToGameCommand(IRole discordRole, bool resettable, bool needModApproval, string emote, [Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
