@@ -99,7 +99,7 @@ namespace Chos5555Bot
                     break;
 
                 case CommandError.UnknownCommand:
-                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type !help if you need help.");
+                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type {config.Prefix}help if you need help.");
                     await log.Log("Couldn't recognize command " + res.ErrorReason, Discord.LogSeverity.Error);
                     break;
             }
