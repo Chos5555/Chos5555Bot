@@ -49,6 +49,8 @@ namespace Chos5555Bot.Modules.ModerationTools
             var guild = await _repo.FindGuild(Context.Guild.Id);
             guild.RuleMessageText = text;
 
+            await _repo.UpdateGuild(guild);
+
             if (guild.RuleRoom is null)
                 return;
 
@@ -57,11 +59,15 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Delete old message if one exists
             if (guild.RuleMessageId != 0)
             {
-                await (await ruleRoom.GetMessageAsync(guild.RuleMessageId)).DeleteAsync();
+                var message = (ruleRoom as SocketTextChannel).GetMessageAsync(guild.RuleMessageId);
+                await (message as IUserMessage).ModifyAsync(m => { m.Content = text; });
             }
+            else
+            {
             guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
 
             await _repo.UpdateGuild(guild);
+        }
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
