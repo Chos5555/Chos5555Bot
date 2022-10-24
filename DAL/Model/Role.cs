@@ -1,5 +1,4 @@
 ﻿using DAL.Model;
-using Discord;
 
 namespace DAL
 {

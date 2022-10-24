@@ -6,9 +6,7 @@ using System.Linq;
 using DAL.Model;
 using DAL.Misc;
 using Chos5555Bot.Services;
-using System.Threading.Channels;
 using System;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace Chos5555Bot.EventHandlers
@@ -16,7 +14,7 @@ namespace Chos5555Bot.EventHandlers
     /// <summary>
     /// Class <c>Reactions</c> contains handlers for adding/removing reactions and other helper methods
     /// </summary>
-    public class Reactions
+    internal class Reactions
     {
         private static BotRepository _repo;
         private static LogService _log;
@@ -329,7 +327,7 @@ namespace Chos5555Bot.EventHandlers
             await (user as IGuildUser).RemoveRolesAsync(roles);
 
             // Removes all reactions of user in games activeCheckRoom
-            var discordActiveRoom = (ITextChannel) await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId);
+            var discordActiveRoom = (ITextChannel)await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId);
 
             await RemoveReactionsByUserInChannel(discordActiveRoom, user);
         }

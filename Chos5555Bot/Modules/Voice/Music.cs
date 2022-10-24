@@ -14,7 +14,7 @@ namespace Chos5555Bot.Modules.Voice
             _musicService = musicService;
         }
 
-        [Command("Join")]
+        //[Command("Join")]
         public async Task Join()
         {
             var user = Context.User as SocketGuildUser;
@@ -30,7 +30,7 @@ namespace Chos5555Bot.Modules.Voice
             }
         }
 
-        [Command("Leave")]
+        //[Command("Leave")]
         public async Task Leave()
         {
             var user = Context.User as SocketGuildUser;
@@ -45,28 +45,28 @@ namespace Chos5555Bot.Modules.Voice
             }
         }
 
-        [Command("Play")]
+        //[Command("Play")]
         public async Task Play([Remainder] string query)
             => await ReplyAsync(await _musicService.PlayAsync(query, Context.Guild));
 
 
-        [Command("Stop")]
+        //[Command("Stop")]
         public async Task Stop()
             => await ReplyAsync(await _musicService.StopAsync(Context.Guild));
 
-        [Command("Skip")]
+        //[Command("Skip")]
         public async Task Skip()
             => await ReplyAsync(await _musicService.SkipAsync(Context.Guild));
 
-        [Command("Volume")]
+        //[Command("Volume")]
         public async Task Volume(ushort vol)
             => await ReplyAsync(await _musicService.SetVolumeAsync(vol, Context.Guild));
 
-        [Command("Pause")]
+        //[Command("Pause")]
         public async Task Pause()
             => await ReplyAsync(await _musicService.PauseOrResumeAsync(Context.Guild));
 
-        [Command("Resume")]
+        //[Command("Resume")]
         public async Task Resume()
             => await ReplyAsync(await _musicService.ResumeAsync(Context.Guild));
     }

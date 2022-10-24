@@ -1,16 +1,13 @@
 ﻿using DAL;
 using Chos5555Bot.Services;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    [Name("Manual Guild Management")]
     public class ManualGuild : ModuleBase<SocketCommandContext>
     {
         private readonly BotRepository _repo;
@@ -24,6 +21,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addGuild")]
+        [Summary("Adds a guild into the bots database.")]
         private async Task AddGuildCommand()
         {
             var guild = await _repo.FindGuild(Context.Guild);
@@ -40,7 +38,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRuleText")]
-        private async Task setRuleTextCommand([Remainder] string text = null)
+        [Summary("Sets the text of rule channel (if this message is a reply to a message, it will take that messages text.).")]
+        private async Task setRuleTextCommand(
+            [Name("Text")][Summary("Text if this command is not a reply to a message (optional).")][Remainder] string text = null)
         {
             // If this is a response to some other message, take that messages content
             if (Context.Message.ReferencedMessage is not null)
@@ -56,7 +56,6 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             var ruleRoom = Context.Guild.GetChannel(guild.RuleRoom.DiscordId) as SocketTextChannel;
 
-            // Delete old message if one exists
             if (guild.RuleMessageId != 0)
             {
                 var message = (ruleRoom as SocketTextChannel).GetMessageAsync(guild.RuleMessageId);
@@ -64,15 +63,16 @@ namespace Chos5555Bot.Modules.ModerationTools
             }
             else
             {
-            guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
-
-            await _repo.UpdateGuild(guild);
-        }
+                guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
+            }
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("setRuleRoom")]
-        private async Task setRuleRoomCommand(IChannel discordChannel = null)
+        [Command("setRuleChannel")]
+        [Alias("setRuleRoom")]
+        [Summary("Set the rule channel.")]
+        private async Task setRuleRoomCommand(
+            [Name("Channel")][Summary("Channel to be set as rule channel, if not provided, will take the channel the command is used in.")] IChannel discordChannel = null)
         {
             // If there is no channel provided, take the channel the command was used in
             if (discordChannel is null)
@@ -97,7 +97,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setMemberRole")]
-        private async Task setMemberRoleCommand(IRole discordRole)
+        [Summary("Sets member role for this guild.")]
+        private async Task setMemberRoleCommand(
+            [Name("Role")][Summary("Role to be set as member role (needs to be a mention).")] IRole discordRole)
         {
             var role = new Role()
             {
@@ -115,7 +117,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setArchiveCategory")]
-        private async Task setArchiveCategoryCommand(ulong channelId)
+        [Summary("Sets a category to which channels are archived when deleted.")]
+        private async Task setArchiveCategoryCommand(
+            [Name("Category Id")][Summary("Id of the category channel.")] ulong channelId)
         {
             var guild = await _repo.FindGuild(Context.Guild.Id);
             guild.ArchiveCategoryId = channelId;
@@ -124,6 +128,8 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("removeChannel")]
+        [Alias("deleteChannel")]
+        [Summary("Deletes the channel the command was used in (archives it).")]
         private async Task AddChannelToRoleCommand()
         {
             var room = await _repo.FindRoom(Context.Channel);

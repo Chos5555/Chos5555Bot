@@ -1,12 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DAL.Model;
-using Discord;
 using Game = DAL.Model.Game;
 using DAL.Misc;
 using Config;
@@ -22,32 +15,23 @@ namespace DAL
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Song> Songs { get; set; }
         public DbSet<Game> Games { get; set; }
-        
-        //public BotDbContext(DbContextOptions options) : base(options) { }
-        
+
         public BotDbContext() : base()
         {
             _config = Configuration.GetConfig();
             Database.EnsureCreated();
         }
-        
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=BotDB");
-            optionsBuilder.UseSqlServer(_config.ConnectionString);/*
-             .UseLoggerFactory(LoggerFactory.Create(
-                 builder =>
-                 {
-                     builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name
-                     && level == LogLevel.Information).AddConsole();
-                 })).EnableSensitiveDataLogging();
-            Console.WriteLine("Database was connected!!");*/
+            optionsBuilder.UseSqlServer(_config.ConnectionString);
+            Console.WriteLine("Database was connected!");
         }
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             // Create conversions for EmoteEmoji type
             modelBuilder.Entity<Game>()
                 .Property(g => g.ActiveEmote)

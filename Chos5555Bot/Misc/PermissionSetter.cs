@@ -1,13 +1,6 @@
-﻿using DAL;
-using Discord;
-using System;
+﻿using Discord;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
-using Newtonsoft.Json.Linq;
 
 namespace Chos5555Bot.Misc
 {

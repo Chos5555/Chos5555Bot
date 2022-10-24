@@ -76,7 +76,7 @@ namespace Chos5555Bot.Modules
             // If role doesn't have an emote, don't post it
             if (role.ChoiceEmote is null)
                 return;
-            
+
             // If discordRole is not passed, find it
             if (discordRole is null)
             {

@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using DAL.Model;
 using Discord;
 using static DAL.Model.EmoteEmoji;
@@ -24,11 +19,13 @@ namespace DAL.Misc
             {
                 result = newEmote;
                 type = EmoteType.Emote;
-            } else if (emojiParse)
+            }
+            else if (emojiParse)
             {
                 result = newEmoji;
                 type = EmoteType.Emoji;
-            } else
+            }
+            else
             {
                 throw new Exception("Couldn't parse emote with either Emote or Emoji.");
             }

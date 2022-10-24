@@ -17,6 +17,9 @@ public class Program
 {
     // TODO: Add stage channel feature
     // TODO: Add quest feature
+    // TODO: Add music feature
+    // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
+    // TODO: Add documentation
 
     static void Main(string[] args = null)
     {
@@ -96,8 +99,7 @@ public class Program
             .AddSingleton(Configuration.GetConfig())
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
-            // TODO: Check if you should use AddDbContextPool
-            //.AddDbContext<BotDbContext>( options => options.UseSqlServer(_config.ConnectionString))
+            // TODO: Use AddDbContextPool for higher performance if number of requests to DB ever gets >2000/s
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
             .AddSingleton<Queue>()
@@ -106,7 +108,6 @@ public class Program
             .AddSingleton<LogService>()
             .AddSingleton<Reactions>()
             .AddSingleton<Roles>();
-
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();

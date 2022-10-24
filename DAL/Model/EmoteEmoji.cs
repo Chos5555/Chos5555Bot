@@ -1,11 +1,4 @@
-﻿using DAL.Misc;
-using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Discord;
 
 namespace DAL.Model
 {
@@ -29,8 +22,8 @@ namespace DAL.Model
         public IEmote Out()
         {
             if (type == EmoteType.Emote)
-                return (Emote) emote;
-            return (Emoji) emote;
+                return (Emote)emote;
+            return (Emoji)emote;
         }
 
         public bool Equals(EmoteEmoji emoteEmoji)

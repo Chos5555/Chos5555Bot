@@ -1,19 +1,16 @@
-﻿using Chos5555Bot.Misc;
-using DAL;
+﻿using DAL;
 using Chos5555Bot.Services;
 using Discord;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Config;
-using DAL.Migrations;
-using System.Net;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    [Name("Info")]
     public class Info : ModuleBase<SocketCommandContext>
     {
         private readonly BotRepository _repo;
@@ -30,14 +27,15 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [Command("ping")]
+        [Summary("Pings the bot, return latency.")]
         private async Task Ping()
         {
             var time = DateTimeOffset.Now - Context.Message.CreatedAt;
             await Context.Channel.SendMessageAsync($"🏓 **Pong!**\n**Latency:** {((int)time.TotalMilliseconds)} ms");
         }
 
-        // TODO: Add .help
         [Command("help")]
+        [Summary("Lists all commands available to you.")]
         private async Task Help()
         {
             var builder = new EmbedBuilder();
@@ -120,15 +118,15 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Alias("helpwith")]
         [Summary("Helps you with a specific command.")]
         private async Task Help(
-            [Name("Command")][Summary("Name of command with which you need help.")]string commandName)
+            [Name("Command")][Summary("Name of command with which you need help.")] string commandName)
         {
             var result = _service.Search(Context, commandName);
 
             if (!result.IsSuccess)
             {
                 await Context.Channel.SendMessageAsync($"I couldn't find the command {commandName}");
-            return;
-        }
+                return;
+            }
 
             var embedDescription = result.Commands.Count == 1 ? $"There is {result.Commands.Count} result:" : $"There are {result.Commands.Count} results:";
 
@@ -169,7 +167,5 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             await Context.Channel.SendMessageAsync("", embed: builder.Build());
         }
-
-            // TODO: Add briefs and summaries for commands
     }
 }

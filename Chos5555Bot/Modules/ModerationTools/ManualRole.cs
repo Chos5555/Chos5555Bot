@@ -2,18 +2,15 @@
 using Chos5555Bot.Services;
 using Discord.Commands;
 using Discord;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DAL.Misc;
-using Discord.Rest;
-using Discord.WebSocket;
 using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    [Name("Manual Role Management")]
     public class ManualRole : ModuleBase<SocketCommandContext>
     {
         private readonly BotRepository _repo;
@@ -27,7 +24,11 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRoleDescription")]
-        private async Task setRoleDescriptionCommand(IRole discordRole, [Remainder] string desc)
+        [Alias("setRoleDesc")]
+        [Summary("Sets a description for a role and updates its select message.")]
+        private async Task setRoleDescriptionCommand(
+            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole,
+            [Name("Description")][Summary("Description of the role.")][Remainder] string desc)
         {
             var role = await _repo.FindRole(discordRole);
 
@@ -47,7 +48,10 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRoleEmote")]
-        private async Task setRoleEmoteCommand(IRole discordRole, string emote)
+        [Summary("Sets emote of a role and updates its select message.")]
+        private async Task setRoleEmoteCommand(
+            [Name("Role")][Summary("Role to be updated (needs to be a mention.)")] IRole discordRole,
+            [Name("Emote")][Summary("Emote to be used.")] string emote)
         {
             var role = await _repo.FindRole(discordRole);
 
@@ -69,7 +73,11 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRoleResettable")]
-        private async Task setRoleResettableCommand(IRole discordRole, bool value)
+        [Alias("setRoleReset")]
+        [Summary("Sets whether role should be resettable.")]
+        private async Task setRoleResettableCommand(
+            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole,
+            [Name("Is resettable")][Summary("Whether role should be resettable (true/false).")] bool value)
         {
             var role = await _repo.FindRole(discordRole);
 
@@ -79,7 +87,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addChannelToRole")]
-        private async Task AddChannelToRoleCommand(IRole role, [Remainder] string gameName)
+        [Summary("Add channel in which the command is used to a role and hides it from other roles.")]
+        private async Task AddChannelToRoleCommand(
+            [Name("Role")][Summary("Role to which the channel is added (Needs to be a mention).")] IRole discordRole)
         {
             var role = await _repo.FindRole(discordRole);
             var game = await _repo.FindGameByRole(role);
@@ -106,7 +116,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("resetRole")]
-        private async Task resetRoleCommand(IRole discordRole)
+        [Summary("Removes this role from all users, removes reactions from its selection message.")]
+        private async Task resetRoleCommand(
+            [Name("Role")][Summary("Role to be reset (needs to be a mention).")] IRole discordRole)
         {
             await _log.Log($"{Context.User.Username} initiated reset of role {discordRole.Name} on {Context.Guild.Name}.", LogSeverity.Info);
             var role = await _repo.FindRole(discordRole);
@@ -141,7 +153,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 var users = Context.Guild.GetRole(currRole.DisordId).Members;
 
                 await message.RemoveAllReactionsForEmoteAsync(currRole.ChoiceEmote.Out());
-                
+
                 foreach (var user in users)
                 {
                     await user.RemoveRoleAsync(currRole.DisordId);

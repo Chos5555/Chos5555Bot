@@ -1,10 +1,8 @@
 ﻿using DAL;
 using Chos5555Bot.Services;
 using Discord.Commands;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
@@ -13,6 +11,7 @@ using DAL.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    [Name("Manual Game Management")]
     public class ManualGame : ModuleBase<SocketCommandContext>
     {
         private readonly BotRepository _repo;
@@ -94,7 +93,10 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addModRole")]
-        private async Task AddModRoleCommand(IRole role, string gameName)
+        [Summary("Adds a new role to mod roles of a game.")]
+        private async Task AddModRoleCommand(
+            [Name("Role")][Summary("Role to be added into games mod roles.")] IRole role,
+            [Name("Name")][Summary("Name of the game")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
             var modRole = await _repo.FindRole(role);
@@ -125,7 +127,10 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("removeModRole")]
-        private async Task RemoveModRoleCommand(IRole role, string gameName)
+        [Summary("Removes mod role from a game")]
+        private async Task RemoveModRoleCommand(
+            [Name("Role")][Summary("Role to be removed from games mod roles.")] IRole role,
+            [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
             var modRole = await _repo.FindRole(role);
@@ -138,7 +143,10 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setModRoom")]
-        private async Task setMemberRoleCommand(IChannel discordChannel, string gameName)
+        [Summary("Sets mod room for a game.")]
+        private async Task setMemberRoleCommand(
+            [Name("Channel")][Summary("Channel to be set (needs to be a mention).")] IChannel discordChannel,
+            [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
             var channel = await _repo.FindRoom(discordChannel);
@@ -166,7 +174,10 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setGameEmote")]
-        private async Task setGameEmoteCommand(string gameName, string emote)
+        [Summary("Sets emote for a game.")]
+        private async Task setGameEmoteCommand(
+            [Name("Emote")][Summary("Emote to be set.")] string emote,
+            [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
@@ -188,7 +199,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addChannelToGame")]
-        private async Task AddChannelToGameCommand([Remainder] string gameName)
+        [Summary("Adds this channel to a game.")]
+        private async Task AddChannelToGameCommand(
+            [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
@@ -209,7 +222,13 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addRoleToGame")]
-        private async Task AddRoleToGameCommand(IRole discordRole, bool resettable, bool needModApproval, string emote, [Remainder] string gameName)
+        [Summary("Adds role to a game.")]
+        private async Task AddRoleToGameCommand(
+            [Name("Role")][Summary("Role to be added to a game (needs to be a mention).")] IRole discordRole,
+            [Name("Is Resettable")][Summary("Whether the role should be resettable (true/false).")] bool resettable,
+            [Name("Needs mod approval")][Summary("Whether giving the role to a user need to be approved by a moderator (true/false).")] bool needModApproval,
+            [Name("Emote")][Summary("Emote of the role in selection room.")] string emote,
+            [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 

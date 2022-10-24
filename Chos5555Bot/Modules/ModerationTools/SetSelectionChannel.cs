@@ -8,6 +8,7 @@ using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules
 {
+    [Name("Manual Guild Management")]
     public class SetSelectionChannel : ModuleBase<SocketCommandContext>
     {
         private readonly BotRepository _repo;
@@ -21,6 +22,7 @@ namespace Chos5555Bot.Modules
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setSelectionChannel")]
+        [Summary("Sets the channel which this command is used in as selection channel for this guild and posts selection messages.")]
         private async Task Command()
         {
             var guild = await CheckGuild();

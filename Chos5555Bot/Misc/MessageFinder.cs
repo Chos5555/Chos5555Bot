@@ -1,13 +1,9 @@
-﻿using Chos5555Bot.Modules;
-using Chos5555Bot.Services;
+﻿using Chos5555Bot.Services;
 using DAL;
 using Discord;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace Chos5555Bot.Misc
 {
