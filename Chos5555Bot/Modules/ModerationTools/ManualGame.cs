@@ -26,7 +26,36 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("deleteGame")]
-        private async Task DeleteGameCommand(string gameName, IRole discordRole)
+        [Summary("Deletes game, all of its channels and roles.")]
+        private async Task DeleteGameByRoleCommand(
+            [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole)
+        {
+            var game = await _repo.FindGameByRole(await _repo.FindRole(discordRole));
+            if (game is null)
+                await Context.Channel.SendMessageAsync("Couldn't find a game with this role.");
+
+            await DeleteGameCommand(discordRole, game.Name);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("deleteGame")]
+        [Summary("Deletes game, all of its channels and roles.")]
+        private async Task DeleteGameByRoleCommand(
+            [Name("Name")][Summary("Name of game to be deleted.")][Remainder] string gameName)
+        {
+            var game = await _repo.FindGame(gameName);
+            if (game is null)
+                await Context.Channel.SendMessageAsync("Couldn't find a game with this name.");
+
+            await DeleteGameCommand(Context.Guild.GetRole(game.GameRole.DisordId), gameName);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("deleteGame")]
+        [Summary("Deletes game, all of its channels and roles.")]
+        private async Task DeleteGameCommand(
+            [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole,
+            [Name("Name")][Summary("Name of game to be deleted.")][Remainder] string gameName)
         {
             var game = await _repo.FindGameByNameAndGameRole(gameName, discordRole.Id);
             var guild = await _repo.FindGuild(game.Guild);
