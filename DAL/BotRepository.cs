@@ -1,51 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DAL.Model;
 using Discord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Game = DAL.Model.Game;
 
 namespace DAL
 {
     public class BotRepository
     {
-        private readonly BotDbContext context;
+        private readonly BotDbContext _context;
 
-        public BotRepository()
-        {
-            context = new BotDbContext();
-        }
-        // TODO: Add context in dependency injection?? (research)
         public BotRepository(BotDbContext ctx)
         {
-            context = ctx;
+            _context = ctx;
         }
 
         public async Task AddGuild(Guild guild)
         {
-            await context.Guilds.AddAsync(guild);
-            await context.SaveChangesAsync();
+            await _context.Guilds.AddAsync(guild);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveGuild(Guild guild)
         {
-            context.Guilds.Remove(guild);
-            await context.SaveChangesAsync();
+            _context.Guilds.Remove(guild);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Guild> FindGuild(Guild guild)
         {
-            return await context.Guilds.FindAsync(guild.Id);
+            return await _context.Guilds.FindAsync(guild.Id);
         }
 
         public async Task<Guild> FindGuild(IGuild guild)
         {
-            return await context.Guilds
+            return await _context.Guilds
                 .AsQueryable()
                 .Where(g => g.DiscordId == guild.Id)
                 .SingleOrDefaultAsync();
@@ -53,7 +44,7 @@ namespace DAL
 
         public async Task<Guild> FindGuild(ulong id)
         {
-            return await context.Guilds
+            return await _context.Guilds
                 .AsQueryable()
                 .Where(g => g.DiscordId == id)
                 .SingleOrDefaultAsync();
@@ -61,7 +52,7 @@ namespace DAL
 
         public async Task UpdateGuild(Guild guild)
         {
-            context.Guilds.Update(guild);
+            _context.Guilds.Update(guild);
             var currGuild = await FindGuild(guild);
             currGuild.SelectionRoom = guild.SelectionRoom;
             currGuild.MemberRole = guild.MemberRole;
@@ -70,29 +61,29 @@ namespace DAL
             currGuild.RuleMessageText = guild.RuleMessageText;
             currGuild.RuleMessageId = guild.RuleMessageId;
             currGuild.Songs = guild.Songs;
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task AddRole(Role role)
         {
-            await context.Roles.AddAsync(role);
-            await context.SaveChangesAsync();
+            await _context.Roles.AddAsync(role);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveRole(Role role)
         {
-            context.Roles.Remove(role);
-            await context.SaveChangesAsync();
+            _context.Roles.Remove(role);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Role> FindRole(Role role)
         {
-            return await context.Roles.FindAsync(role.Id);
+            return await _context.Roles.FindAsync(role.Id);
         }
 
         public async Task<Role> FindRole(ulong id)
         {
-            return await context.Roles.AsQueryable()
+            return await _context.Roles.AsQueryable()
                 .Where(r => r.DisordId == id)
                 .SingleOrDefaultAsync();
         }
@@ -104,7 +95,7 @@ namespace DAL
 
         public async Task UpdateRole(Role role)
         {
-            context.Roles.Update(role);
+            _context.Roles.Update(role);
             var currRole = await FindRole(role);
             currRole.DisordId = role.DisordId;
             currRole.Name = role.Name;
@@ -112,12 +103,12 @@ namespace DAL
             currRole.NeedsModApproval = role.NeedsModApproval;
             currRole.ChoiceEmote = role.ChoiceEmote;
             currRole.Description = role.Description;
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Role> FindGameRoleByGame(Game game)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g == game)
                 .Select(g => g.GameRole)
@@ -160,24 +151,24 @@ namespace DAL
 
         public async Task AddRoom(Room room)
         {
-            await context.Rooms.AddAsync(room);
-            await context.SaveChangesAsync();
+            await _context.Rooms.AddAsync(room);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveRoom(Room room)
         {
-            context.Rooms.Remove(room);
-            await context.SaveChangesAsync();
+            _context.Rooms.Remove(room);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Room> FindRoom(Room room)
         {
-            return await context.Rooms.FindAsync(room.Id);
+            return await _context.Rooms.FindAsync(room.Id);
         }
 
         public async Task<Room> FindRoom(IChannel channel)
         {
-            return await context.Rooms
+            return await _context.Rooms
                 .AsQueryable()
                 .Where(r => r.DiscordId == channel.Id)
                 .SingleOrDefaultAsync();
@@ -185,25 +176,25 @@ namespace DAL
 
         public async Task AddSong(Song song)
         {
-            await context.Songs.AddAsync(song);
-            await context.SaveChangesAsync();
+            await _context.Songs.AddAsync(song);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveSong(Song song)
         {
-            context.Songs.Remove(song);
-            await context.SaveChangesAsync();
+            _context.Songs.Remove(song);
+            await _context.SaveChangesAsync();
         }
         public async Task AddGame(Game game)
         {
-            await context.Games.AddAsync(game);
-            await context.SaveChangesAsync();
+            await _context.Games.AddAsync(game);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveGame(Game game)
         {
-            context.Games.Remove(game);
-            await context.SaveChangesAsync();
+            _context.Games.Remove(game);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateGame(Game game)
@@ -221,17 +212,17 @@ namespace DAL
             currGame.ActiveCheckRoom = game.ActiveCheckRoom;
             currGame.ModAcceptRoom = game.ModAcceptRoom;
             currGame.ModAcceptRoles = game.ModAcceptRoles;
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Game> FindGame(Game game)
         {
-            return await context.Games.FindAsync(game.Id);
+            return await _context.Games.FindAsync(game.Id);
         }
 
         public async Task<ICollection<Game>> FingGamesByGuild(Guild guild)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g.Guild.DiscordId == guild.DiscordId)
                 .ToListAsync();
@@ -239,7 +230,7 @@ namespace DAL
 
         public async Task<Game> FindGameBySelectionMessage(ulong messageId)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g.SelectionMessageId == messageId)
                 .SingleOrDefaultAsync();
@@ -247,7 +238,7 @@ namespace DAL
 
         public async Task<Game> FindGameByModRoom(ulong channelId)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g.ModAcceptRoom.DiscordId == channelId)
                 .SingleOrDefaultAsync();
@@ -255,7 +246,7 @@ namespace DAL
 
         public async Task<Game> FindGameByActiveCheckRoom(ulong channelId)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g.ActiveCheckRoom.DiscordId == channelId)
                 .SingleOrDefaultAsync();
@@ -263,7 +254,7 @@ namespace DAL
 
         public async Task<Game> FindGameByRole(Role role)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => (g.ActiveRoles.Where(r => r.Id == role.Id)).Any())
                 .SingleOrDefaultAsync();
@@ -271,7 +262,7 @@ namespace DAL
 
         public async Task<Game> FindGameByRoom(Room room)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => (g.Rooms.Where(r => r.Id == room.Id)).Any())
                 .SingleOrDefaultAsync();
@@ -279,7 +270,7 @@ namespace DAL
 
         public async Task<Game> FindGameByNameAndGameRole(string name, ulong roleId)
         {
-            return await context.Games
+            return await _context.Games
                 .AsQueryable()
                 .Where(g => g.Name == name && g.GameRole.DisordId == roleId)
                 .SingleOrDefaultAsync();
@@ -287,14 +278,14 @@ namespace DAL
 
         public async Task<Game> FindGame(string name)
         {
-            return await context.Games
+            return await _context.Games
                 .Where(g => g.Name == name)
                 .SingleOrDefaultAsync();
         }
 
         public bool FindDuplicateGame(string name, ulong roleId)
         {
-            return context.Games
+            return _context.Games
                 .AsQueryable()
                 .Where(g => g.Name == name || g.GameRole.DisordId == roleId)
                 .Any();
