@@ -43,12 +43,31 @@ namespace Chos5555Bot.Modules.ModerationTools
             var builder = new EmbedBuilder();
             List<string> commandNames = new();
 
+            Dictionary<string, List<CommandInfo>> groups = new();
+
+            // Separate commands by name of modules (which match if they should be in the same field)
             foreach (var module in _service.Modules)
+            {
+                if (module.Name is null)
+                {
+                    continue;
+                }    
+
+                if (!groups.Keys.Contains(module.Name))
+                {
+                    groups.Add(module.Name, new());
+                }
+
+                groups[module.Name].AddRange(module.Commands);
+            }
+
+            // Add commands into embed
+            foreach (var (module, commands) in groups)
             {
                 string names = null;
                 string description = null;
 
-                foreach (var command in module.Commands)
+                foreach (var command in commands)
                 {
                     if ((await command.CheckPreconditionsAsync(Context)).IsSuccess)
                     {
@@ -56,7 +75,14 @@ namespace Chos5555Bot.Modules.ModerationTools
                         if (commandNames.Contains(command.Name))
                             continue;
                         names += $"{_config.Prefix}{command.Name}\n";
-                        description += $"{command.Summary ?? "No summary available for this command."}\n";
+                        var commandDescription = $"{command.Summary ?? "No summary available for this command."}\n";
+
+                        description += commandDescription;
+
+                        // Forces next command onto new line if description of command is longer than 1 complete line
+                        // TODO: Find a better way to add newline
+                        names += new string('\n', commandDescription.Length / 51);
+
                         commandNames.Add(command.Name);
                     }
                 }
@@ -66,7 +92,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 {
                     builder.AddField(x =>
                     {
-                        x.Name = module.Name;
+                        x.Name = module;
                         x.Value = names;
                         x.IsInline = true;
                     });
