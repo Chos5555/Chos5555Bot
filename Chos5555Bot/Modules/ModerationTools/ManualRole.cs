@@ -81,10 +81,12 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("addChannelToRole")]
         private async Task AddChannelToRoleCommand(IRole role, [Remainder] string gameName)
         {
-            var game = await _repo.FindGame(gameName);
+            var role = await _repo.FindRole(discordRole);
+            var game = await _repo.FindGameByRole(role);
 
             var room = await _repo.FindRoom(Context.Channel);
 
+            // If room was not found, create it
             if (room is null)
             {
                 room = new Room()
@@ -97,7 +99,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             game.Rooms.Add(room);
 
             // Set only viewable by given role, hide for gameRole
-            await PermissionSetter.SetShownOnlyForRole(role, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
+            await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
 
             await _repo.UpdateGame(game);
         }
