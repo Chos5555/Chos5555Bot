@@ -28,7 +28,10 @@ namespace Chos5555Bot.Modules.ModerationTools
         {
             var guild = await _repo.FindGuild(Context.Guild);
             if (guild is not null)
+            {
+                await Context.Channel.SendMessageAsync("This guild is already in the database.");
                 return;
+            }
             guild = new Guild() { DiscordId = Context.Guild.Id };
             await _repo.AddGuild(guild);
 
