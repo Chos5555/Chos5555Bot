@@ -91,9 +91,57 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [Command("help")]
-        private async Task Help(string command)
+        [Alias("helpwith")]
+        [Summary("Helps you with a specific command.")]
+        private async Task Help(
+            [Name("Command")][Summary("Name of command with which you need help.")]string commandName)
         {
+            var result = _service.Search(Context, commandName);
+
+            if (!result.IsSuccess)
+            {
+                await Context.Channel.SendMessageAsync($"I couldn't find the command {commandName}");
             return;
+        }
+
+            var embedDescription = result.Commands.Count == 1 ? $"There is {result.Commands.Count} result:" : $"There are {result.Commands.Count} results:";
+
+            var builder = new EmbedBuilder()
+            {
+                Title = $"Help for '{commandName}':",
+                Description = embedDescription
+            };
+
+            foreach (var command in result.Commands.Select(c => c.Command))
+            {
+                // Create a code block with summary and parameters
+                string description = $"```Summary:\n    {command.Summary ?? "No summary available for this command."}\n";
+
+                if (command.Parameters.Any())
+                {
+                    description += "Parameters:\n";
+                }
+                else
+                {
+                    description += "No parameters\n";
+                }
+
+                foreach (var parameter in command.Parameters)
+                {
+                    description += $"   {parameter.Name} - {parameter.Summary ?? "No description provided."}\n";
+                }
+
+                description += "```";
+
+                builder.AddField(x =>
+                {
+                    x.Name = string.Join(", ", command.Aliases);
+                    x.Value = description;
+                    x.IsInline = false;
+                });
+            }
+
+            await Context.Channel.SendMessageAsync("", embed: builder.Build());
         }
 
             // TODO: Add briefs and summaries for commands
