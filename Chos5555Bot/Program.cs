@@ -55,16 +55,24 @@ public class Program
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
-        // Initialize Reaction handler
+        // Initialize Reaction handlers
         Reactions.InitReactions(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
-        // Initialize Role handler
+        // Initialize Role handlers
         Roles.InitRoles(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
-        // Initialize User handler
+        // Initialize User handlers
         Users.InitUsers(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Channel handlers
+        Channels.InitChannels(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Guild handlers
+        Guilds.InitGuilds(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
         // Log in to Discord
@@ -85,16 +93,21 @@ public class Program
         // TODO: Add handlers and initializers for handlers to it's own method
 
         // Handle added/removed emote to message
-        client.ReactionAdded += Reactions.AddHandler;
-        client.ReactionRemoved += Reactions.RemoveHandler;
+        client.ReactionAdded += Reactions.ReactionAdded;
+        client.ReactionRemoved += Reactions.ReactionRemoved;
 
-        // Handle user leaving
+        // Handle user updates
         client.UserLeft += Users.UserLeft;
 
         // Handle role updates
-        client.RoleUpdated += Roles.UpdateHandler;
+        client.RoleUpdated += Roles.RoleUpdated;
+        client.RoleDeleted += Roles.RoleDeleted;
 
-        // TODO: Handle channel/role/guild deletion to delete from DB
+        // Handle channel updates
+        client.ChannelDestroyed += Channels.ChannelDestroyed;
+
+        // Handle guild updates
+        client.LeftGuild += Guilds.LeftGuild;
 
         // Block this task until the program is closed
         await Task.Delay(-1);

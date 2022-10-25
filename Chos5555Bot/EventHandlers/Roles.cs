@@ -30,5 +30,19 @@ namespace Chos5555Bot.EventHandlers
 
             await _log.Log($"Updated role {oldRole.Name} to now be {role.Name}", LogSeverity.Info);
         }
+
+        public static async Task RoleDeleted(SocketRole discordRole)
+        {
+            var role = await _repo.FindRole(discordRole);
+
+            if (role is null)
+            {
+                return;
+            }
+
+            await _repo.RemoveRole(role);
+
+            await _log.Log($"Role {discordRole.Name}:{discordRole.Guild.Name} was deleted from DB.", LogSeverity.Info);
+        }
     }
 }
