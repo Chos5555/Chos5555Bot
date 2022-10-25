@@ -33,7 +33,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Task</returns>
-        public static async Task AddHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public static async Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
@@ -267,7 +267,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveHandler(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public static async Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 

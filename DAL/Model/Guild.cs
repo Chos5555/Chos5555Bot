@@ -13,5 +13,6 @@ namespace DAL
         public string RuleMessageText { get; set; }
         public ulong RuleMessageId { get; set; } = 0;
         public ICollection<Song> Songs { get; set; } = new List<Song>();
+        public ulong UserLeaveMessageRoomId { get; set; } = 0;
     }
 }

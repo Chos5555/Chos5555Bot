@@ -43,8 +43,7 @@ public class Program
         var services = ConfigureServices(socketConfig);
 
         // Assign client and commands to local variables
-        var client = services.GetRequiredService<DiscordSocketClient>();
-        _client = client;
+        _client = services.GetRequiredService<DiscordSocketClient>();
 
         // Get token from config file
         _config = services.GetRequiredService<Configuration>();
@@ -55,37 +54,23 @@ public class Program
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
-        // Initialize Reaction handler
-        Reactions.InitReactions(services.GetRequiredService<BotRepository>(),
-            services.GetRequiredService<LogService>());
-
-        // Initialize Role handler
-        Roles.InitRoles(services.GetRequiredService<BotRepository>(),
-            services.GetRequiredService<LogService>());
+        // Configure event handlers
+        ConfigureHandlers(_client, services);
 
         // Log in to Discord
-        await client.LoginAsync(TokenType.Bot, _config.Token);
+        await _client.LoginAsync(TokenType.Bot, _config.Token);
 
         // Start log service
         services.GetRequiredService<LogService>();
 
         // Start connection logic
-        await client.StartAsync();
+        await _client.StartAsync();
 
         // Start CommandHandler
         await services.GetRequiredService<CommandHandler>().SetupAsync();
 
         // Initialize MusicService
         await services.GetRequiredService<MusicService>().InitializeAsync();
-
-        // Handle added/removed emote to message
-        client.ReactionAdded += Reactions.AddHandler;
-        client.ReactionRemoved += Reactions.RemoveHandler;
-
-        // Handle role updates
-        client.RoleUpdated += Roles.UpdateHandler;
-
-        // TODO: Handle channel/role deletion to delete from DB
 
         // Block this task until the program is closed
         await Task.Delay(-1);
@@ -107,11 +92,52 @@ public class Program
             .AddSingleton<MusicService>()
             .AddSingleton<LogService>()
             .AddSingleton<Reactions>()
-            .AddSingleton<Roles>();
+            .AddSingleton<Roles>()
+            .AddSingleton<Users>();
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();
 
         return serviceProvider;
+    }
+
+    private void ConfigureHandlers(DiscordSocketClient client, ServiceProvider services)
+    {
+        // Initialize Reaction handlers
+        Reactions.InitReactions(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Role handlers
+        Roles.InitRoles(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize User handlers
+        Users.InitUsers(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Channel handlers
+        Channels.InitChannels(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize Guild handlers
+        Guilds.InitGuilds(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Handle added/removed emote to message
+        client.ReactionAdded += Reactions.ReactionAdded;
+        client.ReactionRemoved += Reactions.ReactionRemoved;
+
+        // Handle user updates
+        client.UserLeft += Users.UserLeft;
+
+        // Handle role updates
+        client.RoleUpdated += Roles.RoleUpdated;
+        client.RoleDeleted += Roles.RoleDeleted;
+
+        // Handle channel updates
+        client.ChannelDestroyed += Channels.ChannelDestroyed;
+
+        // Handle guild updates
+        client.LeftGuild += Guilds.LeftGuild;
     }
 }
