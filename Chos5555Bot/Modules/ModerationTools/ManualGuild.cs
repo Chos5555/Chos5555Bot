@@ -142,5 +142,19 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Put channel into archive category
             await (Context.Channel as INestedChannel).ModifyAsync(c => { c.CategoryId = guild.ArchiveCategoryId; });
         }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setUserLeftMessageChannel")]
+        [Summary("Sets channel in which comamnd is used as the channel to which messages will be sent if user leaves the server.")]
+        private async Task setUserLeftMessageChannel()
+        {
+            var guild = await _repo.FindGuild(Context.Guild);
+
+            guild.UserLeaveMessageRoomId = Context.Channel.Id;
+
+            await _repo.UpdateGuild(guild);
+
+            await _log.Log($"Set {Context.Channel.Name} as UserLeftMessageChannel for guild {Context.Guild.Name}.", LogSeverity.Info);
+        }
     }
 }
