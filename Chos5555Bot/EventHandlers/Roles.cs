@@ -17,7 +17,7 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
-        public static async Task UpdateHandler(SocketRole oldRole, SocketRole newRole)
+        public static async Task RoleUpdated(SocketRole oldRole, SocketRole newRole)
         {
             var role = await _repo.FindRole(oldRole);
 
