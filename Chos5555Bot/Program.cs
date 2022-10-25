@@ -63,6 +63,10 @@ public class Program
         Roles.InitRoles(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
+        // Initialize User handler
+        Users.InitUsers(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
         // Log in to Discord
         await client.LoginAsync(TokenType.Bot, _config.Token);
 
@@ -78,14 +82,19 @@ public class Program
         // Initialize MusicService
         await services.GetRequiredService<MusicService>().InitializeAsync();
 
+        // TODO: Add handlers and initializers for handlers to it's own method
+
         // Handle added/removed emote to message
         client.ReactionAdded += Reactions.AddHandler;
         client.ReactionRemoved += Reactions.RemoveHandler;
 
+        // Handle user leaving
+        client.UserLeft += Users.UserLeft;
+
         // Handle role updates
         client.RoleUpdated += Roles.UpdateHandler;
 
-        // TODO: Handle channel/role deletion to delete from DB
+        // TODO: Handle channel/role/guild deletion to delete from DB
 
         // Block this task until the program is closed
         await Task.Delay(-1);
@@ -107,7 +116,8 @@ public class Program
             .AddSingleton<MusicService>()
             .AddSingleton<LogService>()
             .AddSingleton<Reactions>()
-            .AddSingleton<Roles>();
+            .AddSingleton<Roles>()
+            .AddSingleton<Users>();
 
         // Setup provider
         var serviceProvider = services.BuildServiceProvider();
