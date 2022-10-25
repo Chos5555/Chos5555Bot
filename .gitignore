@@ -368,3 +368,4 @@ FodyWeavers.xsd
 
 # Config file with sensitive information
 Config.json
+*.bat

@@ -14,7 +14,7 @@ namespace Config
 #if DEBUG
             var file = "../../../../Chos5555Bot/Config.json";
 #else
-            var file = "../Chos5555Bot/Config.json";
+            var file = "Chos5555Bot/Config.json";
 #endif
 
             var data = File.ReadAllText(file);
