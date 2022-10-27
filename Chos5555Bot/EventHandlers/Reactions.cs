@@ -46,12 +46,22 @@ namespace Chos5555Bot.EventHandlers
             var modRoomGame = await _repo.FindGameByModRoom(channel.Id);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
             var message = await uncachedMessage.GetOrDownloadAsync();
+            IUser user = null;
+
+            if (!reaction.User.IsSpecified)
+            {
+                user = channel.Guild.GetUser(reaction.UserId);
+            }
+            else
+            {
+                user = reaction.User.Value;
+            }
 
             var removeReaction = false;
 
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
-                removeReaction = await AddedRuleRoomReaction(reaction.User.Value, guild, reaction.Emote);
+                removeReaction = await AddedRuleRoomReaction(user, guild, reaction.Emote);
             }
 
             if (modRoomGame is not null)
@@ -61,17 +71,17 @@ namespace Chos5555Bot.EventHandlers
 
             if (selectionRoomGame is not null)
             {
-                removeReaction = await AddedSelectionRoomReaction(selectionRoomGame, reaction.User.Value, reaction.Emote);
+                removeReaction = await AddedSelectionRoomReaction(selectionRoomGame, user, reaction.Emote);
             }
 
             if (activeCheckRoomGame is not null)
             {
-                removeReaction = await AddedActiveCheckRoomReaction(activeCheckRoomGame, reaction.User.Value, channel.Guild, message, reaction.Emote);
+                removeReaction = await AddedActiveCheckRoomReaction(activeCheckRoomGame, user, channel.Guild, message, reaction.Emote);
             }
 
             if (removeReaction)
             {
-                await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                await message.RemoveReactionAsync(reaction.Emote, user);
             }
         }
 
