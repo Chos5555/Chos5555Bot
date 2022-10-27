@@ -3,6 +3,7 @@ using System;
 using Game = DAL.Model.Game;
 using DAL.Misc;
 using Config;
+using System.Text.RegularExpressions;
 
 namespace DAL
 {
@@ -19,13 +20,23 @@ namespace DAL
         public BotDbContext() : base()
         {
             _config = Configuration.GetConfig();
-            Database.EnsureCreated();
+            // Apply all migrations
+            Database.Migrate();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_config.ConnectionString);
-            Console.WriteLine("Database was connected!");
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+            {
+                optionsBuilder.UseNpgsql(_config.ConnectionString);
+                Console.WriteLine("Heroku Postgres DB connected.");
+            }
+            else
+            {
+                // Use local Postgres database in development mode
+                optionsBuilder.UseNpgsql(_config.ConnectionString);
+                Console.WriteLine("Local DB connected.");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
