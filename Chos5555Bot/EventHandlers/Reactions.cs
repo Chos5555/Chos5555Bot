@@ -270,6 +270,7 @@ namespace Chos5555Bot.EventHandlers
         public static async Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
+            var message = await uncachedMessage.GetOrDownloadAsync();
 
             // Ignore if reactions was added by bot
             if (channel.Guild.GetUser(reaction.UserId).IsBot)
@@ -282,7 +283,7 @@ namespace Chos5555Bot.EventHandlers
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
                 await _log.Log($"Removing {reaction.User.Value.Username} memberRole of {channel.Guild.Name}.", LogSeverity.Info);
-                await RemovedRuleRoomReaction(reaction.User.Value);
+                await RemovedRuleRoomReaction(reaction.User.Value, channel.Guild.EveryoneRole.Id);
             }
 
             if (selectionRoomGame is not null)
@@ -300,7 +301,7 @@ namespace Chos5555Bot.EventHandlers
                 }
                 await _log.Log($"Removing {reaction.User.Value.Username} " +
                     $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
-                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction);
+                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message);
             }
         }
 
@@ -309,9 +310,9 @@ namespace Chos5555Bot.EventHandlers
         /// </summary>
         /// <param name="user">User that removed the reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task RemovedRuleRoomReaction(IUser user)
+        public static async Task RemovedRuleRoomReaction(IUser user, ulong everyoneRoleId)
         {
-            await (user as SocketGuildUser).RemoveRolesAsync((user as SocketGuildUser).Roles);
+            await (user as SocketGuildUser).RemoveRolesAsync((user as SocketGuildUser).Roles.Where(r => r.Id != everyoneRoleId));
         }
 
         /// <summary>
@@ -338,13 +339,13 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the active message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction)
+        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message)
         {
-            var role = reaction.Message.Value.MentionedRoles.SingleOrDefault();
+            var roleId = message.MentionedRoleIds.SingleOrDefault();
             var user = reaction.User.Value as IGuildUser;
 
             // If MainActiveRole is removed, also remove all roles that don't need mod approval
-            if (game.MainActiveRole.DisordId == role.Id)
+            if (game.MainActiveRole.DisordId == roleId)
             {
                 var roleIds = game.ActiveRoles.Where(r => !r.NeedsModApproval).Select(r => r.DisordId);
                 await user.RemoveRolesAsync(roleIds);
@@ -353,7 +354,7 @@ namespace Chos5555Bot.EventHandlers
                 await RemoveReactionsByUserInChannel(reaction.Channel as ITextChannel, user, roleIds);
             }
 
-            await user.RemoveRoleAsync(role.Id);
+            await user.RemoveRoleAsync(roleId);
         }
 
         private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
