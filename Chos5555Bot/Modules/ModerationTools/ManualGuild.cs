@@ -49,8 +49,6 @@ namespace Chos5555Bot.Modules.ModerationTools
             var guild = await _repo.FindGuild(Context.Guild.Id);
             guild.RuleMessageText = text;
 
-            await _repo.UpdateGuild(guild);
-
             if (guild.RuleRoom is null)
                 return;
 
@@ -63,8 +61,10 @@ namespace Chos5555Bot.Modules.ModerationTools
             }
             else
             {
-                guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
+                await sendRuleMessage(ruleRoom, guild);
             }
+
+            await _repo.UpdateGuild(guild);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -91,8 +91,27 @@ namespace Chos5555Bot.Modules.ModerationTools
             }
 
             var guild = await _repo.FindGuild(Context.Guild.Id);
+
+            if (guild.RuleMessageId != 0)
+            {
+                var oldRuleRoom = Context.Guild.GetTextChannel(guild.RuleRoom.DiscordId);
+                var oldMessage = await (oldRuleRoom as SocketTextChannel).GetMessageAsync(guild.RuleMessageId);
+                await oldMessage.DeleteAsync();
+            }
+
             guild.RuleRoom = channel;
+
+            await sendRuleMessage(Context.Guild.GetTextChannel(channel.DiscordId), guild);
+
             await _repo.UpdateGuild(guild);
+        }
+
+        private async Task sendRuleMessage(ITextChannel ruleRoom, Guild guild)
+        {
+            var message = await ruleRoom.SendMessageAsync(guild.RuleMessageText);
+            guild.RuleMessageId = message.Id;
+
+            await message.AddReactionAsync(new Emoji("✅"));
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
