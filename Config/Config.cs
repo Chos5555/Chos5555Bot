@@ -4,18 +4,31 @@ using System.IO;
 
 namespace Config
 {
+    /// <summary>
+    /// Class Configuration contains all configs for external connections, including lavalink, db connection,
+    /// discord client token.
+    /// </summary>
     public class Configuration
     {
+        // TODO: Put prefix into Guild model so you can choose on guild basis
+        // TODO: Add db type string which indicates whether a local or external db is connected
         public string Token { get; set; }
         public string ConnectionString { get; set; }
         public char Prefix { get; set; }
 
+        /// <summary>
+        /// Fills an instance of Configuration with configs needed for the bot.
+        /// Configs can be either loaded from a Config.json file or from env variables.
+        /// If the bot is run in debug mode, it will run in the bin/debug/... folder, so Config.json is further out,
+        /// otherwise, it's in the main folder.
+        /// </summary>
+        /// <returns> Returns new configuration filled with configs. </returns>
         public static Configuration GetConfig()
         {
 #if DEBUG
-            var file = "../../../../Chos5555Bot/Config.json";
+            var file = "../../../../Config.json";
 #else
-            var file = "../Chos5555Bot/Config.json";
+            var file = "../Config.json";
 #endif
 
             Configuration result = null;

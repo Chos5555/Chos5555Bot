@@ -4,17 +4,34 @@ using System.Threading.Tasks;
 
 namespace Chos5555Bot.Misc
 {
+    /// <summary>
+    /// Class containing methods that alter permission of a discord channel
+    /// </summary>
     internal class PermissionSetter
     {
-        public static async Task SetShownOnlyForRole(IRole showRole, IRole hideRole, IGuildChannel channel)
+        /// <summary>
+        /// Makes <paramref name="channel"> visible for <paramref name="showRole">
+        /// and hides it for <paramref name="hideRole"/>
+        /// </summary>
+        /// <param name="showRole">Discord role</param>
+        /// <param name="hideRole">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task SetShownOnlyForRole(IRole showRole, IRole hideRole, IGuildChannel channel)
         {
-            var perms = channel.PermissionOverwrites;
-
             await SetHiddenForRole(hideRole, channel);
             await SetShownForRole(showRole, channel);
         }
 
-        public static async Task SetShownForRoles(ICollection<IRole> showRoles, IRole hideRole, IGuildChannel channel)
+        /// <summary>
+        /// Makes <paramref name="channel"/> visible for all roles from <paramref name="showRoles"/>
+        /// and hides it for <paramref>hideRole</paramref>
+        /// </summary>
+        /// <param name="showRole">Discord roles</param>
+        /// <param name="hideRole">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task SetShownForRoles(ICollection<IRole> showRoles, IRole hideRole, IGuildChannel channel)
         {
             await SetHiddenForRole(hideRole, channel);
 
@@ -24,40 +41,78 @@ namespace Chos5555Bot.Misc
             }
         }
 
-        public static async Task SetHiddenForRole(IRole role, IGuildChannel channel)
+        /// <summary>
+        /// Sets <paramref name="channel"/> hidden from <paramref name="role">
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task SetHiddenForRole(IRole role, IGuildChannel channel)
         {
+            // TODO: Use helper method, delte and put into the method higher
             // Deny viewing channel for given role
             await channel.AddPermissionOverwriteAsync(role,
                 OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Deny));
         }
 
-        public static async Task SetShownForRole(IRole role, IGuildChannel channel)
+        /// <summary>
+        /// Sets <paramref name="channel"/> shown for <paramref name="role"/>
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task SetShownForRole(IRole role, IGuildChannel channel)
         {
+            // TODO: Use helper method, delte and put into the method higher
             // Allow viewing channel for given role
             await channel.AddPermissionOverwriteAsync(role,
                 OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
         }
 
-        public static async Task UpdateAddReaction(IRole role, IGuildChannel channel, PermValue value)
+        /// <summary>
+        /// Updates the addReaction permission of <paramref name="channel"/> for <paramref name="role"/> with value <paramref name="value"/>
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <param name="value">Value</param>
+        /// <returns>Nothing</returns>
+        public async static Task UpdateAddReaction(IRole role, IGuildChannel channel, PermValue value)
         {
             // Stops users with role from adding new reactions, they can still react with the ones already there
             await UpdateHelper(role, channel, "addReactions", value);
         }
 
-        public static async Task UpdateViewChannel(IRole role, IGuildChannel channel, PermValue value)
+        /// <summary>
+        /// Updates the viewChannel permission of <paramref name="channel"/> for <paramref name="role"/> with value <paramref name="value"/>
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <param name="value">Value</param>
+        /// <returns>Nothing</returns>
+        public async static Task UpdateViewChannel(IRole role, IGuildChannel channel, PermValue value)
         {
             await UpdateHelper(role, channel, "viewChannel", value);
         }
 
-        private static async Task UpdateHelper(IRole role, IGuildChannel channel, string permission, PermValue value)
+        /// <summary>
+        /// Updates given <paramref name="permission"/> with <paramref name="value"/> for <paramref name="role"/> for <paramref name="channel"/>
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <param name="permission">Name of the permission to be changed</param>
+        /// <param name="value">Value</param>
+        /// <returns>Nothing</returns>
+        private async static Task UpdateHelper(IRole role, IGuildChannel channel, string permission, PermValue value)
         {
             var rolePerms = channel.GetPermissionOverwrite(role);
 
             if (!rolePerms.HasValue)
                 rolePerms = OverwritePermissions.InheritAll;
 
+            // Removes old permission for role
             await channel.RemovePermissionOverwriteAsync(role);
 
+            // Find which permission to modify
             switch (permission)
             {
                 case "viewChannel":

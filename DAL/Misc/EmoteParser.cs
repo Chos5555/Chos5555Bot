@@ -7,8 +7,16 @@ namespace DAL.Misc
 {
     public class EmoteParser
     {
+        /// <summary>
+        /// Parses a string (either string of Emote or Emoji) into EmoteEmoji.
+        /// </summary>
+        /// <param name="emoteString">String of the emote to be parsed.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Thrown if neither Emote nor Emoji could be parsed.</exception>
         public static EmoteEmoji ParseEmote(string emoteString)
         {
+            // TODO: Create NonparableEmoteException which is thrown when nothing could be parsed
+            // Try to parse both Emote and emoji
             var emoteParse = Emote.TryParse(emoteString, out var newEmote);
             var emojiParse = Emoji.TryParse(emoteString, out var newEmoji);
 
