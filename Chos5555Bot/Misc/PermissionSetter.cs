@@ -49,10 +49,8 @@ namespace Chos5555Bot.Misc
         /// <returns>Nothing</returns>
         public async static Task SetHiddenForRole(IRole role, IGuildChannel channel)
         {
-            // TODO: Use helper method, delte and put into the method higher
             // Deny viewing channel for given role
-            await channel.AddPermissionOverwriteAsync(role,
-                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Deny));
+            await UpdateHelper(role, channel, "viewChannel", PermValue.Deny);
         }
 
         /// <summary>
@@ -63,10 +61,8 @@ namespace Chos5555Bot.Misc
         /// <returns>Nothing</returns>
         public async static Task SetShownForRole(IRole role, IGuildChannel channel)
         {
-            // TODO: Use helper method, delte and put into the method higher
             // Allow viewing channel for given role
-            await channel.AddPermissionOverwriteAsync(role,
-                OverwritePermissions.InheritAll.Modify(viewChannel: PermValue.Allow));
+            await UpdateHelper(role, channel, "viewChannel", PermValue.Allow);
         }
 
         /// <summary>

@@ -32,9 +32,12 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task DeleteGameByRoleCommand(
             [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole)
         {
-            var game = await _repo.FindGameByRole(await _repo.FindRole(discordRole));
+            var game = await _repo.FindGameByGameRole(await _repo.FindRole(discordRole));
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this role.");
+                return;
+            }
 
             await DeleteGameCommand(discordRole, game.Name);
         }
@@ -47,7 +50,10 @@ namespace Chos5555Bot.Modules.ModerationTools
         {
             var game = await _repo.FindGame(gameName);
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this name.");
+                return;
+            }
 
             await DeleteGameCommand(Context.Guild.GetRole(game.GameRole.DisordId), gameName);
         }
@@ -96,9 +102,12 @@ namespace Chos5555Bot.Modules.ModerationTools
             var categoryChannel = Context.Guild.GetChannel(categoryId.Value);
             await categoryChannel.DeleteAsync();
 
-            // Delete games selection message
-            var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
-            await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            // Delete games selection message if there is one (if SelectionRoom is set)
+            if (guild.SelectionRoom is not null)
+            {
+                var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
+                await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            }
 
             await _repo.RemoveGame(game);
 
@@ -195,14 +204,14 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setGameEmote")]
-        [Summary("Sets emote for a game.")]
+        [Summary("Sets emote for a game (unfortunately this can't change the reacted emote and will remove the old emote with all of its reactions).")]
         private async Task SetGameEmoteCommand(
-            [Name("Emote")][Summary("Emote to be set.")] string emote,
+            [Name("Emote")][Summary("Emote to be set.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
-            var parsedEmote = EmoteParser.ParseEmote(emote);
+            var parsedEmote = EmoteParser.ParseEmote(emote.ToString());
 
             // Save old emote to replace it with new emote
             var oldEmote = game.ActiveEmote.Out();
@@ -213,9 +222,11 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Update emote on announce message
             var guildSelectionChannelId = (await _repo.FindGuild(Context.Guild)).SelectionRoom.DiscordId;
             var message = await MessageFinder.FindAnnouncedMessage(game.GameRole, Context.Guild.GetTextChannel(guildSelectionChannelId));
-
-            // TODO: Reactions is not changed 
             var newMessageContent = message.Content.Replace(oldEmote.ToString(), game.ActiveEmote.Out().ToString());
+
+            // Remove reactions for old emote and react with new emote
+            await message.RemoveAllReactionsForEmoteAsync(oldEmote);
+            await message.AddReactionAsync(parsedEmote.Out());
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
@@ -264,7 +275,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Role")][Summary("Role to be added to a game (needs to be a mention).")] IRole discordRole,
             [Name("Is Resettable")][Summary("Whether the role should be resettable (true/false).")] bool resettable,
             [Name("Needs mod approval")][Summary("Whether giving the role to a user need to be approved by a moderator (true/false).")] bool needModApproval,
-            [Name("Emote")][Summary("Emote of the role in selection room.")] string emote,
+            [Name("Emote")][Summary("Emote of the role in selection room.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
