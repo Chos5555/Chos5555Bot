@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Chos5555Bot
 {
+    // TODO: Move into Handlers folder
+    /// <summary>
+    /// Class containing handlers for commands
+    /// </summary>
     public class CommandHandler
     {
         private readonly DiscordSocketClient _client;
@@ -28,6 +32,7 @@ namespace Chos5555Bot
 
         public async Task SetupAsync()
         {
+            // TODO: Add into Program.cs
             // Hook the MessageReceived event into our command handler
             _client.MessageReceived += HandleCommandAsync;
 
@@ -35,6 +40,11 @@ namespace Chos5555Bot
             await _commandService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: _services);
         }
 
+        /// <summary>
+        /// Handles incoming command and resolves error if there is one
+        /// </summary>
+        /// <param name="messageParam">Message parameters</param>
+        /// <returns>Nothing</returns>
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             // Don't process the command if it was a system message
@@ -61,9 +71,16 @@ namespace Chos5555Bot
                 return;
             }
 
+            // Resolve error if there is one
             await ResolveError(res, context);
         }
 
+        /// <summary>
+        /// Resolve all different errors, send and log error messages.
+        /// </summary>
+        /// <param name="res">Command execute result</param>
+        /// <param name="context">Command context</param>
+        /// <returns>Nothing</returns>
         private async Task ResolveError(IResult res, SocketCommandContext context)
         {
             switch (res.Error.Value)

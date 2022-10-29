@@ -32,7 +32,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="cachedMessage">Uncached message</param>
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
-        /// <returns>Task</returns>
+        /// <returns>Nothing</returns>
         public static async Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
@@ -46,8 +46,7 @@ namespace Chos5555Bot.EventHandlers
             var modRoomGame = await _repo.FindGameByModRoom(channel.Id);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
             var message = await uncachedMessage.GetOrDownloadAsync();
-            IUser user = null;
-
+            IUser user;
             if (!reaction.User.IsSpecified)
             {
                 user = channel.Guild.GetUser(reaction.UserId);
@@ -59,6 +58,7 @@ namespace Chos5555Bot.EventHandlers
 
             var removeReaction = false;
 
+            // Call appropriate handler
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
                 removeReaction = await AddedRuleRoomReaction(user, guild, reaction.Emote);
@@ -290,6 +290,7 @@ namespace Chos5555Bot.EventHandlers
             var selectionRoomGame = await _repo.FindGameBySelectionMessage(reaction.MessageId);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
 
+            // Call appropriate handler
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
             {
                 await _log.Log($"Removing {reaction.User.Value.Username} memberRole of {channel.Guild.Name}.", LogSeverity.Info);
@@ -373,7 +374,15 @@ namespace Chos5555Bot.EventHandlers
             return emoteEmoji1.Equals(emoteEmoji2);
         }
 
-        private static async Task RemoveReactionsByUserInChannel(ITextChannel channel, IUser user, IEnumerable<ulong> roleIds = null)
+
+        /// <summary>
+        /// Removes all reactions created by given user for all messages (or only messages containing mentions of role contained in roleIds if roleIds is passed) in given channel
+        /// </summary>
+        /// <param name="channel">Given channel</param>
+        /// <param name="user">Given user</param>
+        /// <param name="roleIds">Role Ids of selection messages from which reactions should be removed</param>
+        /// <returns>Nothing</returns>
+        private async static Task RemoveReactionsByUserInChannel(ITextChannel channel, IUser user, IEnumerable<ulong> roleIds = null)
         {
             var messages = await channel.GetMessagesAsync().FlattenAsync();
             foreach (var message in messages)
@@ -385,9 +394,11 @@ namespace Chos5555Bot.EventHandlers
                         continue;
                 }
 
+                // Remove reaction of user, if user reacted to this message
                 var reactedEmotes = message.Reactions.Keys;
                 foreach (var emote in reactedEmotes)
                 {
+                    // Find all users that have reacted with current emote
                     var users = await message.GetReactionUsersAsync(emote, int.MaxValue).FlattenAsync();
                     if (users.Where(u => u.Id == user.Id).Any())
                         await message.RemoveReactionAsync(emote, user);

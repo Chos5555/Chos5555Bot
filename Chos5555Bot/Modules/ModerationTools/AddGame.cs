@@ -24,7 +24,7 @@ namespace Chos5555Bot.Modules
         }
 
         /// <summary>
-        /// Add command for basic games (without active role)
+        /// Add command for games
         /// </summary>
         /// <param name="discordRole">GameRole of the new game</param>
         /// <param name="emote">Active ChoiceEmote of the new game (Needs to have '\' in front when using this command)</param>
@@ -79,6 +79,15 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote, name, true);
         }
 
+        /// <summary>
+        /// Helper method for addGame commands. Creates a new game, fills its properties, creates channels,
+        /// if the game is an active game, create MainActiveRole, more channels and set their permissions.
+        /// </summary>
+        /// <param name="discordRole">Discord role</param>
+        /// <param name="emote">Emote (escaped with '\')</param>
+        /// <param name="name">Name of the new game</param>
+        /// <param name="hasActiveRole">Whether game has active roles or not</param>
+        /// <returns>Nothing</returns>
         private async Task AddGameHelper(IRole discordRole, string emote, string name, bool hasActiveRole)
         {
             if (_repo.FindDuplicateGame(name, discordRole.Id))
@@ -158,6 +167,13 @@ namespace Chos5555Bot.Modules
             return (guild, role, game);
         }
 
+        /// <summary>
+        /// Set up additional channels, mainActive role, sets needed permissions for a game with active roles.
+        /// </summary>
+        /// <param name="game">Game to be set</param>
+        /// <param name="categoryId">Id of the game category channel</param>
+        /// <param name="discordGameRole">GameRole of the game</param>
+        /// <returns>Nothing</returns>
         private async Task SetupGameWithActiveRole(Game game, ulong categoryId, IRole discordGameRole)
         {
             // Create ActiveCheckRoom (doesn't need to have view permission set, the category is already hidden for everyone except GameRole)

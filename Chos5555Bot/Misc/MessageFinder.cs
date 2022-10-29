@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Chos5555Bot.Misc
 {
+    /// <summary>
+    /// Class containing method for finding message based on different parameters
+    /// </summary>
     public class MessageFinder
     {
         private static BotRepository _repo;
@@ -18,6 +21,12 @@ namespace Chos5555Bot.Misc
             _log = log;
         }
 
+        /// <summary>
+        /// Finds a message in a given channel that has the given role mentioned
+        /// </summary>
+        /// <param name="role">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Message</returns>
         public static async Task<IMessage> FindAnnouncedMessage(Role role, ITextChannel channel)
         {
             return (await channel
