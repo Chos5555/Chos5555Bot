@@ -32,9 +32,12 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task DeleteGameByRoleCommand(
             [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole)
         {
-            var game = await _repo.FindGameByRole(await _repo.FindRole(discordRole));
+            var game = await _repo.FindGameByGameRole(await _repo.FindRole(discordRole));
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this role.");
+                return;
+            }
 
             await DeleteGameCommand(discordRole, game.Name);
         }
@@ -47,7 +50,10 @@ namespace Chos5555Bot.Modules.ModerationTools
         {
             var game = await _repo.FindGame(gameName);
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this name.");
+                return;
+            }
 
             await DeleteGameCommand(Context.Guild.GetRole(game.GameRole.DisordId), gameName);
         }
@@ -96,9 +102,12 @@ namespace Chos5555Bot.Modules.ModerationTools
             var categoryChannel = Context.Guild.GetChannel(categoryId.Value);
             await categoryChannel.DeleteAsync();
 
-            // Delete games selection message
-            var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
-            await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            // Delete games selection message if there is one (if SelectionRoom is set)
+            if (guild.SelectionRoom is not null)
+            {
+                var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
+                await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            }
 
             await _repo.RemoveGame(game);
 

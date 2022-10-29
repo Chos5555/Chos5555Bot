@@ -426,6 +426,19 @@ namespace DAL
         }
 
         /// <summary>
+        /// Finds game which has given role as GameRole
+        /// </summary>
+        /// <param name="role">ActiveRole</param>
+        /// <returns>Game</returns>
+        public async Task<Game> FindGameByGameRole(Role role)
+        {
+            return await _context.Games
+                .AsQueryable()
+                .Where(g => (g.GameRole.Id == role.Id))
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
         /// Finds game which has given room in Rooms
         /// </summary>
         /// <param name="room">Room</param>
