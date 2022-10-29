@@ -147,6 +147,11 @@ namespace Chos5555Bot.Modules
 
             var guild = await _repo.FindGuild(Context.Guild);
 
+            if (guild is null)
+            {
+                throw new GuildNotFoundException();
+            }
+
             Role role = new()
             {
                 DisordId = discordRole.Id,

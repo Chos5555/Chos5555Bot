@@ -3,6 +3,7 @@ using Discord;
 using Discord.Commands;
 using DAL;
 using Chos5555Bot.Services;
+using Chos5555Bot.Exceptions;
 
 namespace Chos5555Bot.Modules
 {
@@ -29,9 +30,7 @@ namespace Chos5555Bot.Modules
             var guild = await _repo.FindGuild(Context.Guild);
             if (guild == null)
             {
-                await Context.Channel.SendMessageAsync($"This guild is not yet registered with me, use addGuild to add it first.");
-                await _log.Log($"Cannot set selection channel, guild {Context.Guild.Name} is not yet in DB.", LogSeverity.Verbose);
-                return;
+                throw new GuildNotFoundException();
             }
 
             // Delete old SelectionRoom from DB
