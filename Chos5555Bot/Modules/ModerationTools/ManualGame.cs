@@ -195,7 +195,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setGameEmote")]
-        [Summary("Sets emote for a game.")]
+        [Summary("Sets emote for a game (unfortunately this can't change the reacted emote and will remove the old emote with all of its reactions).")]
         private async Task SetGameEmoteCommand(
             [Name("Emote")][Summary("Emote to be set.")] string emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
@@ -213,9 +213,11 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Update emote on announce message
             var guildSelectionChannelId = (await _repo.FindGuild(Context.Guild)).SelectionRoom.DiscordId;
             var message = await MessageFinder.FindAnnouncedMessage(game.GameRole, Context.Guild.GetTextChannel(guildSelectionChannelId));
-
-            // TODO: Reactions is not changed 
             var newMessageContent = message.Content.Replace(oldEmote.ToString(), game.ActiveEmote.Out().ToString());
+
+            // Remove reactions for old emote and react with new emote
+            await message.RemoveAllReactionsForEmoteAsync(oldEmote);
+            await message.AddReactionAsync(parsedEmote.Out());
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
