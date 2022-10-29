@@ -29,7 +29,7 @@ public class Program
     }
 
     private DiscordSocketClient _client;
-    private Configuration _config;
+    private Configuration _config = Configuration.GetConfig();
 
     // TODO: Move Startup to it's own file
     public async Task MainAsync()
@@ -43,22 +43,13 @@ public class Program
         };
 
         // Setup config for lavalink
-        Action<LavaConfig> lavaConfig = null;
-        // If env is production, change config to heroku lavalink server
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+        Action<LavaConfig> lavaConfig = x =>
         {
-            lavaConfig = x =>
-            {
-                x.SelfDeaf = false;
-                x.Hostname = Environment.GetEnvironmentVariable("LAVALINK_HOSTNAME");
-                x.Port = ushort.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT"));
-                x.Authorization = Environment.GetEnvironmentVariable("LAVALINK_PASSWORD");
-            };
-        }
-        else
-        {
-            lavaConfig = x => x.SelfDeaf = false;
-        }
+            x.SelfDeaf = false;
+            x.Hostname = _config.LavalinkHostname;
+            x.Port = _config.LavalinkPort;
+            x.Authorization = _config.LavalinkPassword;
+        };
 
         // Setup services
         var services = ConfigureServices(socketConfig, lavaConfig);
@@ -102,7 +93,7 @@ public class Program
         // Setup services and dependency injection
         var services = new ServiceCollection()
             .AddSingleton(new DiscordSocketClient(discordConfig))
-            .AddSingleton(Configuration.GetConfig())
+            .AddSingleton(_config)
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
             // TODO: Use AddDbContextPool for higher performance if number of requests to DB ever gets >2000/s

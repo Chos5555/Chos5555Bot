@@ -11,10 +11,12 @@ namespace Config
     public class Configuration
     {
         // TODO: Put prefix into Guild model so you can choose on guild basis
-        // TODO: Add db type string which indicates whether a local or external db is connected
         public string Token { get; set; }
         public string ConnectionString { get; set; }
         public char Prefix { get; set; }
+        public string LavalinkHostname { get; set; }
+        public ushort LavalinkPort { get; set; }
+        public string LavalinkPassword { get; set; }
         public DatabaseType DBType { get; set; }
 
         public enum DatabaseType
@@ -52,6 +54,11 @@ namespace Config
                 result.Token = Environment.GetEnvironmentVariable("TOKEN");
                 result.Prefix = (Environment.GetEnvironmentVariable("PREFIX"))[0];
                 result.DBType = DatabaseType.External;
+
+                // Get Lavalink configs
+                result.LavalinkHostname = Environment.GetEnvironmentVariable("LAVALINK_HOSTNAME");
+                result.LavalinkPort = ushort.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT"));
+                result.LavalinkPassword = Environment.GetEnvironmentVariable("LAVALINK_PASSWORD");
 
                 if (Environment.GetEnvironmentVariable("CONNECTION_STRING") is not null)
                 {
