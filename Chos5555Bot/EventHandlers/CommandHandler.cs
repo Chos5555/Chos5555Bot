@@ -8,9 +8,8 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Chos5555Bot
+namespace Chos5555Bot.EventHandlers
 {
-    // TODO: Move into Handlers folder
     /// <summary>
     /// Class containing handlers for commands
     /// </summary>
@@ -34,7 +33,6 @@ namespace Chos5555Bot
 
         public async Task SetupAsync()
         {
-            // TODO: Add into Program.cs
             // Hook the MessageReceived event into our command handler
             _client.MessageReceived += HandleCommandAsync;
 
@@ -50,7 +48,7 @@ namespace Chos5555Bot
         /// </summary>
         /// <param name="messageParam">Message parameters</param>
         /// <returns>Nothing</returns>
-        private async Task HandleCommandAsync(SocketMessage messageParam)
+        public async Task HandleCommandAsync(SocketMessage messageParam)
         {
             // Don't process the command if it was a system message
             var message = messageParam as SocketUserMessage;

@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
-using Chos5555Bot;
 using Chos5555Bot.EventHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Chos5555Bot.Modules.Voice;
