@@ -2,12 +2,13 @@
 using Discord;
 using Discord.Commands;
 using DAL;
-using System.Collections.Generic;
 using Chos5555Bot.Services;
-using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules
 {
+    /// <summary>
+    /// Module class containing commands for setting selection guilds selection channel
+    /// </summary>
     [Name("Manual Guild Management")]
     public class SetSelectionChannel : ModuleBase<SocketCommandContext>
     {
@@ -25,6 +26,7 @@ namespace Chos5555Bot.Modules
         [Summary("Sets the channel which this command is used in as selection channel for this guild and posts selection messages.")]
         private async Task Command()
         {
+            // TODO: rework or check
             var guild = await CheckGuild();
 
             // Delete old SelectionRoom from DB
@@ -43,7 +45,7 @@ namespace Chos5555Bot.Modules
 
             await _log.Log($"Set {Context.Guild.GetChannel(newRoom.DiscordId).Name} as selection channel for {Context.Guild.Name}", LogSeverity.Info);
 
-            ICollection<Game> games = await _repo.FingGamesByGuild(guild);
+            var games = await _repo.FingGamesByGuild(guild);
             foreach (var game in games)
             {
                 await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
@@ -52,7 +54,7 @@ namespace Chos5555Bot.Modules
 
         private async Task<Guild> CheckGuild()
         {
-            Guild guild = await _repo.FindGuild(Context.Guild);
+            var guild = await _repo.FindGuild(Context.Guild);
 
             if (guild is null)
             {
