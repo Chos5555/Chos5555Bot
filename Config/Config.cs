@@ -15,6 +15,13 @@ namespace Config
         public string Token { get; set; }
         public string ConnectionString { get; set; }
         public char Prefix { get; set; }
+        public DatabaseType DBType { get; set; }
+
+        public enum DatabaseType
+        {
+            Local,
+            External
+        }
 
         /// <summary>
         /// Fills an instance of Configuration with configs needed for the bot.
@@ -36,6 +43,7 @@ namespace Config
             {
                 var data = File.ReadAllText(file);
                 result = JsonConvert.DeserializeObject<Configuration>(data);
+                result.DBType = DatabaseType.Local;
             }
             catch (Exception _)
             {
@@ -43,6 +51,7 @@ namespace Config
                 result = new Configuration();
                 result.Token = Environment.GetEnvironmentVariable("TOKEN");
                 result.Prefix = (Environment.GetEnvironmentVariable("PREFIX"))[0];
+                result.DBType = DatabaseType.External;
 
                 if (Environment.GetEnvironmentVariable("CONNECTION_STRING") is not null)
                 {

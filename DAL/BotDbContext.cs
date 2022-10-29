@@ -30,18 +30,8 @@ namespace DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Connect the database
-            // TODO: not needed, add which db was selected into config just as string and cw it instead.
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-            {
-                optionsBuilder.UseNpgsql(_config.ConnectionString);
-                Console.WriteLine("Heroku Postgres DB connected.");
-            }
-            else
-            {
-                // Use local Postgres database in development mode
-                optionsBuilder.UseNpgsql(_config.ConnectionString);
-                Console.WriteLine("Local DB connected.");
-            }
+            optionsBuilder.UseNpgsql(_config.ConnectionString);
+            Console.WriteLine($"{_config.DBType} DB connected.");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
