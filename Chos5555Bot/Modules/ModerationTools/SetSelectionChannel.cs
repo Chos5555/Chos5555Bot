@@ -24,10 +24,15 @@ namespace Chos5555Bot.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setSelectionChannel")]
         [Summary("Sets the channel which this command is used in as selection channel for this guild and posts selection messages.")]
-        private async Task Command()
+        private async Task SetSelectionChannelCommand()
         {
-            // TODO: rework or check
-            var guild = await CheckGuild();
+            var guild = await _repo.FindGuild(Context.Guild);
+            if (guild == null)
+            {
+                await Context.Channel.SendMessageAsync($"This guild is not yet registered with me, use addGuild to add it first.");
+                await _log.Log($"Cannot set selection channel, guild {Context.Guild.Name} is not yet in DB.", LogSeverity.Verbose);
+                return;
+            }
 
             // Delete old SelectionRoom from DB
             if (guild.SelectionRoom is not null)
@@ -50,22 +55,6 @@ namespace Chos5555Bot.Modules
             {
                 await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
             }
-        }
-
-        private async Task<Guild> CheckGuild()
-        {
-            var guild = await _repo.FindGuild(Context.Guild);
-
-            if (guild is null)
-            {
-                guild = new Guild()
-                {
-                    DiscordId = Context.Guild.Id,
-                };
-                await _repo.AddGuild(guild);
-                await _log.Log($"Added guild {Context.Guild.Name} to the DB.", LogSeverity.Info);
-            }
-            return guild;
         }
     }
 }
