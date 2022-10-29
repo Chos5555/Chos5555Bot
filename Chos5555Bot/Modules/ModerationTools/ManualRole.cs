@@ -133,7 +133,6 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task ResetRoleCommand(
             [Name("Role")][Summary("Role to be reset (needs to be a mention).")] IRole discordRole)
         {
-            // TODO: If role is main active role, do not reset it from people who have mod roles
             await _log.Log($"{Context.User.Username} initiated reset of role {discordRole.Name} on {Context.Guild.Name}.", LogSeverity.Info);
             var role = await _repo.FindRole(discordRole);
             var game = await _repo.FindGameByRole(role);
@@ -161,19 +160,23 @@ namespace Chos5555Bot.Modules.ModerationTools
                 resetRoles.Add(role);
             }
 
-            // Remove all reactions from the announce message and remove the role from all members holding the role
+            // Remove role from all (besides moderatiors) users that have that role and their reactions on announce message
             foreach (var currRole in resetRoles)
             {
                 var activeChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel;
                 var message = await MessageFinder.FindAnnouncedMessage(currRole, activeChannel);
                 var users = Context.Guild.GetRole(currRole.DisordId).Members;
 
-                await message.RemoveAllReactionsForEmoteAsync(currRole.ChoiceEmote.Out());
-
-                // TODO: Do not remove reactions of mods
                 foreach (var user in users)
                 {
+                    // If current user has one of the games ModAcceptRoles, keep his role and reaction
+                    if (user.Roles.SelectMany(r1 => game.ModAcceptRoles.Where(r2 => r1.Id == r2.DisordId)).Any())
+                    {
+                        continue;
+                    }
+                    // Remove role from user and remove users reaction 
                     await user.RemoveRoleAsync(currRole.DisordId);
+                    await message.RemoveReactionAsync(currRole.ChoiceEmote.Out(), user);
                 }
 
                 await _log.Log($"Removed reactions and roles from all users that had role {role.Name}", LogSeverity.Verbose);
