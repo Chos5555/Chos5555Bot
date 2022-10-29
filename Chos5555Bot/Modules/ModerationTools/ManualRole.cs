@@ -54,11 +54,11 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Summary("Sets emote of a role and updates its select message.")]
         private async Task SetRoleEmoteCommand(
             [Name("Role")][Summary("Role to be updated (needs to be a mention.)")] IRole discordRole,
-            [Name("Emote")][Summary("Emote to be used.")] string emote)
+            [Name("Emote")][Summary("Emote to be used.")] IEmote emote)
         {
             var role = await _repo.FindRole(discordRole);
 
-            var parsedEmote = EmoteParser.ParseEmote(emote);
+            var parsedEmote = EmoteParser.ParseEmote(emote.ToString());
 
             var oldEmote = role.ChoiceEmote.Out();
 

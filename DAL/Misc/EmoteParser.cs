@@ -40,7 +40,7 @@ namespace DAL.Misc
             return new EmoteEmoji(type, result);
         }
 
-        private class EmoteNotParsedException : Exception
+        public class EmoteNotParsedException : Exception
         {
             public EmoteNotParsedException() {}
             public EmoteNotParsedException(string message) : base(message) {}

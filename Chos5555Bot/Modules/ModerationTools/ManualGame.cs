@@ -197,12 +197,12 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("setGameEmote")]
         [Summary("Sets emote for a game (unfortunately this can't change the reacted emote and will remove the old emote with all of its reactions).")]
         private async Task SetGameEmoteCommand(
-            [Name("Emote")][Summary("Emote to be set.")] string emote,
+            [Name("Emote")][Summary("Emote to be set.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
-            var parsedEmote = EmoteParser.ParseEmote(emote);
+            var parsedEmote = EmoteParser.ParseEmote(emote.ToString());
 
             // Save old emote to replace it with new emote
             var oldEmote = game.ActiveEmote.Out();
@@ -266,7 +266,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Role")][Summary("Role to be added to a game (needs to be a mention).")] IRole discordRole,
             [Name("Is Resettable")][Summary("Whether the role should be resettable (true/false).")] bool resettable,
             [Name("Needs mod approval")][Summary("Whether giving the role to a user need to be approved by a moderator (true/false).")] bool needModApproval,
-            [Name("Emote")][Summary("Emote of the role in selection room.")] string emote,
+            [Name("Emote")][Summary("Emote of the role in selection room.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);

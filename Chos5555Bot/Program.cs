@@ -39,7 +39,6 @@ public class Program
         {
             MessageCacheSize = 100,
             GatewayIntents = GatewayIntents.All
-            
         };
 
         // Setup config for lavalink
