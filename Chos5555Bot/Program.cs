@@ -20,7 +20,6 @@ public class Program
     // TODO: Add music feature
     // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
     // TODO: ADD README
-    // TODO: Try to add custom parser for IEmote to EmoteEmoji, so you don't have to escape emojis with \
     // TODO: Documentation: Add parameters into <paramsref>
 
     static void Main(string[] args = null)
