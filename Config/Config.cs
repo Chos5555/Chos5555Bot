@@ -10,7 +10,6 @@ namespace Config
     /// </summary>
     public class Configuration
     {
-        // TODO: Put prefix into Guild model so you can choose on guild basis
         public string Token { get; set; }
         public string ConnectionString { get; set; }
         public string LavalinkHostname { get; set; }
