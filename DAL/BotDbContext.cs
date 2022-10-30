@@ -3,6 +3,7 @@ using System;
 using Game = DAL.Model.Game;
 using DAL.Misc;
 using Config;
+using System.Linq;
 
 namespace DAL
 {
@@ -23,8 +24,14 @@ namespace DAL
         public BotDbContext() : base()
         {
             _config = Configuration.GetConfig();
-            // Apply all migrations
-            Database.Migrate();
+
+            var pendingMigrations = Database.GetPendingMigrations();
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine($"There are {pendingMigrations.Count()} pending migrations. Migrating DB.");
+                // Apply all migrations
+                Database.Migrate();
+            }
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
