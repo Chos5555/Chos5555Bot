@@ -194,6 +194,8 @@ namespace Chos5555Bot.Modules.ModerationTools
             guild.Prefix = prefix;
 
             await _repo.UpdateGuild(guild);
+
+            await _log.Log($"Updated prefix for guild {Context.Guild.Name} to \"{prefix}\"", LogSeverity.Info);
         }
     }
 }
