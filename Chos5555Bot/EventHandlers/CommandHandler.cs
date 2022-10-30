@@ -78,13 +78,13 @@ namespace Chos5555Bot.EventHandlers
 
             // Get prefix for guild the command was used in, if no guild is found, use '.' as default
             var guild = await _repo.FindGuild(context.Guild);
-            var guildPrefix = '.';
+            var guildPrefix = ".";
             if (guild is not null)
                 guildPrefix = guild.Prefix;
 
             // Determine if the message is a command based on the prefix
             // or if the message mentions the bot
-            if (!message.HasStringPrefix(guildPrefix.ToString(), ref argPos) &&
+            if (!message.HasStringPrefix(guildPrefix, ref argPos) &&
                 !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 return;
 
