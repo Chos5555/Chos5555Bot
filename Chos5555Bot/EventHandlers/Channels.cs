@@ -6,6 +6,9 @@ using Discord;
 
 namespace Chos5555Bot.EventHandlers
 {
+    /// <summary>
+    /// Class containing handlers for events that related to a channel
+    /// </summary>
     internal class Channels
     {
         private static BotRepository _repo;
@@ -17,7 +20,12 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
-        public static async Task ChannelDestroyed(SocketChannel discordChannel)
+        /// <summary>
+        /// Removes given channel from DB when its deleted on discord
+        /// </summary>
+        /// <param name="discordChannel">Given discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task ChannelDestroyed(SocketChannel discordChannel)
         {
             var channel = await _repo.FindRoom(discordChannel);
 

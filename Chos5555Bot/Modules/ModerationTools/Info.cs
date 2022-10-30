@@ -10,6 +10,9 @@ using Config;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    /// <summary>
+    /// Module class containing informative commands.
+    /// </summary>
     [Name("Info")]
     public class Info : ModuleBase<SocketCommandContext>
     {
@@ -27,17 +30,22 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [Command("ping")]
-        [Summary("Pings the bot, return latency.")]
+        [Summary("Pings the bot, returns latency.")]
         private async Task Ping()
         {
             var time = DateTimeOffset.Now - Context.Message.CreatedAt;
             await Context.Channel.SendMessageAsync($"🏓 **Pong!**\n**Latency:** {((int)time.TotalMilliseconds)} ms");
         }
 
+        /// <summary>
+        /// Lists all commands available to user that used the command (depending on users permission).
+        /// </summary>
+        /// <returns>Nothing</returns>
         [Command("help")]
         [Summary("Lists all commands available to you.")]
         private async Task Help()
         {
+            // Start building embed
             var builder = new EmbedBuilder();
             List<string> commandNames = new();
 
@@ -67,6 +75,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
                 foreach (var command in commands)
                 {
+                    // Only list command, if user has the right permission to use it
                     if ((await command.CheckPreconditionsAsync(Context)).IsSuccess)
                     {
                         // Don't add duplicate command
@@ -114,6 +123,11 @@ namespace Chos5555Bot.Modules.ModerationTools
             await Context.Channel.SendMessageAsync("", embed: builder.Build());
         }
 
+        /// <summary>
+        /// Sends message with help for a specific command. Lists out all of its variant, their summaries and paramaters.
+        /// </summary>
+        /// <param name="commandName">Name of the command to be listed.</param>
+        /// <returns>Nothing</returns>
         [Command("help")]
         [Alias("helpwith")]
         [Summary("Helps you with a specific command.")]
@@ -128,6 +142,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 return;
             }
 
+            // Start building embed
             var embedDescription = result.Commands.Count == 1 ? $"There is {result.Commands.Count} result:" : $"There are {result.Commands.Count} results:";
 
             var builder = new EmbedBuilder()
@@ -139,8 +154,9 @@ namespace Chos5555Bot.Modules.ModerationTools
             foreach (var command in result.Commands.Select(c => c.Command))
             {
                 // Create a code block with summary and parameters
-                string description = $"```Summary:\n    {command.Summary ?? "No summary available for this command."}\n";
+                var description = $"```Summary:\n    {command.Summary ?? "No summary available for this command."}\n";
 
+                // List out all parameters
                 if (command.Parameters.Any())
                 {
                     description += "Parameters:\n";
@@ -155,6 +171,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                     description += $"   {parameter.Name} - {parameter.Summary ?? "No description provided."}\n";
                 }
 
+                // End code block
                 description += "```";
 
                 builder.AddField(x =>

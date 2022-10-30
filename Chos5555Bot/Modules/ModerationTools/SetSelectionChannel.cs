@@ -2,12 +2,14 @@
 using Discord;
 using Discord.Commands;
 using DAL;
-using System.Collections.Generic;
 using Chos5555Bot.Services;
-using Game = DAL.Model.Game;
+using Chos5555Bot.Exceptions;
 
 namespace Chos5555Bot.Modules
 {
+    /// <summary>
+    /// Module class containing commands for setting selection guilds selection channel
+    /// </summary>
     [Name("Manual Guild Management")]
     public class SetSelectionChannel : ModuleBase<SocketCommandContext>
     {
@@ -23,9 +25,13 @@ namespace Chos5555Bot.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setSelectionChannel")]
         [Summary("Sets the channel which this command is used in as selection channel for this guild and posts selection messages.")]
-        private async Task Command()
+        private async Task SetSelectionChannelCommand()
         {
-            var guild = await CheckGuild();
+            var guild = await _repo.FindGuild(Context.Guild);
+            if (guild == null)
+            {
+                throw new GuildNotFoundException();
+            }
 
             // Delete old SelectionRoom from DB
             if (guild.SelectionRoom is not null)
@@ -43,27 +49,11 @@ namespace Chos5555Bot.Modules
 
             await _log.Log($"Set {Context.Guild.GetChannel(newRoom.DiscordId).Name} as selection channel for {Context.Guild.Name}", LogSeverity.Info);
 
-            ICollection<Game> games = await _repo.FingGamesByGuild(guild);
+            var games = await _repo.FingGamesByGuild(guild);
             foreach (var game in games)
             {
                 await GameAnnouncer.AnnounceGame(game, guild.SelectionRoom, Context);
             }
-        }
-
-        private async Task<Guild> CheckGuild()
-        {
-            Guild guild = await _repo.FindGuild(Context.Guild);
-
-            if (guild is null)
-            {
-                guild = new Guild()
-                {
-                    DiscordId = Context.Guild.Id,
-                };
-                await _repo.AddGuild(guild);
-                await _log.Log($"Added guild {Context.Guild.Name} to the DB.", LogSeverity.Info);
-            }
-            return guild;
         }
     }
 }

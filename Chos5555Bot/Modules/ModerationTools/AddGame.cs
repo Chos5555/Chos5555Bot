@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Chos5555Bot.Misc;
 using Game = DAL.Model.Game;
 using System.Data;
+using Chos5555Bot.Exceptions;
 
 namespace Chos5555Bot.Modules
 {
@@ -24,7 +25,7 @@ namespace Chos5555Bot.Modules
         }
 
         /// <summary>
-        /// Add command for basic games (without active role)
+        /// Add command for games
         /// </summary>
         /// <param name="discordRole">GameRole of the new game</param>
         /// <param name="emote">Active ChoiceEmote of the new game (Needs to have '\' in front when using this command)</param>
@@ -37,10 +38,10 @@ namespace Chos5555Bot.Modules
         [Summary("Creates a new game with it's category, voice and text channel, adds it into selection channel")]
         private async Task AddBaseGame(
             [Name("Role")][Summary("Role of the new game (needs to be a mention).")] IRole discordRole,
-            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] string emote,
+            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] IEmote emote,
             [Name("Name")][Summary("Name of the new game")][Remainder] string name)
         {
-            await AddGameHelper(discordRole, emote, name, false);
+            await AddGameHelper(discordRole, emote.ToString(), name, false);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -49,10 +50,10 @@ namespace Chos5555Bot.Modules
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
         private async Task AddGameByRole(
             [Name("Role")][Summary("Role of the new game (needs to be a mention).")] IRole discordRole,
-            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] string emote,
+            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] IEmote emote,
             [Name("Active role")][Summary("Should have antive role (true/false)(is optional).")] bool hasActiveRole = false)
         {
-            await AddGameHelper(discordRole, emote, discordRole.Name, hasActiveRole);
+            await AddGameHelper(discordRole, emote.ToString(), discordRole.Name, hasActiveRole);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -60,12 +61,12 @@ namespace Chos5555Bot.Modules
         [Alias("addActiveGame")]
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
         private async Task AddGameByName(
-            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] string emote,
+            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] IEmote emote,
             [Name("Active role")][Summary("Should have antive role (true/false).")] bool hasActiveRole,
             [Name("Name")][Summary("Name of the new game")][Remainder] string name)
         {
             var discordRole = await Context.Guild.CreateRoleAsync(name);
-            await AddGameHelper(discordRole, emote, name, hasActiveRole);
+            await AddGameHelper(discordRole, emote.ToString(), name, hasActiveRole);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -73,18 +74,28 @@ namespace Chos5555Bot.Modules
         [Summary("Creates a new game with active role (with recruit channels and a role selection channel)")]
         private async Task AddActiveGame(
             [Name("Role")][Summary("Role of the new game (needs to be a mention).")] IRole discordRole,
-            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] string emote,
+            [Name("Emote")][Summary("Emote for selecting the game in selection channel.")] IEmote emote,
             [Name("Name")][Summary("Name of the new game")][Remainder] string name)
         {
-            await AddGameHelper(discordRole, emote, name, true);
+            await AddGameHelper(discordRole, emote.ToString(), name, true);
         }
 
+        /// <summary>
+        /// Helper method for addGame commands. Creates a new game, fills its properties, creates channels,
+        /// if the game is an active game, create MainActiveRole, more channels and set their permissions.
+        /// </summary>
+        /// <param name="discordRole">Discord role</param>
+        /// <param name="emote">Emote (escaped with '\')</param>
+        /// <param name="name">Name of the new game</param>
+        /// <param name="hasActiveRole">Whether game has active roles or not</param>
+        /// <returns>Nothing</returns>
         private async Task AddGameHelper(IRole discordRole, string emote, string name, bool hasActiveRole)
         {
             if (_repo.FindDuplicateGame(name, discordRole.Id))
             {
                 await Context.Channel.SendMessageAsync("A game with this name or role is already created, please choose a different one.");
                 await _log.Log($"User {Context.User.Username} tried to create game {name} with role {discordRole.Name}, but it already exists", LogSeverity.Verbose);
+                return;
             }
 
             await _log.Log($"Started addGame command with role: {discordRole.Name}, name: {name}, emote: {emote}, active: {hasActiveRole}.",
@@ -138,6 +149,11 @@ namespace Chos5555Bot.Modules
 
             var guild = await _repo.FindGuild(Context.Guild);
 
+            if (guild is null)
+            {
+                throw new GuildNotFoundException();
+            }
+
             Role role = new()
             {
                 DisordId = discordRole.Id,
@@ -158,6 +174,13 @@ namespace Chos5555Bot.Modules
             return (guild, role, game);
         }
 
+        /// <summary>
+        /// Set up additional channels, mainActive role, sets needed permissions for a game with active roles.
+        /// </summary>
+        /// <param name="game">Game to be set</param>
+        /// <param name="categoryId">Id of the game category channel</param>
+        /// <param name="discordGameRole">GameRole of the game</param>
+        /// <returns>Nothing</returns>
         private async Task SetupGameWithActiveRole(Game game, ulong categoryId, IRole discordGameRole)
         {
             // Create ActiveCheckRoom (doesn't need to have view permission set, the category is already hidden for everyone except GameRole)

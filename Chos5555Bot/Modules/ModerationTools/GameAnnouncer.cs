@@ -5,11 +5,13 @@ using Chos5555Bot.Services;
 using DAL;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules
 {
+    /// <summary>
+    /// Class containing methods for announcing games/ roles for games into selection channels
+    /// </summary>
     public static class GameAnnouncer
     {
         private static BotRepository repo;
@@ -21,7 +23,15 @@ namespace Chos5555Bot.Modules
             GameAnnouncer.log = log;
         }
 
-        public static async Task AnnounceGame(Game game, Room selectionRoom, SocketCommandContext context)
+        /// <summary>
+        /// Announces a gamme into guilds selection room
+        /// </summary>
+        /// <param name="game">Game</param>
+        /// <param name="selectionRoom">Guilds selection room</param>
+        /// <param name="context">Command context</param>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException">Thrown when selection room has not been set.</exception>
+        public async static Task AnnounceGame(Game game, Room selectionRoom, SocketCommandContext context)
         {
             IEmote reactEmote = game.ActiveEmote.Out();
             // Send message to user if no selectionRoom is set
@@ -44,7 +54,15 @@ namespace Chos5555Bot.Modules
             await log.Log($"Announced game {game.Name} in guild {context.Guild.Id}({context.Guild.Name})", LogSeverity.Info);
         }
 
-        public static async Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context, IRole mainDiscordRole = null)
+        /// <summary>
+        /// Announces all of games active roles into games ActiveCheckRoom
+        /// </summary>
+        /// <param name="game">Game</param>
+        /// <param name="channel">Games ActiveCheckRoom</param>
+        /// <param name="context">Command context</param>
+        /// <param name="mainDiscordRole">MainActiveRole to be announced separately</param>
+        /// <returns>Nothing</returns>
+        public async static Task AnnounceActiveRoles(Game game, ITextChannel channel, SocketCommandContext context, IRole mainDiscordRole = null)
         {
             // Delete old messages
             await channel.DeleteMessagesAsync(await channel.GetMessagesAsync().FlattenAsync());
@@ -63,7 +81,14 @@ namespace Chos5555Bot.Modules
             await AnnounceNonMainActiveRoles(game, channel, context);
         }
 
-        public static async Task AnnounceNonMainActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
+        /// <summary>
+        /// Announce all active roles, which are not MainActivRole of the game.
+        /// </summary>
+        /// <param name="game">Game</param>
+        /// <param name="channel">Games ActiveCheckRoom</param>
+        /// <param name="context">Command context</param>
+        /// <returns>Nothing</returns>
+        public async static Task AnnounceNonMainActiveRoles(Game game, ITextChannel channel, SocketCommandContext context)
         {
             foreach (var role in game.ActiveRoles.Where(r => r.Id != game.MainActiveRole.Id))
             {
@@ -71,19 +96,27 @@ namespace Chos5555Bot.Modules
             }
         }
 
-        public static async Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context, IRole discordRole = null)
+        /// <summary>
+        /// Announces single active role
+        /// </summary>
+        /// <param name="role">Role</param>
+        /// <param name="game">Game</param>
+        /// <param name="channel">Games ActiveCheckRoom</param>
+        /// <param name="context">Command context</param>
+        /// <param name="discordRole">(Optional) discord role to be announced if <paramref name="role"/> has not yet been put into the DB.</param>
+        /// <returns>Nothing</returns>
+        public async static Task AnnounceActiveRole(Role role, Game game, ITextChannel channel, SocketCommandContext context, IRole discordRole = null)
         {
             // If role doesn't have an emote, don't post it
             if (role.ChoiceEmote is null)
                 return;
 
             // If discordRole is not passed, find it
-            if (discordRole is null)
-            {
-                discordRole = context.Guild.GetRole(role.DisordId);
-            }
+            discordRole ??= context.Guild.GetRole(role.DisordId);
+
             var message = await channel.SendMessageAsync($"{discordRole.Mention} {role.ChoiceEmote.Out()} - {role.Description}");
 
+            // Add selection reaction
             await message.AddReactionAsync(role.ChoiceEmote.Out());
 
             await log.Log($"Announced role {role.Name} into {game.Name}'s active channel.", LogSeverity.Info);

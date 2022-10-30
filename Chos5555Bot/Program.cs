@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
-using Chos5555Bot;
 using Chos5555Bot.EventHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Chos5555Bot.Modules.Voice;
@@ -19,7 +18,8 @@ public class Program
     // TODO: Add quest feature
     // TODO: Add music feature
     // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
-    // TODO: Add documentation
+    // TODO: ADD README
+    // TODO: Documentation: Add parameters into <paramsref>
 
     static void Main(string[] args = null)
     {
@@ -27,7 +27,7 @@ public class Program
     }
 
     private DiscordSocketClient _client;
-    private Configuration _config;
+    private Configuration _config = Configuration.GetConfig();
 
     // TODO: Move Startup to it's own file
     public async Task MainAsync()
@@ -39,8 +39,17 @@ public class Program
             GatewayIntents = GatewayIntents.All
         };
 
+        // Setup config for lavalink
+        Action<LavaConfig> lavaConfig = x =>
+        {
+            x.SelfDeaf = false;
+            x.Hostname = _config.LavalinkHostname;
+            x.Port = _config.LavalinkPort;
+            x.Authorization = _config.LavalinkPassword;
+        };
+
         // Setup services
-        var services = ConfigureServices(socketConfig);
+        var services = ConfigureServices(socketConfig, lavaConfig);
 
         // Assign client and commands to local variables
         _client = services.GetRequiredService<DiscordSocketClient>();
@@ -76,19 +85,19 @@ public class Program
         await Task.Delay(-1);
     }
 
-    private ServiceProvider ConfigureServices(DiscordSocketConfig config)
+    private ServiceProvider ConfigureServices(DiscordSocketConfig discordConfig, Action<LavaConfig> lavaConfig)
     {
         // Setup services and dependency injection
         var services = new ServiceCollection()
-            .AddSingleton(new DiscordSocketClient(config))
-            .AddSingleton(Configuration.GetConfig())
+            .AddSingleton(new DiscordSocketClient(discordConfig))
+            .AddSingleton(_config)
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandler>()
             // TODO: Use AddDbContextPool for higher performance if number of requests to DB ever gets >2000/s
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
             .AddSingleton<Queue>()
-            .AddLavaNode(x => { x.SelfDeaf = false; })
+            .AddLavaNode(lavaConfig)
             .AddSingleton<MusicService>()
             .AddSingleton<LogService>()
             .AddSingleton<Reactions>()

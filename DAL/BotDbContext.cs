@@ -6,10 +6,14 @@ using Config;
 
 namespace DAL
 {
+    /// <summary>
+    /// Database context for the bot
+    /// </summary>
     public class BotDbContext : DbContext
     {
         private readonly Configuration _config;
 
+        // Define all tables in model of DB
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Room> Rooms { get; set; }
@@ -19,13 +23,15 @@ namespace DAL
         public BotDbContext() : base()
         {
             _config = Configuration.GetConfig();
-            Database.EnsureCreated();
+            // Apply all migrations
+            Database.Migrate();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_config.ConnectionString);
-            Console.WriteLine("Database was connected!");
+            // Connect the database
+            optionsBuilder.UseNpgsql(_config.ConnectionString);
+            Console.WriteLine($"{_config.DBType} DB connected.");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,13 +42,13 @@ namespace DAL
             modelBuilder.Entity<Game>()
                 .Property(g => g.ActiveEmote)
                 .HasConversion(
-                    e => e.emote.ToString(),
+                    e => e.Emote.ToString(),
                     e => EmoteParser.ParseEmote(e));
 
             modelBuilder.Entity<Role>()
                 .Property(r => r.ChoiceEmote)
                 .HasConversion(
-                    e => e.emote.ToString(),
+                    e => e.Emote.ToString(),
                     e => EmoteParser.ParseEmote(e));
 
             // Set auto includes for guilds properties in other tables

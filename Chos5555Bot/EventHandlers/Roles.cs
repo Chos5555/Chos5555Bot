@@ -6,6 +6,9 @@ using Discord;
 
 namespace Chos5555Bot.EventHandlers
 {
+    /// <summary>
+    /// Class containing handlers for events that related to a roles
+    /// </summary>
     internal class Roles
     {
         private static BotRepository _repo;
@@ -17,13 +20,21 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
-        public static async Task RoleUpdated(SocketRole oldRole, SocketRole newRole)
+        /// <summary>
+        /// Updates roles name when role is changed
+        /// </summary>
+        /// <param name="oldRole">old discord role</param>
+        /// <param name="newRole">new discord role</param>
+        /// <returns>Nothing</returns>
+        public async static Task RoleUpdated(SocketRole oldRole, SocketRole newRole)
         {
             var role = await _repo.FindRole(oldRole);
 
             // If role is null, it's not in the DB => nothing to update
             if (role is null)
+            {
                 return;
+            }
 
             role.Name = newRole.Name;
             await _repo.UpdateRole(role);
@@ -31,7 +42,12 @@ namespace Chos5555Bot.EventHandlers
             await _log.Log($"Updated role {oldRole.Name} to now be {role.Name}", LogSeverity.Info);
         }
 
-        public static async Task RoleDeleted(SocketRole discordRole)
+        /// <summary>
+        /// Removes given role from DB when its deleted on discord
+        /// </summary>
+        /// <param name="discordRole">Discord role to be deleted</param>
+        /// <returns>Nothing</returns>
+        public async static Task RoleDeleted(SocketRole discordRole)
         {
             var role = await _repo.FindRole(discordRole);
 

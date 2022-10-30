@@ -11,6 +11,9 @@ using DAL.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    /// <summary>
+    /// Module class containing commands for managing games
+    /// </summary>
     [Name("Manual Game Management")]
     public class ManualGame : ModuleBase<SocketCommandContext>
     {
@@ -29,9 +32,12 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task DeleteGameByRoleCommand(
             [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole)
         {
-            var game = await _repo.FindGameByRole(await _repo.FindRole(discordRole));
+            var game = await _repo.FindGameByGameRole(await _repo.FindRole(discordRole));
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this role.");
+                return;
+            }
 
             await DeleteGameCommand(discordRole, game.Name);
         }
@@ -44,11 +50,20 @@ namespace Chos5555Bot.Modules.ModerationTools
         {
             var game = await _repo.FindGame(gameName);
             if (game is null)
+            {
                 await Context.Channel.SendMessageAsync("Couldn't find a game with this name.");
+                return;
+            }
 
             await DeleteGameCommand(Context.Guild.GetRole(game.GameRole.DisordId), gameName);
         }
 
+        /// <summary>
+        /// Main deleteGame method, deletes all roles and channels connected to the game, the game itself from DB and from discord.
+        /// </summary>
+        /// <param name="discordRole">Discord role of games GameRole</param>
+        /// <param name="gameName">Name of the game</param>
+        /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("deleteGame")]
         [Summary("Deletes game, all of its channels and roles.")]
@@ -62,12 +77,14 @@ namespace Chos5555Bot.Modules.ModerationTools
             if (game is null)
                 await Context.Channel.SendMessageAsync($"Couldn't find game named {gameName} with role {discordRole}");
 
+            // Delete all roles belonging to this game in DB and on discord
             foreach (var role in await _repo.FindAllRolesByGame(game))
             {
                 await _repo.RemoveRole(await _repo.FindRole(role));
                 await Context.Guild.GetRole(role.DisordId).DeleteAsync();
             }
 
+            // Delete all channels belonging to this game in DB and on discord
             ulong? categoryId = 0;
             foreach (var room in game.Rooms.ToArray())
             {
@@ -75,16 +92,22 @@ namespace Chos5555Bot.Modules.ModerationTools
                 var discordChannel = Context.Guild.GetChannel(room.DiscordId);
                 await discordChannel.DeleteAsync();
 
+                // Get category of the game
                 categoryId = (discordChannel as INestedChannel).CategoryId;
                 if (categoryId.HasValue)
                     categoryId = categoryId.Value;
             }
 
+            // Delete the category
             var categoryChannel = Context.Guild.GetChannel(categoryId.Value);
             await categoryChannel.DeleteAsync();
 
-            var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
-            await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            // Delete games selection message if there is one (if SelectionRoom is set)
+            if (guild.SelectionRoom is not null)
+            {
+                var channel = Context.Guild.GetChannel(guild.SelectionRoom.DiscordId) as ISocketMessageChannel;
+                await (await channel.GetMessageAsync(game.SelectionMessageId)).DeleteAsync();
+            }
 
             await _repo.RemoveGame(game);
 
@@ -99,8 +122,9 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Name")][Summary("Name of the game")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
-            var modRole = await _repo.FindRole(role);
 
+            // Try to find the role in DB, if it's not present, create a new one
+            var modRole = await _repo.FindRole(role);
             if (modRole is null)
             {
                 modRole = new Role()
@@ -110,14 +134,16 @@ namespace Chos5555Bot.Modules.ModerationTools
                     Resettable = false,
                     NeedsModApproval = true,
                 };
+                await _repo.AddRole(modRole);
             }
 
-            // Set modRoom viewable for new mod role
+            // Set ModAcceptRoom viewable for new mod role
             await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Allow);
 
             game.ModAcceptRoles.Add(modRole);
             await _repo.UpdateGame(game);
 
+            // If the first ModAcceptRole was added, announce all active roles into selection channel
             if (game.ModAcceptRoles.Count == 1)
             {
                 var activeCheckChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId);
@@ -138,6 +164,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             game.ModAcceptRoles.Remove(modRole);
             await _repo.UpdateGame(game);
 
+            // Hide ModAcceptRoom from removed role
             await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Deny);
         }
 
@@ -149,8 +176,9 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
-            var channel = await _repo.FindRoom(discordChannel);
 
+            // Try to find the channel in DB, if it's not present, create a new one
+            var channel = await _repo.FindRoom(discordChannel);
             if (channel is null)
             {
                 channel = new Room()
@@ -163,26 +191,29 @@ namespace Chos5555Bot.Modules.ModerationTools
             game.ModAcceptRoom = channel;
             await _repo.UpdateGame(game);
 
+            // Create a list of discord roles out of games ModAcceptRoles
             var modDiscordRoles = new List<IRole>();
             foreach (var role in game.ModAcceptRoles)
             {
                 modDiscordRoles.Add(Context.Guild.GetRole(role.DisordId));
             }
 
+            // Set the ModAcceptRoom visible only for ModAcceptRoles
             await PermissionSetter.SetShownForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setGameEmote")]
-        [Summary("Sets emote for a game.")]
-        private async Task setGameEmoteCommand(
-            [Name("Emote")][Summary("Emote to be set.")] string emote,
+        [Summary("Sets emote for a game (unfortunately this can't change the reacted emote and will remove the old emote with all of its reactions).")]
+        private async Task SetGameEmoteCommand(
+            [Name("Emote")][Summary("Emote to be set.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);
 
-            var parsedEmote = EmoteParser.ParseEmote(emote);
+            var parsedEmote = EmoteParser.ParseEmote(emote.ToString());
 
+            // Save old emote to replace it with new emote
             var oldEmote = game.ActiveEmote.Out();
 
             game.ActiveEmote = parsedEmote;
@@ -191,12 +222,20 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Update emote on announce message
             var guildSelectionChannelId = (await _repo.FindGuild(Context.Guild)).SelectionRoom.DiscordId;
             var message = await MessageFinder.FindAnnouncedMessage(game.GameRole, Context.Guild.GetTextChannel(guildSelectionChannelId));
-
             var newMessageContent = message.Content.Replace(oldEmote.ToString(), game.ActiveEmote.Out().ToString());
+
+            // Remove reactions for old emote and react with new emote
+            await message.RemoveAllReactionsForEmoteAsync(oldEmote);
+            await message.AddReactionAsync(parsedEmote.Out());
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
 
+        /// <summary>
+        /// Adds channel in which the command is used to the games Rooms.
+        /// </summary>
+        /// <param name="gameName">Name of the game</param>
+        /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addChannelToGame")]
         [Summary("Adds this channel to a game.")]
@@ -220,6 +259,15 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGame(game);
         }
 
+        /// <summary>
+        /// Adds a role to the games ActiveRoles.
+        /// </summary>
+        /// <param name="discordRole">Discord role</param>
+        /// <param name="resettable">Whether the role should be resettable or not</param>
+        /// <param name="needModApproval">Whether the role needs approval by a mod or not</param>
+        /// <param name="emote">Emote of the role in selection room</param>
+        /// <param name="gameName">Name of the game</param>
+        /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("addRoleToGame")]
         [Summary("Adds role to a game.")]
@@ -227,7 +275,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Role")][Summary("Role to be added to a game (needs to be a mention).")] IRole discordRole,
             [Name("Is Resettable")][Summary("Whether the role should be resettable (true/false).")] bool resettable,
             [Name("Needs mod approval")][Summary("Whether giving the role to a user need to be approved by a moderator (true/false).")] bool needModApproval,
-            [Name("Emote")][Summary("Emote of the role in selection room.")] string emote,
+            [Name("Emote")][Summary("Emote of the role in selection room.")] IEmote emote,
             [Name("Name")][Summary("Name of the game.")][Remainder] string gameName)
         {
             var game = await _repo.FindGame(gameName);

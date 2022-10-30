@@ -2,10 +2,13 @@
 
 namespace DAL.Model
 {
+    /// <summary>
+    /// Class representing either Emote or Emoji
+    /// </summary>
     public class EmoteEmoji
     {
-        private EmoteType type;
-        public IEmote emote { get; set; }
+        private readonly EmoteType Type;
+        public IEmote Emote { get; set; }
 
         public enum EmoteType
         {
@@ -15,26 +18,35 @@ namespace DAL.Model
 
         public EmoteEmoji(EmoteType type, IEmote emote)
         {
-            this.type = type;
-            this.emote = emote;
+            Type = type;
+            Emote = emote;
         }
 
+        /// <summary>
+        /// Returns either Emote or Emoji, depending on what type the emote stored is 
+        /// </summary>
+        /// <returns>Emote or Emoji</returns>
         public IEmote Out()
         {
-            if (type == EmoteType.Emote)
-                return (Emote)emote;
-            return (Emoji)emote;
+            if (Type == EmoteType.Emote)
+                return (Emote)Emote;
+            return (Emoji)Emote;
         }
 
+        /// <summary>
+        /// Compares to another EmoteEmoji, returns whether they are the same emote or not
+        /// </summary>
+        /// <param name="emoteEmoji">EmoteEmoji for this one to be compared to</param>
+        /// <returns>bool</returns>
         public bool Equals(EmoteEmoji emoteEmoji)
         {
-            if (type != emoteEmoji.type)
+            if (Type != emoteEmoji.Type)
                 return false;
 
-            if (type == EmoteType.Emote)
-                return ((Emote)emote).Id == ((Emote)emoteEmoji.emote).Id;
+            if (Type == EmoteType.Emote)
+                return ((Emote)Emote).Id == ((Emote)emoteEmoji.Emote).Id;
 
-            return ((Emoji)emote).Name == ((Emoji)emoteEmoji.emote).Name;
+            return ((Emoji)Emote).Name == ((Emoji)emoteEmoji.Emote).Name;
         }
     }
 }

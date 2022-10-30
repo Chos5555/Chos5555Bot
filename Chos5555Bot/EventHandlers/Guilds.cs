@@ -6,6 +6,9 @@ using Discord;
 
 namespace Chos5555Bot.EventHandlers
 {
+    /// <summary>
+    /// Class containing handlers for events that related to guilds
+    /// </summary>
     internal class Guilds
     {
         private static BotRepository _repo;
@@ -17,7 +20,12 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
-        public static async Task LeftGuild(SocketGuild discordGuild)
+        /// <summary>
+        /// Removes given guild from DB when bot has left it
+        /// </summary>
+        /// <param name="discordGuild">Guild the bot has left</param>
+        /// <returns>Nothing</returns>
+        public async static Task LeftGuild(SocketGuild discordGuild)
         {
             var guild = await _repo.FindGuild(discordGuild);
 

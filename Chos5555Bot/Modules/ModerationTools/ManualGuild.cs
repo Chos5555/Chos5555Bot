@@ -7,6 +7,9 @@ using Discord;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    /// <summary>
+    /// Module class containing commands for managing guilds
+    /// </summary>
     [Name("Manual Guild Management")]
     public class ManualGuild : ModuleBase<SocketCommandContext>
     {
@@ -39,7 +42,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRuleText")]
         [Summary("Sets the text of rule channel (if this message is a reply to a message, it will take that messages text.).")]
-        private async Task setRuleTextCommand(
+        private async Task SetRuleTextCommand(
             [Name("Text")][Summary("Text if this command is not a reply to a message (optional).")][Remainder] string text = null)
         {
             // If this is a response to some other message, take that messages content
@@ -49,56 +52,75 @@ namespace Chos5555Bot.Modules.ModerationTools
             var guild = await _repo.FindGuild(Context.Guild.Id);
             guild.RuleMessageText = text;
 
-            await _repo.UpdateGuild(guild);
-
             if (guild.RuleRoom is null)
                 return;
 
             var ruleRoom = Context.Guild.GetChannel(guild.RuleRoom.DiscordId) as SocketTextChannel;
 
+            // If there already is en existing message, modify it, otherwise send a new one
             if (guild.RuleMessageId != 0)
             {
-                var message = (ruleRoom as SocketTextChannel).GetMessageAsync(guild.RuleMessageId);
+                var message = ruleRoom.GetMessageAsync(guild.RuleMessageId);
                 await (message as IUserMessage).ModifyAsync(m => { m.Content = text; });
             }
             else
             {
-                guild.RuleMessageId = (await ruleRoom.SendMessageAsync(guild.RuleMessageText)).Id;
+                await SendRuleMessage(ruleRoom, guild);
             }
+
+            await _repo.UpdateGuild(guild);
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setRuleChannel")]
         [Alias("setRuleRoom")]
         [Summary("Set the rule channel.")]
-        private async Task setRuleRoomCommand(
+        private async Task SetRuleRoomCommand(
             [Name("Channel")][Summary("Channel to be set as rule channel, if not provided, will take the channel the command is used in.")] IChannel discordChannel = null)
         {
             // If there is no channel provided, take the channel the command was used in
-            if (discordChannel is null)
-            {
-                discordChannel = Context.Channel;
-            }
+            discordChannel ??= Context.Channel;
 
+            // Try to find the channel in the DB, if its not there, create a new Room and add it into DB
             var channel = await _repo.FindRoom(discordChannel);
-
             if (channel is null)
             {
                 channel = new Room()
                 {
                     DiscordId = discordChannel.Id,
                 };
+                await _repo.AddRoom(channel);
             }
 
             var guild = await _repo.FindGuild(Context.Guild.Id);
+
+            // If there already is en existing message, delete it
+            if (guild.RuleMessageId != 0)
+            {
+                var oldRuleRoom = Context.Guild.GetTextChannel(guild.RuleRoom.DiscordId);
+                var oldMessage = await (oldRuleRoom as SocketTextChannel).GetMessageAsync(guild.RuleMessageId);
+                await oldMessage.DeleteAsync();
+            }
+
+            // Send the rule message into the new channel
             guild.RuleRoom = channel;
+            await SendRuleMessage(Context.Guild.GetTextChannel(channel.DiscordId), guild);
+
             await _repo.UpdateGuild(guild);
+        }
+
+        private async static Task SendRuleMessage(ITextChannel ruleRoom, Guild guild)
+        {
+            var message = await ruleRoom.SendMessageAsync(guild.RuleMessageText);
+            guild.RuleMessageId = message.Id;
+
+            await message.AddReactionAsync(new Emoji("✅"));
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setMemberRole")]
         [Summary("Sets member role for this guild.")]
-        private async Task setMemberRoleCommand(
+        private async Task SetMemberRoleCommand(
             [Name("Role")][Summary("Role to be set as member role (needs to be a mention).")] IRole discordRole)
         {
             var role = new Role()
@@ -118,7 +140,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setArchiveCategory")]
         [Summary("Sets a category to which channels are archived when deleted.")]
-        private async Task setArchiveCategoryCommand(
+        private async Task SetArchiveCategoryCommand(
             [Name("Category Id")][Summary("Id of the category channel.")] ulong channelId)
         {
             var guild = await _repo.FindGuild(Context.Guild.Id);
@@ -146,7 +168,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("setUserLeftMessageChannel")]
         [Summary("Sets channel in which comamnd is used as the channel to which messages will be sent if user leaves the server.")]
-        private async Task setUserLeftMessageChannel()
+        private async Task SetUserLeftMessageChannel()
         {
             var guild = await _repo.FindGuild(Context.Guild);
 
