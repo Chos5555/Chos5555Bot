@@ -84,8 +84,8 @@ namespace Chos5555Bot.EventHandlers
 
             // Determine if the message is a command based on the prefix
             // or if the message mentions the bot
-            if (!message.HasStringPrefix(guildPrefix, ref argPos) &&
-                !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if (!message.HasMentionPrefix(_client.CurrentUser, ref argPos) &&
+                !message.HasStringPrefix(guildPrefix, ref argPos))
                 return;
 
             // Execute the command with the command context we just created
