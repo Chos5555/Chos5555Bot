@@ -13,7 +13,7 @@ namespace Chos5555Bot.EventHandlers
     /// <summary>
     /// Class containing handlers for commands
     /// </summary>
-    public class CommandHandler
+    public class Commands
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commandService;
@@ -22,7 +22,7 @@ namespace Chos5555Bot.EventHandlers
         private readonly Configuration _config;
 
         // Retrieve client and CommandService instance via constructor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config)
+        public Commands(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config)
         {
             _client = client;
             _commandService = commandService;

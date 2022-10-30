@@ -76,7 +76,7 @@ public class Program
         await _client.StartAsync();
 
         // Start CommandHandler
-        await services.GetRequiredService<CommandHandler>().SetupAsync();
+        await services.GetRequiredService<Commands>().SetupAsync();
 
         // Initialize MusicService
         await services.GetRequiredService<MusicService>().InitializeAsync();
@@ -92,7 +92,7 @@ public class Program
             .AddSingleton(new DiscordSocketClient(discordConfig))
             .AddSingleton(_config)
             .AddSingleton<CommandService>()
-            .AddSingleton<CommandHandler>()
+            .AddSingleton<Commands>()
             // TODO: Use AddDbContextPool for higher performance if number of requests to DB ever gets >2000/s
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
