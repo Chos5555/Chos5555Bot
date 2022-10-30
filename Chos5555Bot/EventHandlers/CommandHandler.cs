@@ -96,7 +96,7 @@ namespace Chos5555Bot.EventHandlers
             }
 
             // Resolve error if there is one
-            await ResolveError(res, context);
+            await ResolveError(res, context, guildPrefix);
         }
 
         /// <summary>
@@ -105,12 +105,12 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="res">Command execute result</param>
         /// <param name="context">Command context</param>
         /// <returns>Nothing</returns>
-        private async Task ResolveError(IResult res, SocketCommandContext context)
+        private async Task ResolveError(IResult res, SocketCommandContext context, string prefix)
         {
             switch (res.Error.Value)
             {
                 case CommandError.Exception:
-                    await ResolveCustomException(res.ErrorReason, context);
+                    await ResolveCustomException(res.ErrorReason, context, prefix);
                     break;
 
                 case CommandError.Unsuccessful:
@@ -144,17 +144,17 @@ namespace Chos5555Bot.EventHandlers
                     break;
 
                 case CommandError.UnknownCommand:
-                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type {_config.Prefix}help if you need help.");
+                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type {prefix}help if you need help.");
                     await _log.Log("Couldn't recognize command " + res.ErrorReason, LogSeverity.Error);
                     break;
             }
         }
 
-        private async Task ResolveCustomException(string exceptionString, SocketCommandContext context)
+        private async Task ResolveCustomException(string exceptionString, SocketCommandContext context, string prefix)
         {
             if (exceptionString.Contains("GuildNotFoundException"))
             {
-                await context.Channel.SendMessageAsync($"This guild is not yet registered with me, use {_config.Prefix}addGuild to add it first.");
+                await context.Channel.SendMessageAsync($"This guild is not yet registered with me, use {prefix}addGuild to add it first.");
                 await _log.Log($"Cannot set selection channel, guild {context.Guild.Name} is not yet in DB.", LogSeverity.Verbose);
             }
             else
