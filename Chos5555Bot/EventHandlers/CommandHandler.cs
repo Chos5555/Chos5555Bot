@@ -56,16 +56,28 @@ namespace Chos5555Bot.EventHandlers
             // Ignore self when checking commands
             if (message.Author.Id == _client.CurrentUser.Id) return;
 
+            // Create a WebSocket-based command context based on the message
+            var context = new SocketCommandContext(_client, message);
+
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;
 
-            // Determine if the message is a command based on the prefix and make sure no bots trigger commands
-            if (!message.HasStringPrefix(_config.Prefix.ToString(), ref argPos) ||
-                message.Author.IsBot)
+            if (message is null)
                 return;
 
-            // Create a WebSocket-based command context based on the message
-            var context = new SocketCommandContext(_client, message);
+            // Ignores messages from self
+            if (message.Author.Id == _client.CurrentUser.Id)
+                return;
+
+            // Ignore message from other bots
+            if (message.Author.IsBot)
+                return;
+
+            // Determine if the message is a command based on the prefix
+            // or if the message mentions the bot
+            if (!message.HasStringPrefix(_config.Prefix.ToString(), ref argPos) &&
+                !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+                return;
 
             // Execute the command with the command context we just created
             var res = await _commandService.ExecuteAsync(context: context, argPos: argPos, services: _services);
