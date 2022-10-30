@@ -13,7 +13,6 @@ namespace Config
         // TODO: Put prefix into Guild model so you can choose on guild basis
         public string Token { get; set; }
         public string ConnectionString { get; set; }
-        public char Prefix { get; set; }
         public string LavalinkHostname { get; set; }
         public ushort LavalinkPort { get; set; }
         public string LavalinkPassword { get; set; }
@@ -52,7 +51,6 @@ namespace Config
                 // If config file is not present, take values from env variables
                 result = new Configuration();
                 result.Token = Environment.GetEnvironmentVariable("TOKEN");
-                result.Prefix = (Environment.GetEnvironmentVariable("PREFIX"))[0];
                 result.DBType = DatabaseType.External;
 
                 // Get Lavalink configs

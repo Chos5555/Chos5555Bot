@@ -1,6 +1,7 @@
 ﻿using Chos5555Bot.Services;
 using Chos5555Bot.TypeReaders;
 using Config;
+using DAL;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -13,22 +14,24 @@ namespace Chos5555Bot.EventHandlers
     /// <summary>
     /// Class containing handlers for commands
     /// </summary>
-    public class CommandHandler
+    public class Commands
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commandService;
         private readonly IServiceProvider _services;
         private readonly LogService _log;
         private readonly Configuration _config;
+        private readonly BotRepository _repo;
 
         // Retrieve client and CommandService instance via constructor
-        public CommandHandler(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config)
+        public Commands(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config, BotRepository repo)
         {
             _client = client;
             _commandService = commandService;
             _services = services;
             _log = log;
             _config = config;
+            _repo = repo;
         }
 
         public async Task SetupAsync()
@@ -56,16 +59,34 @@ namespace Chos5555Bot.EventHandlers
             // Ignore self when checking commands
             if (message.Author.Id == _client.CurrentUser.Id) return;
 
+            // Create a WebSocket-based command context based on the message
+            var context = new SocketCommandContext(_client, message);
+
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;
 
-            // Determine if the message is a command based on the prefix and make sure no bots trigger commands
-            if (!message.HasStringPrefix(_config.Prefix.ToString(), ref argPos) ||
-                message.Author.IsBot)
+            if (message is null)
                 return;
 
-            // Create a WebSocket-based command context based on the message
-            var context = new SocketCommandContext(_client, message);
+            // Ignores messages from self
+            if (message.Author.Id == _client.CurrentUser.Id)
+                return;
+
+            // Ignore message from other bots
+            if (message.Author.IsBot)
+                return;
+
+            // Get prefix for guild the command was used in, if no guild is found, use '.' as default
+            var guild = await _repo.FindGuild(context.Guild);
+            var guildPrefix = ".";
+            if (guild is not null)
+                guildPrefix = guild.Prefix;
+
+            // Determine if the message is a command based on the prefix
+            // or if the message mentions the bot
+            if (!message.HasMentionPrefix(_client.CurrentUser, ref argPos) &&
+                !message.HasStringPrefix(guildPrefix, ref argPos))
+                return;
 
             // Execute the command with the command context we just created
             var res = await _commandService.ExecuteAsync(context: context, argPos: argPos, services: _services);
@@ -75,7 +96,7 @@ namespace Chos5555Bot.EventHandlers
             }
 
             // Resolve error if there is one
-            await ResolveError(res, context);
+            await ResolveError(res, context, guildPrefix);
         }
 
         /// <summary>
@@ -84,12 +105,12 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="res">Command execute result</param>
         /// <param name="context">Command context</param>
         /// <returns>Nothing</returns>
-        private async Task ResolveError(IResult res, SocketCommandContext context)
+        private async Task ResolveError(IResult res, SocketCommandContext context, string prefix)
         {
             switch (res.Error.Value)
             {
                 case CommandError.Exception:
-                    await ResolveCustomException(res.ErrorReason, context);
+                    await ResolveCustomException(res.ErrorReason, context, prefix);
                     break;
 
                 case CommandError.Unsuccessful:
@@ -123,17 +144,17 @@ namespace Chos5555Bot.EventHandlers
                     break;
 
                 case CommandError.UnknownCommand:
-                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type {_config.Prefix}help if you need help.");
+                    await context.Channel.SendMessageAsync($"I couldn't recognize that command, type {prefix}help if you need help.");
                     await _log.Log("Couldn't recognize command " + res.ErrorReason, LogSeverity.Error);
                     break;
             }
         }
 
-        private async Task ResolveCustomException(string exceptionString, SocketCommandContext context)
+        private async Task ResolveCustomException(string exceptionString, SocketCommandContext context, string prefix)
         {
             if (exceptionString.Contains("GuildNotFoundException"))
             {
-                await context.Channel.SendMessageAsync($"This guild is not yet registered with me, use {_config.Prefix}addGuild to add it first.");
+                await context.Channel.SendMessageAsync($"This guild is not yet registered with me, use {prefix}addGuild to add it first.");
                 await _log.Log($"Cannot set selection channel, guild {context.Guild.Name} is not yet in DB.", LogSeverity.Verbose);
             }
             else

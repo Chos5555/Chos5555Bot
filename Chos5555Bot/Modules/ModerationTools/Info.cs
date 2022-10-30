@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Config;
+using Chos5555Bot.Exceptions;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -45,8 +46,15 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Summary("Lists all commands available to you.")]
         private async Task Help()
         {
+            var guild = await _repo.FindGuild(Context.Guild);
+            if (guild is null)
+                throw new GuildNotFoundException();
+
             // Start building embed
-            var builder = new EmbedBuilder();
+            var builder = new EmbedBuilder()
+            {
+                Title = $"Command Prefix = \"{guild.Prefix}\""
+            };
             List<string> commandNames = new();
 
             Dictionary<string, List<CommandInfo>> groups = new();
@@ -81,7 +89,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                         // Don't add duplicate command
                         if (commandNames.Contains(command.Name))
                             continue;
-                        names += $"{_config.Prefix}{command.Name}\n";
+                        names += $"{command.Name}\n";
                         var commandDescription = $"{command.Summary ?? "No summary available for this command."}\n";
 
                         description += commandDescription;
