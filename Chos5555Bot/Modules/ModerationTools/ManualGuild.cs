@@ -4,6 +4,7 @@ using Discord.Commands;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
+using Chos5555Bot.Exceptions;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -177,6 +178,22 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
 
             await _log.Log($"Set {Context.Channel.Name} as UserLeftMessageChannel for guild {Context.Guild.Name}.", LogSeverity.Info);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Command("setBotPrefix")]
+        [Summary("Sets bots prefix for this guild")]
+        private async Task SetBotPrefixCommand(
+            [Name("New prefix")][Summary("New prefix to be set for this guild.")]string prefix)
+        {
+            var guild = await _repo.FindGuild(Context.Guild);
+
+            if (guild == null)
+                throw new GuildNotFoundException();
+
+            guild.Prefix = prefix;
+
+            await _repo.UpdateGuild(guild);
         }
     }
 }
