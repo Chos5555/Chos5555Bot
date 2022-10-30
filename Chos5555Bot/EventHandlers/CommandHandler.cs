@@ -1,6 +1,7 @@
 ﻿using Chos5555Bot.Services;
 using Chos5555Bot.TypeReaders;
 using Config;
+using DAL;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -20,15 +21,17 @@ namespace Chos5555Bot.EventHandlers
         private readonly IServiceProvider _services;
         private readonly LogService _log;
         private readonly Configuration _config;
+        private readonly BotRepository _repo;
 
         // Retrieve client and CommandService instance via constructor
-        public Commands(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config)
+        public Commands(DiscordSocketClient client, CommandService commandService, IServiceProvider services, LogService log, Configuration config, BotRepository repo)
         {
             _client = client;
             _commandService = commandService;
             _services = services;
             _log = log;
             _config = config;
+            _repo = repo;
         }
 
         public async Task SetupAsync()
@@ -73,9 +76,15 @@ namespace Chos5555Bot.EventHandlers
             if (message.Author.IsBot)
                 return;
 
+            // Get prefix for guild the command was used in, if no guild is found, use '.' as default
+            var guild = await _repo.FindGuild(context.Guild);
+            var guildPrefix = '.';
+            if (guild is not null)
+                guildPrefix = guild.Prefix;
+
             // Determine if the message is a command based on the prefix
             // or if the message mentions the bot
-            if (!message.HasStringPrefix(_config.Prefix.ToString(), ref argPos) &&
+            if (!message.HasStringPrefix(guildPrefix.ToString(), ref argPos) &&
                 !message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 return;
 

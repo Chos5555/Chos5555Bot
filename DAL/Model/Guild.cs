@@ -10,6 +10,8 @@ namespace DAL
         public int Id { get; set; }
         // Id of corresponding guild in discord
         public ulong DiscordId { get; set; }
+        // Command prefix used for this guild
+        public char Prefix { get; set; } = '.';
         // Room to send game selection messages to
         public Room SelectionRoom { get; set; }
         // Discord role to be considered role for members of the guild
