@@ -9,5 +9,7 @@ namespace DAL
         public int Id { get; set; }
         // Id of a corresponding channel in discord
         public ulong DiscordId { get; set; }
+        // Speaker role
+        public ulong SpeakerRoleId { get; set; } = 0;
     }
 }
