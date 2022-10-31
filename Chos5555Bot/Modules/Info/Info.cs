@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Config;
 using Chos5555Bot.Exceptions;
 
-namespace Chos5555Bot.Modules.ModerationTools
+namespace Chos5555Bot.Modules.Info
 {
     /// <summary>
     /// Module class containing informative commands.
@@ -35,7 +35,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task Ping()
         {
             var time = DateTimeOffset.Now - Context.Message.CreatedAt;
-            await Context.Channel.SendMessageAsync($"🏓 **Pong!**\n**Latency:** {((int)time.TotalMilliseconds)} ms");
+            await Context.Channel.SendMessageAsync($"🏓 **Pong!**\n**Latency:** {(int)time.TotalMilliseconds} ms");
         }
 
         /// <summary>
@@ -63,14 +63,10 @@ namespace Chos5555Bot.Modules.ModerationTools
             foreach (var module in _service.Modules)
             {
                 if (module.Name is null)
-                {
                     continue;
-                }    
 
                 if (!groups.Keys.Contains(module.Name))
-                {
                     groups.Add(module.Name, new());
-                }
 
                 groups[module.Name].AddRange(module.Commands);
             }
@@ -82,7 +78,6 @@ namespace Chos5555Bot.Modules.ModerationTools
                 string description = null;
 
                 foreach (var command in commands)
-                {
                     // Only list command, if user has the right permission to use it
                     if ((await command.CheckPreconditionsAsync(Context)).IsSuccess)
                     {
@@ -100,7 +95,6 @@ namespace Chos5555Bot.Modules.ModerationTools
 
                         commandNames.Add(command.Name);
                     }
-                }
 
                 // TODO: Max 25 fields in one embed, work around this limit if there are more modules (maybe with pages?)
                 if (!string.IsNullOrWhiteSpace(names))
@@ -166,18 +160,12 @@ namespace Chos5555Bot.Modules.ModerationTools
 
                 // List out all parameters
                 if (command.Parameters.Any())
-                {
                     description += "Parameters:\n";
-                }
                 else
-                {
                     description += "No parameters\n";
-                }
 
                 foreach (var parameter in command.Parameters)
-                {
                     description += $"   {parameter.Name} - {parameter.Summary ?? "No description provided."}\n";
-                }
 
                 // End code block
                 description += "```";

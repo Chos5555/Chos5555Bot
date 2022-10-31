@@ -3,6 +3,7 @@ using System;
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(BotDbContext))]
-    partial class BotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221030223704_StageChannelUpdate")]
+    partial class StageChannelUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,9 +179,6 @@ namespace DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<decimal>("SpeakerRoleId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("TextForStageId")
                         .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id");

@@ -28,5 +28,7 @@ namespace DAL
         public ICollection<Song> Songs { get; set; } = new List<Song>();
         // Id of room to which messages are sent when a user leaves the guild on discord
         public ulong UserLeaveMessageRoomId { get; set; } = 0;
+        // List of currently active stage channels
+        public ICollection<Room> StageChannels { get; set; } = new List<Room>();
     }
 }

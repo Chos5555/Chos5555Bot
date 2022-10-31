@@ -216,6 +216,7 @@ namespace Chos5555Bot.Modules
 
             // Hide room for people that can see the game category and show it only to admins
             // (since the game has just been created, there are no more mod roles yet)
+            // TODO: Update the first into updateViewChannel
             await PermissionSetter.SetHiddenForRole(discordGameRole, discordmodAcceptRoom);
             await PermissionSetter.SetShownForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
 

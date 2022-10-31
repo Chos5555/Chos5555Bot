@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -79,6 +80,21 @@ namespace DAL
         }
 
         /// <summary>
+        /// Finds guild by Id of given stage channel
+        /// </summary>
+        /// <param name="id">If of the stage channel</param>
+        /// <returns>Guild</returns>
+        public async Task<Guild> FindGuildByStageChannel(ulong id)
+        {
+            var room = await FindRoomByTextOfStage(id);
+
+            return await _context.Guilds
+                .AsQueryable()
+                .Where(g => g.StageChannels.Select(r => r.TextForStageId).Contains(room.TextForStageId))
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
         /// Updates guild in DB
         /// </summary>
         /// <param name="guild">Guild to be updated</param>
@@ -94,6 +110,8 @@ namespace DAL
             currGuild.RuleMessageText = guild.RuleMessageText;
             currGuild.RuleMessageId = guild.RuleMessageId;
             currGuild.Songs = guild.Songs;
+            currGuild.UserLeaveMessageRoomId = guild.UserLeaveMessageRoomId;
+            currGuild.StageChannels = guild.StageChannels;
             await _context.SaveChangesAsync();
         }
 
@@ -280,6 +298,32 @@ namespace DAL
             return await _context.Rooms
                 .AsQueryable()
                 .Where(r => r.DiscordId == channel.Id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds channel with given discordId in DB
+        /// </summary>
+        /// <param name="id">Id of channel to be found</param>
+        /// <returns>Room</returns>
+        public async Task<Room> FindRoom(ulong id)
+        {
+            return await _context.Rooms
+                .AsQueryable()
+                .Where(r => r.DiscordId == id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds channel, that has the given channel (id) as it's text channel for stage
+        /// </summary>
+        /// <param name="id">Id of the text channel</param>
+        /// <returns>Room</returns>
+        public async Task<Room> FindRoomByTextOfStage(ulong id)
+        {
+            return await _context.Rooms
+                .AsQueryable()
+                .Where(r => r.TextForStageId == id)
                 .SingleOrDefaultAsync();
         }
 
