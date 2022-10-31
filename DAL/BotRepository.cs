@@ -86,11 +86,11 @@ namespace DAL
         /// <returns>Guild</returns>
         public async Task<Guild> FindGuildByStageChannel(ulong id)
         {
-            var room = await FindRoom(id);
+            var room = await FindRoomByTextOfStage(id);
 
             return await _context.Guilds
                 .AsQueryable()
-                .Where(g => g.StageChannels.Contains(room))
+                .Where(g => g.StageChannels.Select(r => r.TextForStageId).Contains(room.TextForStageId))
                 .SingleOrDefaultAsync();
         }
 
@@ -311,6 +311,19 @@ namespace DAL
             return await _context.Rooms
                 .AsQueryable()
                 .Where(r => r.DiscordId == id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds channel, that has the given channel (id) as it's text channel for stage
+        /// </summary>
+        /// <param name="id">Id of the text channel</param>
+        /// <returns>Room</returns>
+        public async Task<Room> FindRoomByTextOfStage(ulong id)
+        {
+            return await _context.Rooms
+                .AsQueryable()
+                .Where(r => r.TextForStageId == id)
                 .SingleOrDefaultAsync();
         }
 
