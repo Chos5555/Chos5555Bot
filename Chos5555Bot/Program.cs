@@ -14,7 +14,6 @@ using Config;
 
 public class Program
 {
-    // TODO: Add stage channel feature
     // TODO: Add quest feature
     // TODO: Add music feature
     // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
@@ -148,5 +147,8 @@ public class Program
 
         // Handle guild updates
         client.LeftGuild += Guilds.LeftGuild;
+
+        // Handle when users voice state updates
+        client.UserVoiceStateUpdated += Users.UserVoiceStateUpdated;
     }
 }
