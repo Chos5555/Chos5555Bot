@@ -8,6 +8,7 @@ using DAL.Misc;
 using Chos5555Bot.Services;
 using System;
 using System.Collections.Generic;
+using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -33,7 +34,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
@@ -45,6 +46,7 @@ namespace Chos5555Bot.EventHandlers
             var selectionRoomGame = await _repo.FindGameBySelectionMessage(reaction.MessageId);
             var modRoomGame = await _repo.FindGameByModRoom(channel.Id);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
+            var isStageChannel = await _repo.FindGuildByStageChannel(channel.Id) is not null;
             var message = await uncachedMessage.GetOrDownloadAsync();
             IUser user;
             if (!reaction.User.IsSpecified)
@@ -79,6 +81,11 @@ namespace Chos5555Bot.EventHandlers
                 removeReaction = await AddedActiveCheckRoomReaction(activeCheckRoomGame, user, channel.Guild, message, reaction.Emote);
             }
 
+            if (isStageChannel)
+            {
+                removeReaction = await AddedStageChannelReaction(message, reaction, user as IGuildUser, channel);
+            }
+
             if (removeReaction)
             {
                 await message.RemoveReactionAsync(reaction.Emote, user);
@@ -94,7 +101,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedRuleRoomReaction(IUser user, Guild guild, IEmote emote)
+        private async static Task<bool> AddedRuleRoomReaction(IUser user, Guild guild, IEmote emote)
         {
             await _log.Log($"User {user.Username} has reacted with {emote.Name} in rule room in server {guild.Id}", LogSeverity.Info);
 
@@ -120,7 +127,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
+        private async static Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
         {
             await _log.Log($"ModRoom received reaction {emote.Name} in game {game.Name} on server {guild.Id}", LogSeverity.Info);
 
@@ -178,7 +185,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
+        private async static Task<bool> AddedSelectionRoomReaction(DAL.Model.Game game, IUser user, IEmote emote)
         {
             await _log.Log($"{user.Username} added reaction to selectionRoom, game {game.Name}.", LogSeverity.Info);
 
@@ -206,7 +213,7 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        public static async Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IUserMessage message, IEmote emote)
+        private async static Task<bool> AddedActiveCheckRoomReaction(DAL.Model.Game game, IUser user, IGuild guild, IUserMessage message, IEmote emote)
         {
             await _log.Log($"{user.Username} added reaction to {game.Name}'s activeCheckRoom.", LogSeverity.Info);
 
@@ -271,13 +278,48 @@ namespace Chos5555Bot.EventHandlers
         }
 
         /// <summary>
+        /// Handles reaction added to a message in a stage channel. If the reaction was added to a speak command message,
+        /// was the sound icon and the user adding it has the speaker role, allow user to speak
+        /// </summary>
+        /// <param name="message">Message to which reaction was added</param>
+        /// <param name="reaction">Reaction that was added</param>
+        /// <param name="user">User that added the reaction</param>
+        /// <param name="channel">Channel in which the reaction was added</param>
+        /// <returns>Bool</returns>
+        private async static Task<bool> AddedStageChannelReaction(IMessage message, SocketReaction reaction, IGuildUser user, IGuildChannel channel)
+        {
+            // Return if message is not a speak command
+            if (!message.Content.ToLower().Contains("speak"))
+            {
+                return false;
+            }
+
+            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            {
+                return true;
+            }
+
+            var stageChannel = await _repo.FindRoomByTextOfStage(channel.Id);
+
+            // Return if user doesn't have the speaker role
+            if (!user.RoleIds.Contains(stageChannel.SpeakerRoleId))
+            {
+                return true;
+            }
+
+            await UserVoicePropertiesSetter.UpdateMute(message.Author as SocketGuildUser, false);
+
+            return false;
+        }
+
+        /// <summary>
         /// This method is the main handler for removing reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// </summary>
         /// <param name="uncachedMessage">Uncached message</param>
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
             var message = await uncachedMessage.GetOrDownloadAsync();
@@ -289,6 +331,16 @@ namespace Chos5555Bot.EventHandlers
             var guild = await _repo.FindGuild(channel.Guild.Id);
             var selectionRoomGame = await _repo.FindGameBySelectionMessage(reaction.MessageId);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
+            var isStageChannel = await _repo.FindGuildByStageChannel(channel.Id) is not null;
+            IUser user;
+            if (!reaction.User.IsSpecified)
+            {
+                user = channel.Guild.GetUser(reaction.UserId);
+            }
+            else
+            {
+                user = reaction.User.Value;
+            }
 
             // Call appropriate handler
             if (guild.RuleRoom is not null && channel.Id == guild.RuleRoom.DiscordId)
@@ -297,6 +349,7 @@ namespace Chos5555Bot.EventHandlers
                 await RemovedRuleRoomReaction(reaction.User.Value, channel.Guild.EveryoneRole.Id);
             }
 
+            // Return if emoji added isn't sound icon
             if (selectionRoomGame is not null)
             {
                 await _log.Log($"Removing {reaction.User.Value.Username} gameRole of {selectionRoomGame.Name} in {channel.Guild.Name} and reaction in activeRoom.", LogSeverity.Info);
@@ -314,6 +367,11 @@ namespace Chos5555Bot.EventHandlers
                     $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
                 await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message);
             }
+
+            if (isStageChannel)
+            {
+                await RemovedStageChannelReaction(message, reaction, user as IGuildUser, channel);
+            }
         }
 
         /// <summary>
@@ -321,7 +379,7 @@ namespace Chos5555Bot.EventHandlers
         /// </summary>
         /// <param name="user">User that removed the reaction</param>
         /// <returns>Nothing</returns>
-        public static async Task RemovedRuleRoomReaction(IUser user, ulong everyoneRoleId)
+        private async static Task RemovedRuleRoomReaction(IUser user, ulong everyoneRoleId)
         {
             await (user as SocketGuildUser).RemoveRolesAsync((user as SocketGuildUser).Roles.Where(r => r.Id != everyoneRoleId));
         }
@@ -332,7 +390,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the selection message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user, IGuild guild)
+        private async static Task RemoveSelectionRoomReaction(DAL.Model.Game game, IUser user, IGuild guild)
         {
             var roles = await _repo.FindAllRoleIdsByGame(game);
 
@@ -350,7 +408,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the active message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        public static async Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message)
+        private async static Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message)
         {
             var roleId = message.MentionedRoleIds.SingleOrDefault();
             var user = reaction.User.Value as IGuildUser;
@@ -373,7 +431,6 @@ namespace Chos5555Bot.EventHandlers
             var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
             return emoteEmoji1.Equals(emoteEmoji2);
         }
-
 
         /// <summary>
         /// Removes all reactions created by given user for all messages (or only messages containing mentions of role contained in roleIds if roleIds is passed) in given channel
@@ -404,6 +461,44 @@ namespace Chos5555Bot.EventHandlers
                         await message.RemoveReactionAsync(emote, user);
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles reaction remove from a message in a stage channel. If the reaction was added to a speak command message,
+        /// was the sound icon and the user adding it has the speaker role, deny user to speaking
+        /// </summary>
+        /// <param name="message">Message to which reaction was added</param>
+        /// <param name="reaction">Reaction that was added</param>
+        /// <param name="user">User that added the reaction</param>
+        /// <param name="channel">Channel in which the reaction was added</param>
+        /// <returns>Nothing</returns>
+        private async static Task RemovedStageChannelReaction(IMessage message, SocketReaction reaction, IGuildUser user, IGuildChannel channel)
+        {
+            // Return if message is not a speak command
+            if (!message.Content.ToLower().Contains("speak"))
+            {
+                return;
+            }
+
+            // Return if emoji added isn't sound icon
+            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            {
+                return;
+            }
+
+            var stageChannel = await _repo.FindRoomByTextOfStage(channel.Id);
+
+            // Return if user doesn't have the speaker role
+            if (!user.RoleIds.Contains(stageChannel.SpeakerRoleId))
+            {
+                return;
+            }
+
+            // Mute user when speaker removed sound emote reaction
+            await UserVoicePropertiesSetter.UpdateMute(message.Author as SocketGuildUser, true);
+
+            // Delete message afterwards
+            await message.DeleteAsync();
         }
     }
 }
