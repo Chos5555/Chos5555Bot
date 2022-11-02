@@ -32,7 +32,7 @@ namespace Chos5555Bot.Modules
         /// <param name="name">Name of the new game</param>
         /// <returns></returns>
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
 
         [Command("addGame")]
         [Summary("Creates a new game with it's category, voice and text channel, adds it into selection channel")]
@@ -44,7 +44,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), name, false);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addGame")]
         [Alias("addActiveGame")]
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
@@ -56,7 +56,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), discordRole.Name, hasActiveRole);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addGame")]
         [Alias("addActiveGame")]
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
@@ -69,7 +69,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), name, hasActiveRole);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addActiveGame")]
         [Summary("Creates a new game with active role (with recruit channels and a role selection channel)")]
         private async Task AddActiveGame(

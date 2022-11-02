@@ -26,7 +26,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             _log = log;
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("deleteGame")]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameByRoleCommand(
@@ -42,7 +42,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await DeleteGameCommand(discordRole, game.Name);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("deleteGame")]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameByRoleCommand(
@@ -64,7 +64,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// <param name="discordRole">Discord role of games GameRole</param>
         /// <param name="gameName">Name of the game</param>
         /// <returns>Nothing</returns>
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("deleteGame")]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameCommand(
@@ -114,7 +114,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _log.Log($"Deleted game {game.Name} from server {Context.Guild.Name}", LogSeverity.Info);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addModRole")]
         [Summary("Adds a new role to mod roles of a game.")]
         private async Task AddModRoleCommand(
@@ -151,7 +151,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             }
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("removeModRole")]
         [Summary("Removes mod role from a game")]
         private async Task RemoveModRoleCommand(
@@ -168,7 +168,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await PermissionSetter.UpdateViewChannel(role, Context.Guild.GetChannel(game.ModAcceptRoom.DiscordId), PermValue.Deny);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setModRoom")]
         [Summary("Sets mod room for a game.")]
         private async Task setMemberRoleCommand(
@@ -202,7 +202,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await PermissionSetter.SetShownForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setGameEmote")]
         [Summary("Sets emote for a game (unfortunately this can't change the reacted emote and will remove the old emote with all of its reactions).")]
         private async Task SetGameEmoteCommand(
@@ -236,7 +236,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// </summary>
         /// <param name="gameName">Name of the game</param>
         /// <returns>Nothing</returns>
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         [Command("addChannelToGame")]
         [Summary("Adds this channel to a game.")]
         private async Task AddChannelToGameCommand(
@@ -268,7 +268,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// <param name="emote">Emote of the role in selection room</param>
         /// <param name="gameName">Name of the game</param>
         /// <returns>Nothing</returns>
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("addRoleToGame")]
         [Summary("Adds role to a game.")]
         private async Task AddRoleToGameCommand(

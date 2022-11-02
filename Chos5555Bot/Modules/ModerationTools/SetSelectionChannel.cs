@@ -22,7 +22,7 @@ namespace Chos5555Bot.Modules
             _log = log;
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setSelectionChannel")]
         [Summary("Sets the channel which this command is used in as selection channel for this guild and posts selection messages.")]
         private async Task SetSelectionChannelCommand()

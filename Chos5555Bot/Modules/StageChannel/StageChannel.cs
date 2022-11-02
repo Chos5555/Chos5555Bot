@@ -21,7 +21,7 @@ namespace Chos5555Bot.Modules.StageChannel
         }
 
         [Command("createStage")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         [Summary("Creates a stage channel in the same category this command is used in, mentioned role is used as speaker for this channel")]
         private async Task CreateStage(
             [Name("Role")][Summary("Mention of the speaker role.")] IRole speakerRole)
@@ -75,7 +75,7 @@ namespace Chos5555Bot.Modules.StageChannel
         }
 
         [Command("deleteStage")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         [Summary("Deletes stage channel the command is used in.")]
         private async Task DeleteStage()
         {
@@ -102,6 +102,7 @@ namespace Chos5555Bot.Modules.StageChannel
         }
 
         [Command("speak")]
+        [RequireUserPermission(GuildPermission.Speak)]
         [Summary("Asks speakers for permission to talk.")]
         private async Task Speak()
         {
