@@ -39,5 +39,7 @@ namespace DAL.Model
         // All roles that can accept request in ModAcceptRoom
         [ForeignKey("ModAcceptRoleGameId")]
         public ICollection<Role> ModAcceptRoles { get; set; } = new List<Role>();
+        // Quest room for mods to post quests in
+        public Room QuestRoom { get; set; }
     }
 }
