@@ -4,6 +4,7 @@ using Game = DAL.Model.Game;
 using DAL.Misc;
 using Config;
 using System.Linq;
+using DAL.Model;
 
 namespace DAL
 {
@@ -20,6 +21,8 @@ namespace DAL
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Song> Songs { get; set; }
         public DbSet<Game> Games { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Quest> Quests { get; set; }
 
         public BotDbContext() : base()
         {
