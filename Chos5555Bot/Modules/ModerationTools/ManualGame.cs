@@ -199,7 +199,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             }
 
             // Set the ModAcceptRoom visible only for ModAcceptRoles
-            await PermissionSetter.SetShownForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
+            await PermissionSetter.EnableViewOnlyForRoles(modDiscordRoles, Context.Guild.GetRole(game.MainActiveRole.DisordId), discordChannel as IGuildChannel);
         }
 
         [RequireUserPermission(GuildPermission.ManageGuild)]

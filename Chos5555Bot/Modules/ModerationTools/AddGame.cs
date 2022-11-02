@@ -105,7 +105,7 @@ namespace Chos5555Bot.Modules
 
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
 
-            await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
+            await PermissionSetter.EnableViewOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
 
             var remainder = game.HasActiveRole ? "Recruit" : "General";
 
@@ -217,8 +217,8 @@ namespace Chos5555Bot.Modules
             // Hide room for people that can see the game category and show it only to admins
             // (since the game has just been created, there are no more mod roles yet)
             // TODO: Update the first into updateViewChannel
-            await PermissionSetter.SetHiddenForRole(discordGameRole, discordmodAcceptRoom);
-            await PermissionSetter.SetShownForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
+            await PermissionSetter.UpdateViewChannel(discordGameRole, discordmodAcceptRoom, PermValue.Deny);
+            await PermissionSetter.EnableViewOnlyForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
 
             var modAcceptRoom = new Room() { DiscordId = discordmodAcceptRoom.Id };
 
@@ -255,8 +255,8 @@ namespace Chos5555Bot.Modules
             });
 
             // Set general rooms only viewable for users with active role
-            await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralTextRoom);
-            await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralVoiceRoom);
+            await PermissionSetter.EnableViewOnlyForRole(discordActiveRole, discordGameRole, discordGeneralTextRoom);
+            await PermissionSetter.EnableViewOnlyForRole(discordActiveRole, discordGameRole, discordGeneralVoiceRoom);
 
             Room generalTextRoom = new() { DiscordId = discordGeneralTextRoom.Id };
             Room generalVoiceRoom = new() { DiscordId = discordGeneralVoiceRoom.Id };

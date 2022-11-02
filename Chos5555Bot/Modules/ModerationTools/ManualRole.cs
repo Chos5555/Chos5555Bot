@@ -116,7 +116,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             game.Rooms.Add(room);
 
             // Set only viewable by given role, hide for gameRole
-            await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
+            await PermissionSetter.EnableViewOnlyForRole(discordRole, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
 
             await _repo.UpdateGame(game);
         }
