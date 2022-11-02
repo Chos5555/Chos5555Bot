@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Chos5555Bot.Modules.Voice
 {
-    public class Music : ModuleBase<SocketCommandContext>
+    class Music : ModuleBase<SocketCommandContext>
     {
         private MusicService _musicService;
 

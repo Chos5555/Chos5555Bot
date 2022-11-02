@@ -25,7 +25,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             _log = log;
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("setRoleDescription")]
         [Alias("setRoleDesc")]
         [Summary("Sets a description for a role and updates its select message.")]
@@ -49,7 +49,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("setRoleEmote")]
         [Summary("Sets emote of a role and updates its select message.")]
         private async Task SetRoleEmoteCommand(
@@ -74,7 +74,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("setRoleResettable")]
         [Alias("setRoleReset")]
         [Summary("Sets whether role should be resettable.")]
@@ -93,7 +93,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// </summary>
         /// <param name="discordRole">Discord role</param>
         /// <returns>Nothing</returns>
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         [Command("addChannelToRole")]
         [Summary("Add channel in which the command is used to a role and hides it from other roles.")]
         private async Task AddChannelToRoleCommand(
@@ -116,7 +116,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             game.Rooms.Add(room);
 
             // Set only viewable by given role, hide for gameRole
-            await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
+            await PermissionSetter.EnableViewOnlyForRole(discordRole, Context.Guild.GetRole(game.GameRole.DisordId), Context.Channel as IGuildChannel);
 
             await _repo.UpdateGame(game);
         }
@@ -127,7 +127,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// </summary>
         /// <param name="discordRole">Discord role</param>
         /// <returns>Nothing</returns>
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("resetRole")]
         [Summary("Removes this role from all users, removes reactions from its selection message.")]
         private async Task ResetRoleCommand(
