@@ -32,7 +32,7 @@ namespace Chos5555Bot.Modules
         /// <param name="name">Name of the new game</param>
         /// <returns></returns>
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
 
         [Command("addGame")]
         [Summary("Creates a new game with it's category, voice and text channel, adds it into selection channel")]
@@ -44,7 +44,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), name, false);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addGame")]
         [Alias("addActiveGame")]
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
@@ -56,7 +56,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), discordRole.Name, hasActiveRole);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addGame")]
         [Alias("addActiveGame")]
         [Summary("Creates a new game, can create a game with an active role (with recruit channels and a role selection channel)")]
@@ -69,7 +69,7 @@ namespace Chos5555Bot.Modules
             await AddGameHelper(discordRole, emote.ToString(), name, hasActiveRole);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("addActiveGame")]
         [Summary("Creates a new game with active role (with recruit channels and a role selection channel)")]
         private async Task AddActiveGame(
@@ -105,7 +105,7 @@ namespace Chos5555Bot.Modules
 
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
 
-            await PermissionSetter.SetShownOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
+            await PermissionSetter.EnableViewOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
 
             var remainder = game.HasActiveRole ? "Recruit" : "General";
 
@@ -217,8 +217,8 @@ namespace Chos5555Bot.Modules
             // Hide room for people that can see the game category and show it only to admins
             // (since the game has just been created, there are no more mod roles yet)
             // TODO: Update the first into updateViewChannel
-            await PermissionSetter.SetHiddenForRole(discordGameRole, discordmodAcceptRoom);
-            await PermissionSetter.SetShownForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
+            await PermissionSetter.UpdateViewChannel(discordGameRole, discordmodAcceptRoom, PermValue.Deny);
+            await PermissionSetter.EnableViewOnlyForRoles(adminRoles, Context.Guild.EveryoneRole, discordmodAcceptRoom);
 
             var modAcceptRoom = new Room() { DiscordId = discordmodAcceptRoom.Id };
 
@@ -255,8 +255,8 @@ namespace Chos5555Bot.Modules
             });
 
             // Set general rooms only viewable for users with active role
-            await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralTextRoom);
-            await PermissionSetter.SetShownOnlyForRole(discordActiveRole, discordGameRole, discordGeneralVoiceRoom);
+            await PermissionSetter.EnableViewOnlyForRole(discordActiveRole, discordGameRole, discordGeneralTextRoom);
+            await PermissionSetter.EnableViewOnlyForRole(discordActiveRole, discordGameRole, discordGeneralVoiceRoom);
 
             Room generalTextRoom = new() { DiscordId = discordGeneralTextRoom.Id };
             Room generalVoiceRoom = new() { DiscordId = discordGeneralVoiceRoom.Id };

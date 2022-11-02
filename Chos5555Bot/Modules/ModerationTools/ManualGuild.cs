@@ -40,7 +40,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _log.Log($"Added guild {Context.Guild.Name} to the DB.", LogSeverity.Info);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setRuleText")]
         [Summary("Sets the text of rule channel (if this message is a reply to a message, it will take that messages text.).")]
         private async Task SetRuleTextCommand(
@@ -72,7 +72,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setRuleChannel")]
         [Alias("setRuleRoom")]
         [Summary("Set the rule channel.")]
@@ -118,7 +118,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await message.AddReactionAsync(new Emoji("✅"));
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setMemberRole")]
         [Summary("Sets member role for this guild.")]
         private async Task SetMemberRoleCommand(
@@ -138,7 +138,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setArchiveCategory")]
         [Summary("Sets a category to which channels are archived when deleted.")]
         private async Task SetArchiveCategoryCommand(
@@ -149,7 +149,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await _repo.UpdateGuild(guild);
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
         [Command("removeChannel")]
         [Alias("deleteChannel")]
         [Summary("Deletes the channel the command was used in (archives it).")]
@@ -166,7 +166,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             await (Context.Channel as INestedChannel).ModifyAsync(c => { c.CategoryId = guild.ArchiveCategoryId; });
         }
 
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("setUserLeftMessageChannel")]
         [Summary("Sets channel in which comamnd is used as the channel to which messages will be sent if user leaves the server.")]
         private async Task SetUserLeftMessageChannel()

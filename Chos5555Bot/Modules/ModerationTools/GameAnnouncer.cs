@@ -9,6 +9,7 @@ using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules
 {
+    // TODO: Move to misc
     /// <summary>
     /// Class containing methods for announcing games/ roles for games into selection channels
     /// </summary>
