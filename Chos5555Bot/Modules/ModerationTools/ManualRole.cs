@@ -43,8 +43,15 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Update text on announce message
             var game = await _repo.FindGameByRole(role);
             var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
-
-            var newMessageContent = message.Content.Replace(oldDesc, role.Description);
+            var newMessageContent = "";
+            if (oldDesc.Equals(""))
+            {
+                newMessageContent = message.Content + desc;
+            }
+            else
+            {
+                newMessageContent = message.Content.Replace(oldDesc, role.Description);
+            }
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
