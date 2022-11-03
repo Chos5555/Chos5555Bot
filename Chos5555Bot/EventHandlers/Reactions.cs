@@ -143,8 +143,11 @@ namespace Chos5555Bot.EventHandlers
             var roleId = message.MentionedRoleIds.SingleOrDefault();
             var role = guild.GetRole(roleId);
 
+            var checkmark = EmoteParser.ParseEmote("✅");
+            var cross = EmoteParser.ParseEmote("❎");
+
             // Find activeCheckRoom message to which the original reaction was added, remove it, PM user, delete message in modRoom
-            if (emote == new Emoji("❎"))
+            if (CompareEmoteToEmoteEmoji(emote, cross))
             {
                 await _log.Log($"Request denied, removing reaction and DMing user {user.Username}", LogSeverity.Verbose);
 
@@ -160,7 +163,7 @@ namespace Chos5555Bot.EventHandlers
                 return false;
             }
 
-            if (emote == new Emoji("✅"))
+            if (CompareEmoteToEmoteEmoji(emote, checkmark))
             {
                 await _log.Log($"Request accepted, giving {role.Name} to {user.Username}", LogSeverity.Verbose);
 
@@ -294,7 +297,9 @@ namespace Chos5555Bot.EventHandlers
                 return false;
             }
 
-            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            // Return if added reaction is not sound icon
+            var sound = EmoteParser.ParseEmote("🔊");
+            if (CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return true;
             }
@@ -481,7 +486,8 @@ namespace Chos5555Bot.EventHandlers
             }
 
             // Return if emoji added isn't sound icon
-            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            var sound = EmoteParser.ParseEmote("🔊");
+            if (CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return;
             }
