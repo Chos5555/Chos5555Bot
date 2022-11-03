@@ -57,6 +57,28 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("deleteRoleDescription")]
+        [Alias("deleteRoleDesc, delRoleDesc")]
+        [Summary("Completely deletes roles description from the message and database, in case setRoleDescription doesn't work.")]
+        private async Task DeleteRoleDescriptionCommand(
+            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole,)
+        {
+            var role = await _repo.FindRole(discordRole);
+
+            var oldDesc = role.Description;
+
+            role.Description = "";
+            await _repo.UpdateRole(role);
+
+            // Update text on announce message
+            var game = await _repo.FindGameByRole(role);
+            var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
+            var newMessageContent = message.Content.Replace(oldDesc, "");
+
+            await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+        }
+
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         [Command("setRoleEmote")]
         [Summary("Sets emote of a role and updates its select message.")]
         private async Task SetRoleEmoteCommand(
