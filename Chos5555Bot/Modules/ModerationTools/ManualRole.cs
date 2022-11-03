@@ -61,7 +61,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Alias("deleteRoleDesc, delRoleDesc")]
         [Summary("Completely deletes roles description from the message and database, in case setRoleDescription doesn't work.")]
         private async Task DeleteRoleDescriptionCommand(
-            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole,)
+            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole)
         {
             var role = await _repo.FindRole(discordRole);
 
