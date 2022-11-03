@@ -88,6 +88,9 @@ namespace DAL
         {
             var room = await FindRoomByTextOfStage(id);
 
+            if (room is null)
+                return null;
+
             return await _context.Guilds
                 .AsQueryable()
                 .Where(g => g.StageChannels.Select(r => r.TextForStageId).Contains(room.TextForStageId))
