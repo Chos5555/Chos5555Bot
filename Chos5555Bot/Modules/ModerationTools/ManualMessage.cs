@@ -28,7 +28,9 @@ namespace Chos5555Bot.Modules.ModerationTools
         [RequireUserPermission(GuildPermission.Administrator)]
         [Command("ModifyMessage")]
         [Summary("Modifies content of a message with given Id (Careful as some messages can be in DB and will not be updated)")]
-        private async Task UpdateMessage(ulong messageId, string text)
+        private async Task ModifyMessage(
+            [Name("Message Id")][Summary("Id of the message to be modified.")] ulong messageId,
+            [Name("Text")][Summary("New text for the message")][Remainder] string text)
         {
             var message = await (Context.Guild as ITextChannel).GetMessageAsync(messageId);
             await (message as IUserMessage).ModifyAsync(m => { m.Content = text; });
