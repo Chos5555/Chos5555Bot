@@ -375,7 +375,7 @@ namespace Chos5555Bot.EventHandlers
                 }
                 await _log.Log($"Removing {reaction.User.Value.Username} " +
                     $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
-                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message);
+                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message, channel.Guild);
             }
 
             if (isStageChannel)
@@ -418,10 +418,24 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the active message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        private async static Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message)
+        private async static Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message, IGuild guild)
         {
             var roleId = message.MentionedRoleIds.SingleOrDefault();
+            var role = await _repo.FindRole(roleId);
             var user = reaction.User.Value as IGuildUser;
+
+            // If user removed reaction and doesn't have the role yet (hadn't yet been approved by mod), remove the message
+            if (role is not null && role.NeedsModApproval && !user.RoleIds.Contains(roleId))
+            {
+                var modAcceptChannel = await guild.GetChannelAsync(game.ModAcceptRoom.DiscordId) as IMessageChannel;
+                var messages = await modAcceptChannel.GetMessagesAsync().FlattenAsync();
+                await messages
+                    .Where(m => m.MentionedUserIds.Contains(user.Id) && m.MentionedRoleIds.Contains(roleId) &&
+                    m.Reactions.Keys.Count() == 2)
+                    .SingleOrDefault()
+                    .DeleteAsync();
+                return;
+            }
 
             // If MainActiveRole is removed, also remove all roles that don't need mod approval
             if (game.MainActiveRole.DisordId == roleId)
