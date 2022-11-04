@@ -32,7 +32,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             [Name("Message Id")][Summary("Id of the message to be modified.")] ulong messageId,
             [Name("Text")][Summary("New text for the message")][Remainder] string text)
         {
-            var message = await (Context.Guild as ITextChannel).GetMessageAsync(messageId);
+            var message = await (Context.Channel as ITextChannel).GetMessageAsync(messageId);
             await (message as IUserMessage).ModifyAsync(m => { m.Content = text; });
             await _log.Log($"Modified content on a message in {Context.Guild.Name}.", LogSeverity.Info);
         }
