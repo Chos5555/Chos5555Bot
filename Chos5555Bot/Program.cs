@@ -19,6 +19,7 @@ public class Program
     // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
     // TODO: ADD README
     // TODO: Documentation: Add parameters into <paramsref>
+    // TODO: Add handler to auto remove reaction from active messages when there is a active role removed from a user
 
     static void Main(string[] args = null)
     {
