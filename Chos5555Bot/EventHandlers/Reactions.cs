@@ -304,7 +304,7 @@ namespace Chos5555Bot.EventHandlers
 
             // Return if added reaction is not sound icon
             var sound = EmoteParser.ParseEmote("🔊");
-            if (CompareEmoteToEmoteEmoji(reaction.Emote, sound))
+            if (!CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return true;
             }
@@ -492,7 +492,7 @@ namespace Chos5555Bot.EventHandlers
 
             // Return if emoji added isn't sound icon
             var sound = EmoteParser.ParseEmote("🔊");
-            if (CompareEmoteToEmoteEmoji(reaction.Emote, sound))
+            if (!CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return;
             }
