@@ -162,7 +162,7 @@ namespace Chos5555Bot.EventHandlers
                 await user.SendMessageAsync($"Unfortunately your request to get role {role.Name} on server {guild.Name}" +
                     $" has been rejected. Please contact a moderator for reason of the rejection. Thanks.");
                 await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
-                    $"have rejected {user.Mention}'s request for role {role.Mention}.");
+                    $"has rejected {user.Mention}'s request for role {role.Mention}.");
                 await message.DeleteAsync();
                 return false;
             }
