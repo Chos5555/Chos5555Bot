@@ -68,7 +68,7 @@ namespace Chos5555Bot.EventHandlers
 
             if (modRoomGame is not null)
             {
-                removeReaction = await AddedModRoomReaction(message, channel.Guild, reaction.Emote, modRoomGame);
+                removeReaction = await AddedModRoomReaction(message, channel.Guild, reaction, modRoomGame);
             }
 
             if (selectionRoomGame is not null)
@@ -127,8 +127,10 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        private async static Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
+        private async static Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, SocketReaction reaction, DAL.Model.Game game)
         {
+            var emote = reaction.Emote;
+
             await _log.Log($"ModRoom received reaction {emote.Name} in game {game.Name} on server {guild.Id}", LogSeverity.Info);
 
             // If there is only 1 of the new emote, it was not given by the bot, thus is not a valid role emote
@@ -154,11 +156,13 @@ namespace Chos5555Bot.EventHandlers
                 var activeCheckRoom = await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId) as IMessageChannel;
                 var messages = await activeCheckRoom.GetMessagesAsync().FlattenAsync();
                 var messageWithReaction = messages.Where(m => m.MentionedRoleIds.Contains(roleId)).SingleOrDefault();
-                await messageWithReaction.RemoveReactionAsync(emote, user);
+                var roleReaction = messageWithReaction.Reactions.Keys.First();
+                await messageWithReaction.RemoveReactionAsync(roleReaction, user);
 
                 await user.SendMessageAsync($"Unfortunately your request to get role {role.Name} on server {guild.Name}" +
                     $" has been rejected. Please contact a moderator for reason of the rejection. Thanks.");
-                await message.Channel.SendMessageAsync($"You have rejected {user.Mention}'s request for role {role.Mention}.");
+                await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
+                    $"have rejected {user.Mention}'s request for role {role.Mention}.");
                 await message.DeleteAsync();
                 return false;
             }
@@ -171,7 +175,8 @@ namespace Chos5555Bot.EventHandlers
                 await (user as SocketGuildUser).AddRoleAsync(role);
 
                 await user.SendMessageAsync($"You have been given role {role.Name} on server {guild.Name}. Enjoy!");
-                await message.Channel.SendMessageAsync($"Given user {user.Mention} role {role.Mention}.");
+                await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
+                    $"has given user {user.Mention} role {role.Mention}.");
                 await message.DeleteAsync();
                 return false;
             }
