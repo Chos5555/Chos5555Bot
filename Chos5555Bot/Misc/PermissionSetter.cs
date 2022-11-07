@@ -47,6 +47,18 @@ namespace Chos5555Bot.Misc
         }
 
         /// <summary>
+        /// Updates the sendMessages permission of <paramref name="channel"/> for <paramref name="user"/> with value <paramref name="value"/>
+        /// </summary>
+        /// <param name="user">Discord user</param>
+        /// <param name="channel">Discord channel</param>
+        /// <param name="value">Value</param>
+        /// <returns>Nothing</returns>
+        public async static Task UpdateSendMessagesUser(IUser user, IGuildChannel channel, PermValue value)
+        {
+            await UpdateUserHelper(user, channel, "sendMessages", value);
+        }
+
+        /// <summary>
         /// Makes <paramref name="channel"> visible for <paramref name="enableRole">
         /// and hides it for <paramref name="disableRole"/>
         /// </summary>
@@ -83,6 +95,19 @@ namespace Chos5555Bot.Misc
         public async static Task EnableSpeakOnlyForRole(IRole enableRole, IRole disableRole, IGuildChannel channel)
         {
             await EnableOnlyForRole(enableRole, disableRole, channel, "speak");
+        }
+
+        /// <summary>
+        /// Enables sendMessages for <paramref name="enableRole"/>
+        /// and disables it for <paramref name="disableRole"/> for <paramref name="channel"/>
+        /// </summary>
+        /// <param name="enableRole">Discord roles</param>
+        /// <param name="disableRole">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task EnableSendMessagesOnlyForRole(IRole enableRole, IRole disableRole, IGuildChannel channel)
+        {
+            await EnableOnlyForRole(enableRole, disableRole, channel, "sendMessages");
         }
 
         /// <summary>
@@ -150,6 +175,9 @@ namespace Chos5555Bot.Misc
                 case "speak":
                     rolePerms = rolePerms.Value.Modify(speak: value);
                     break;
+                case "sendMessages":
+                    rolePerms = rolePerms.Value.Modify(sendMessages: value);
+                    break;
             }
 
             // Adds updated permissions for role
@@ -185,6 +213,9 @@ namespace Chos5555Bot.Misc
                     break;
                 case "speak":
                     rolePerms = rolePerms.Value.Modify(speak: value);
+                    break;
+                case "sendMessages":
+                    rolePerms = rolePerms.Value.Modify(sendMessages: value);
                     break;
             }
 

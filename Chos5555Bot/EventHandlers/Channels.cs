@@ -3,6 +3,7 @@ using Chos5555Bot.Services;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
+using System.Linq;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -27,6 +28,26 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>Nothing</returns>
         public async static Task ChannelDestroyed(SocketChannel discordChannel)
         {
+            // If the channel deleted was one of the stage channels, remove delete the other one
+            // and remove from DB
+            // TODO: Remove when TiV works on Discord.net
+            var stage = await _repo.FindStageChannel(discordChannel.Id);
+            var stageByText = await _repo.FindRoomByTextOfStage(discordChannel.Id);
+            if (stage is not null || stageByText is not null)
+            {
+                var guild = (discordChannel as SocketGuildChannel).Guild;
+                if (stageByText is null)
+                {
+                    await guild.GetChannel(stage.TextForStageId).DeleteAsync();
+                }
+                else
+                {
+                    await _repo.RemoveRoom(await _repo.FindRoom(stageByText.DiscordId));
+                    await guild.GetChannel(stageByText.DiscordId).DeleteAsync();
+                    return;
+                }
+            }
+
             var channel = await _repo.FindRoom(discordChannel);
 
             if (channel is null)

@@ -297,8 +297,9 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             game.ActiveRoles.Add(role);
 
-            // Announce new active role
-            await GameAnnouncer.AnnounceActiveRole(role, game, Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel, Context);
+            // Announce new active role only if there is a mod role present
+            if (game.ModAcceptRoles.Count > 0)
+                await GameAnnouncer.AnnounceActiveRole(role, game, Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel, Context);
 
             await _repo.UpdateGame(game);
         }
