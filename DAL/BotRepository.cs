@@ -332,6 +332,26 @@ namespace DAL
         }
 
         /// <summary>
+        /// Finds stage channel with given id
+        /// </summary>
+        /// <param name="id">Id of the stage chanel</param>
+        /// <returns>Room</returns>
+        // TODO: Rework on TiV update of Discord.net
+        public async Task<Room> FindStageChannel(ulong id)
+        {
+            var guild = await _context.Guilds
+                .Where(g => g.StageChannels.Select(s => s.DiscordId)
+                .Contains(id))
+                .SingleOrDefaultAsync();
+            if (guild == null)
+                return null;
+            return guild
+                .StageChannels
+                .Where(s => s.DiscordId == id)
+                .SingleOrDefault();
+        }
+
+        /// <summary>
         /// Adds new song to DB
         /// </summary>
         /// <param name="song">Song to be added</param>
