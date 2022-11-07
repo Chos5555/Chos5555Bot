@@ -228,7 +228,8 @@ namespace DAL
             res.AddRange(game.ActiveRoles);
             res.AddRange(game.ModAcceptRoles);
 
-            return res;
+            // Remove duplicates
+            return res.ToHashSet();
         }
 
         /// <summary>
