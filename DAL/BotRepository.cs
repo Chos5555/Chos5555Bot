@@ -80,9 +80,9 @@ namespace DAL
         }
 
         /// <summary>
-        /// Finds guild by Id of given stage channel
+        /// Finds guild by Id of given text channel of stage channel
         /// </summary>
-        /// <param name="id">If of the stage channel</param>
+        /// <param name="id">If of the stage text channel</param>
         /// <returns>Guild</returns>
         public async Task<Guild> FindGuildByStageChannel(ulong id)
         {
