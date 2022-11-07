@@ -66,7 +66,11 @@ namespace Chos5555Bot.Modules.StageChannel
 
             // Set permission so only speakerRole can speak
             await PermissionSetter.EnableSpeakOnlyForRole(speakerRole, Context.Guild.EveryoneRole, discordStageChannel);
-            await discordTextChanelForStage.SendMessageAsync($"Type {guild.Prefix}speak to ask for permission to speak.");
+            // Set sendMessage permission on TiV channel to false
+            await PermissionSetter.EnableSendMessagesOnlyForRole(speakerRole, Context.Guild.EveryoneRole, discordStageChannel);
+            await (await discordTextChanelForStage
+                .SendMessageAsync($"Type {guild.Prefix}speak to ask for permission to speak."))
+                .PinAsync();
 
             guild.StageChannels.Add(stageChannel);
 
