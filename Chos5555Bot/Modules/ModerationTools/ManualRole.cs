@@ -10,6 +10,7 @@ using Chos5555Bot.Misc;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
+    // TODO: Add logging
     /// <summary>
     /// Module class containing commands for managing roles
     /// </summary>
@@ -43,8 +44,37 @@ namespace Chos5555Bot.Modules.ModerationTools
             // Update text on announce message
             var game = await _repo.FindGameByRole(role);
             var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
+            var newMessageContent = "";
+            if (oldDesc.Equals(""))
+            {
+                newMessageContent = message.Content + desc;
+            }
+            else
+            {
+                newMessageContent = message.Content.Replace(oldDesc, role.Description);
+            }
 
-            var newMessageContent = message.Content.Replace(oldDesc, role.Description);
+            await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+        }
+
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("deleteRoleDescription")]
+        [Alias("deleteRoleDesc, delRoleDesc")]
+        [Summary("Completely deletes roles description from the message and database, in case setRoleDescription doesn't work.")]
+        private async Task DeleteRoleDescriptionCommand(
+            [Name("Role")][Summary("Role to be updated (needs to be a mention).")] IRole discordRole)
+        {
+            var role = await _repo.FindRole(discordRole);
+
+            var oldDesc = role.Description;
+
+            role.Description = "";
+            await _repo.UpdateRole(role);
+
+            // Update text on announce message
+            var game = await _repo.FindGameByRole(role);
+            var message = await MessageFinder.FindAnnouncedMessage(role, Context.Guild.GetTextChannel(game.ActiveCheckRoom.DiscordId));
+            var newMessageContent = message.Content.Replace(oldDesc, "");
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
         }
@@ -181,6 +211,53 @@ namespace Chos5555Bot.Modules.ModerationTools
 
                 await _log.Log($"Removed reactions and roles from all users that had role {role.Name}", LogSeverity.Verbose);
             }
+        }
+
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("removeUsersActiveRole")]
+        [Alias("removeActiveRole")]
+        [Summary("Removes given users active role of the game the command is used in (Also removes smaller roles, that don't need mod approval" +
+            "and all reactions of user in active check room).")]
+        private async Task RemoveUsersActiveRole(
+            [Name("User")][Summary("User to get his active role removed")]IUser user)
+        {
+            // TODO: Replace with categoryId search from quest feature
+            var room = await _repo.FindRoom(Context.Channel);
+            var game = await _repo.FindGameByRoom(room);
+
+            var activeRole = Context.Guild.GetRole(game.MainActiveRole.DisordId);
+
+            // Find all resettable active roles of the game
+            foreach (var currRole in game.ActiveRoles.Where(r => r.Resettable))
+            {
+                // Find announce message for currRole
+                var activeChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel;
+                var message = await MessageFinder.FindAnnouncedMessage(currRole, activeChannel);
+                // Remove role from user and remove users reaction from announce messages
+                await (user as IGuildUser).RemoveRoleAsync(currRole.DisordId);
+                await message.RemoveReactionAsync(currRole.ChoiceEmote.Out(), user);
+            }
+
+            await _log.Log($"Removed reactions and {game.Name} active roles from user {user.Username}", LogSeverity.Verbose);
+        }
+
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        [Command("removeUsersRole")]
+        [Summary("Removes given users role (Also remove reaction of user in active check room).")]
+        private async Task RemoveUsersRole(
+            [Name("User")][Summary("User from which to remove role")] IUser user,
+            [Name("Role")][Summary("Role to remove from the user")] IRole discordRole)
+        {
+            var role = await _repo.FindRole(discordRole);
+            var game = await _repo.FindGameByRole(role);
+            // Find announce message for role
+            var activeChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel;
+            var message = await MessageFinder.FindAnnouncedMessage(role, activeChannel);
+            // Remove role from user and remove users reaction from announce messages
+            await (user as IGuildUser).RemoveRoleAsync(discordRole);
+            await message.RemoveReactionAsync(role.ChoiceEmote.Out(), user);
+
+            await _log.Log($"Removed reactions and role {role.Name} from user {user.Username}", LogSeverity.Verbose);
         }
     }
 }

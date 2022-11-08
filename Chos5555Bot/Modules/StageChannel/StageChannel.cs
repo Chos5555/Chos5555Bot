@@ -32,6 +32,7 @@ namespace Chos5555Bot.Modules.StageChannel
                 throw new GuildNotFoundException();
 
             // Try to find the game this channel belongs to
+            // TODO: Find by category when quest feature is done
             var commandChannel = await _repo.FindRoom(Context.Channel);
             Game game = null;
             if (commandChannel is not null)
@@ -40,7 +41,7 @@ namespace Chos5555Bot.Modules.StageChannel
             // Get category Id
             var categoryId = (Context.Channel as INestedChannel).CategoryId;
 
-            var stageName = $"{(game is null ? Context.Guild.Name : game.Name)}-stage-#{guild.StageChannels.Count}";
+            var stageName = $"{(game is null ? Context.Guild.Name : game.Name)}-stage-#{guild.StageChannels.Count + 1}";
 
             // Create new voice channel under the category
             var discordStageChannel = await Context.Guild.CreateVoiceChannelAsync(stageName, p =>
@@ -65,7 +66,11 @@ namespace Chos5555Bot.Modules.StageChannel
 
             // Set permission so only speakerRole can speak
             await PermissionSetter.EnableSpeakOnlyForRole(speakerRole, Context.Guild.EveryoneRole, discordStageChannel);
-            await discordTextChanelForStage.SendMessageAsync($"Type {guild.Prefix}speak to ask for permission to speak.");
+            // Set sendMessage permission on TiV channel to false
+            await PermissionSetter.EnableSendMessagesOnlyForRole(speakerRole, Context.Guild.EveryoneRole, discordStageChannel);
+            await (await discordTextChanelForStage
+                .SendMessageAsync($"Type {guild.Prefix}speak to ask for permission to speak."))
+                .PinAsync();
 
             guild.StageChannels.Add(stageChannel);
 

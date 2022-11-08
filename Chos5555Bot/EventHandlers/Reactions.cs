@@ -68,7 +68,7 @@ namespace Chos5555Bot.EventHandlers
 
             if (modRoomGame is not null)
             {
-                removeReaction = await AddedModRoomReaction(message, channel.Guild, reaction.Emote, modRoomGame);
+                removeReaction = await AddedModRoomReaction(message, channel.Guild, reaction, modRoomGame);
             }
 
             if (selectionRoomGame is not null)
@@ -127,8 +127,10 @@ namespace Chos5555Bot.EventHandlers
         /// <returns>
         /// True if the reaction should be removed, false otherwise.
         /// </returns>
-        private async static Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, IEmote emote, DAL.Model.Game game)
+        private async static Task<bool> AddedModRoomReaction(IUserMessage message, IGuild guild, SocketReaction reaction, DAL.Model.Game game)
         {
+            var emote = reaction.Emote;
+
             await _log.Log($"ModRoom received reaction {emote.Name} in game {game.Name} on server {guild.Id}", LogSeverity.Info);
 
             // If there is only 1 of the new emote, it was not given by the bot, thus is not a valid role emote
@@ -143,24 +145,29 @@ namespace Chos5555Bot.EventHandlers
             var roleId = message.MentionedRoleIds.SingleOrDefault();
             var role = guild.GetRole(roleId);
 
+            var checkmark = EmoteParser.ParseEmote("✅");
+            var cross = EmoteParser.ParseEmote("❎");
+
             // Find activeCheckRoom message to which the original reaction was added, remove it, PM user, delete message in modRoom
-            if (emote == new Emoji("❎"))
+            if (CompareEmoteToEmoteEmoji(emote, cross))
             {
                 await _log.Log($"Request denied, removing reaction and DMing user {user.Username}", LogSeverity.Verbose);
 
                 var activeCheckRoom = await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId) as IMessageChannel;
                 var messages = await activeCheckRoom.GetMessagesAsync().FlattenAsync();
                 var messageWithReaction = messages.Where(m => m.MentionedRoleIds.Contains(roleId)).SingleOrDefault();
-                await messageWithReaction.RemoveReactionAsync(emote, user);
+                var roleReaction = messageWithReaction.Reactions.Keys.First();
+                await messageWithReaction.RemoveReactionAsync(roleReaction, user);
 
                 await user.SendMessageAsync($"Unfortunately your request to get role {role.Name} on server {guild.Name}" +
                     $" has been rejected. Please contact a moderator for reason of the rejection. Thanks.");
-                await message.Channel.SendMessageAsync($"You have rejected {user.Mention}'s request for role {role.Mention}.");
+                await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
+                    $"has rejected {user.Mention}'s request for role {role.Mention}.");
                 await message.DeleteAsync();
                 return false;
             }
 
-            if (emote == new Emoji("✅"))
+            if (CompareEmoteToEmoteEmoji(emote, checkmark))
             {
                 await _log.Log($"Request accepted, giving {role.Name} to {user.Username}", LogSeverity.Verbose);
 
@@ -168,7 +175,8 @@ namespace Chos5555Bot.EventHandlers
                 await (user as SocketGuildUser).AddRoleAsync(role);
 
                 await user.SendMessageAsync($"You have been given role {role.Name} on server {guild.Name}. Enjoy!");
-                await message.Channel.SendMessageAsync($"Given user {user.Mention} role {role.Mention}.");
+                await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
+                    $"has given user {user.Mention} role {role.Mention}.");
                 await message.DeleteAsync();
                 return false;
             }
@@ -294,7 +302,9 @@ namespace Chos5555Bot.EventHandlers
                 return false;
             }
 
-            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            // Return if added reaction is not sound icon
+            var sound = EmoteParser.ParseEmote("🔊");
+            if (!CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return true;
             }
@@ -365,7 +375,7 @@ namespace Chos5555Bot.EventHandlers
                 }
                 await _log.Log($"Removing {reaction.User.Value.Username} " +
                     $"activeRole of {activeCheckRoomGame.Name} in {channel.Guild.Name}.", LogSeverity.Info);
-                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message);
+                await RemoveActiveRoomReaction(activeCheckRoomGame, reaction, message, channel.Guild);
             }
 
             if (isStageChannel)
@@ -408,10 +418,24 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="game">Game whose reaction was removed from the active message.</param>
         /// <param name="user">User that removed the reaction.</param>
         /// <returns>Nothing</returns>
-        private async static Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message)
+        private async static Task RemoveActiveRoomReaction(DAL.Model.Game game, SocketReaction reaction, IUserMessage message, IGuild guild)
         {
             var roleId = message.MentionedRoleIds.SingleOrDefault();
+            var role = await _repo.FindRole(roleId);
             var user = reaction.User.Value as IGuildUser;
+
+            // If user removed reaction and doesn't have the role yet (hadn't yet been approved by mod), remove the message
+            if (role is not null && role.NeedsModApproval && !user.RoleIds.Contains(roleId))
+            {
+                var modAcceptChannel = await guild.GetChannelAsync(game.ModAcceptRoom.DiscordId) as IMessageChannel;
+                var messages = await modAcceptChannel.GetMessagesAsync().FlattenAsync();
+                await messages
+                    .Where(m => m.MentionedUserIds.Contains(user.Id) && m.MentionedRoleIds.Contains(roleId) &&
+                    m.Reactions.Keys.Count() == 2)
+                    .SingleOrDefault()
+                    .DeleteAsync();
+                return;
+            }
 
             // If MainActiveRole is removed, also remove all roles that don't need mod approval
             if (game.MainActiveRole.DisordId == roleId)
@@ -481,7 +505,8 @@ namespace Chos5555Bot.EventHandlers
             }
 
             // Return if emoji added isn't sound icon
-            if (reaction.Emote.Name != new Emoji("🔊").Name)
+            var sound = EmoteParser.ParseEmote("🔊");
+            if (!CompareEmoteToEmoteEmoji(reaction.Emote, sound))
             {
                 return;
             }

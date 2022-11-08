@@ -61,7 +61,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             // If there already is en existing message, modify it, otherwise send a new one
             if (guild.RuleMessageId != 0)
             {
-                var message = ruleRoom.GetMessageAsync(guild.RuleMessageId);
+                var message = await ruleRoom.GetMessageAsync(guild.RuleMessageId);
                 await (message as IUserMessage).ModifyAsync(m => { m.Content = text; });
             }
             else

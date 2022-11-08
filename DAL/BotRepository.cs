@@ -81,13 +81,16 @@ namespace DAL
         }
 
         /// <summary>
-        /// Finds guild by Id of given stage channel
+        /// Finds guild by Id of given text channel of stage channel
         /// </summary>
-        /// <param name="id">If of the stage channel</param>
+        /// <param name="id">If of the stage text channel</param>
         /// <returns>Guild</returns>
         public async Task<Guild> FindGuildByStageChannel(ulong id)
         {
             var room = await FindRoomByTextOfStage(id);
+
+            if (room is null)
+                return null;
 
             return await _context.Guilds
                 .AsQueryable()
@@ -226,7 +229,8 @@ namespace DAL
             res.AddRange(game.ActiveRoles);
             res.AddRange(game.ModAcceptRoles);
 
-            return res;
+            // Remove duplicates
+            return res.ToHashSet();
         }
 
         /// <summary>
@@ -326,6 +330,26 @@ namespace DAL
                 .AsQueryable()
                 .Where(r => r.TextForStageId == id)
                 .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds stage channel with given id
+        /// </summary>
+        /// <param name="id">Id of the stage chanel</param>
+        /// <returns>Room</returns>
+        // TODO: Rework on TiV update of Discord.net
+        public async Task<Room> FindStageChannel(ulong id)
+        {
+            var guild = await _context.Guilds
+                .Where(g => g.StageChannels.Select(s => s.DiscordId)
+                .Contains(id))
+                .SingleOrDefaultAsync();
+            if (guild == null)
+                return null;
+            return guild
+                .StageChannels
+                .Where(s => s.DiscordId == id)
+                .SingleOrDefault();
         }
 
         /// <summary>
