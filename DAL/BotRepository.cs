@@ -639,6 +639,30 @@ namespace DAL
             return await _context.Quests.FindAsync(quest.Id);
         }
 
+        /// <summary>
+        /// Finds quest with give quest message id
+        /// </summary>
+        /// <param name="id">Id of quest message</param>
+        /// <returns>Quest</returns>
+        public async Task<Quest> FindQuestByQuestMessage(ulong id)
+        {
+            return await _context.Quests
+                .Where(q => q.QuestMessage == id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds quest with give mod message id
+        /// </summary>
+        /// <param name="id">Id of mod message</param>
+        /// <returns>Quest</returns>
+        public async Task<Quest> FindQuestByModMessage(ulong id)
+        {
+            return await _context.Quests
+                .Where(q => q.ModMessage == id)
+                .SingleOrDefaultAsync();
+        }
+
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
     }
 }
