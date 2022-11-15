@@ -416,7 +416,7 @@ namespace DAL
             currGame.ActiveCheckRoom = game.ActiveCheckRoom;
             currGame.ModAcceptRoom = game.ModAcceptRoom;
             currGame.ModAcceptRoles = game.ModAcceptRoles;
-            currGame.QuestRoom = game.QuestRoom;
+            currGame.ModQuestRoom = game.ModQuestRoom;
             await _context.SaveChangesAsync();
         }
 
@@ -598,6 +598,19 @@ namespace DAL
         }
 
         /// <summary>
+        /// Updates given user in DB
+        /// </summary>
+        /// <param name="user">User to be updated</param>
+        /// <returns>Nothing</returns>
+        public async Task UpdateUser(User user)
+        {
+            var currUser = await FindUser(user);
+            currUser.DiscordId = user.DiscordId;
+            currUser.CompletedQuests = user.CompletedQuests;
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
         /// Find given user in DB
         /// </summary>
         /// <param name="user">User to be found</param>
@@ -605,6 +618,25 @@ namespace DAL
         public async Task<User> FindUser(User user)
         {
             return await _context.Users.FindAsync(user.Id);
+        }
+
+        /// <summary>
+        /// Finds user by given Id in DB
+        /// </summary>
+        /// <param name="id">Id of the given user</param>
+        /// <returns>User</returns>
+        public async Task<User> FindUser(ulong id)
+        {
+            return await _context.Users
+                .Where(u => u.DiscordId == id)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<ICollection<User>> FindUsersWithQuestsForGame(Game game)
+        {
+            return await _context.Users
+                .Where(u => u.CompletedQuests.Where(c => c.GameName == game.Name).Any())
+                .ToListAsync();
         }
 
         /// <summary>
@@ -626,6 +658,21 @@ namespace DAL
         public async Task RemoveQuest(Quest quest)
         {
             _context.Quests.Remove(quest);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Updates given quest in DB
+        /// </summary>
+        /// <param name="quest">Quest to be updated</param>
+        /// <returns>Nothing</returns>
+        public async Task UpdateQuest(Quest quest)
+        {
+            var currQuest = await FindQuest(quest);
+            currQuest.GameName = quest.GameName;
+            currQuest.Text = quest.Text;
+            currQuest.QuestMessage = quest.QuestMessage;
+            currQuest.ModMessage = quest.ModMessage;
             await _context.SaveChangesAsync();
         }
 
