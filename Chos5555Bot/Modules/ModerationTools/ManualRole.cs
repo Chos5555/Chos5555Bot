@@ -223,9 +223,16 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task RemoveUsersActiveRole(
             [Name("User")][Summary("Name or Username of user to get his active role removed")] string name)
         {
+            name = name.ToLower();
             var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
-                .Where(u => u.Username == name || u.Nickname == name || u.DisplayName == name)
+                .Where(u => u.Username.ToLower() == name || u.Nickname.ToLower() == name || u.DisplayName.ToLower() == name)
                 .SingleOrDefault();
+
+            if (user is null)
+            {
+                await Context.Channel.SendMessageAsync("Sorry, I couldn't find that user on this server, make sure you wrote the name correctly.");
+                return;
+            }
             // TODO: Replace with categoryId search from quest feature
             var room = await _repo.FindRoom(Context.Channel);
             var game = await _repo.FindGameByRoom(room);
@@ -253,9 +260,16 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Name("User")][Summary("Name or Username of user to get his active role removed")] string name,
         [Name("Role")][Summary("Role to remove from the user")] IRole discordRole)
         {
+            name = name.ToLower();
             var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
-                .Where(u => u.Username == name || u.Nickname == name || u.DisplayName == name)
+                .Where(u => u.Username.ToLower() == name || u.Nickname.ToLower() == name || u.DisplayName.ToLower() == name)
                 .SingleOrDefault();
+
+            if (user is null)
+            {
+                await Context.Channel.SendMessageAsync("Sorry, I couldn't find that user on this server, make sure you wrote the name correctly.");
+                return;
+            }
 
             var role = await _repo.FindRole(discordRole);
             var game = await _repo.FindGameByRole(role);
