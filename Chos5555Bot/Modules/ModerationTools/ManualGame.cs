@@ -310,11 +310,10 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// </summary>
         /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Command("SetQuestChannel")]
-        [Summary("Sets this channel as a quest channel for this game.")]
+        [Command("SetModQuestChannel")]
+        [Summary("Sets this channel as a mod quest channel for this game.")]
         private async Task SetQuestChannel()
         {
-            // TODO: Also create a mod quests channel
             // Find a game for the category this channel is in
             var categoryId = (Context.Channel as INestedChannel).CategoryId.Value;
             var game = await _repo.FindGameByCategoryId(categoryId);
@@ -336,7 +335,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 await _repo.AddRoom(room);
             }
 
-            game.QuestRoom = room;
+            game.ModQuestRoom = room;
 
             // Get a list of IRole of ModRoles and only enable them to send message into the quest channel
             var modRoles = new List<IRole>();
@@ -348,7 +347,7 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             await _repo.UpdateGame(game);
 
-            await _log.Log($"Set {Context.Channel.Name} channel as Quest chanel for {game.Name} in {Context.Guild.Name}.", LogSeverity.Info);
+            await _log.Log($"Set {Context.Channel.Name} channel as mod Quest chanel for {game.Name} in {Context.Guild.Name}.", LogSeverity.Info);
         }
     }
 }
