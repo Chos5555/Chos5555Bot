@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DAL.Model
 {
@@ -10,7 +11,8 @@ namespace DAL.Model
         public int Id { get; set; }
         // Id of a corresponding channel in discord
         public ulong DiscordId { get; set; }
-        // Quests for this user
-        public ICollection<Quest> Quests { get; set; } = new List<Quest>();
+        // Completed for this user
+        [ForeignKey("CompletedQuestsUserId")]
+        public List<CompletedQuests> CompletedQuests { get; set; } = new List<CompletedQuests>();
     }
 }
