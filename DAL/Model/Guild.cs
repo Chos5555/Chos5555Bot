@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+// TODO: Change to DAL.Model
 namespace DAL
 {
     /// <summary>

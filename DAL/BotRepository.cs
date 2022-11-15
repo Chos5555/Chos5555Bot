@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using DAL.Model;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Game = DAL.Model.Game;
@@ -415,6 +416,7 @@ namespace DAL
             currGame.ActiveCheckRoom = game.ActiveCheckRoom;
             currGame.ModAcceptRoom = game.ModAcceptRoom;
             currGame.ModAcceptRoles = game.ModAcceptRoles;
+            currGame.ModQuestRoom = game.ModQuestRoom;
             await _context.SaveChangesAsync();
         }
 
@@ -541,6 +543,7 @@ namespace DAL
         public async Task<Game> FindGame(string name)
         {
             return await _context.Games
+                .AsQueryable()
                 .Where(g => g.Name == name)
                 .SingleOrDefaultAsync();
         }
@@ -557,6 +560,154 @@ namespace DAL
                 .AsQueryable()
                 .Where(g => g.Name == name || g.GameRole.DisordId == roleId)
                 .Any();
+        }
+
+        /// <summary>
+        /// Finds a game that has given categoryId
+        /// </summary>
+        /// <param name="id">Id of the category</param>
+        /// <returns>Game</returns>
+        public async Task<Game> FindGameByCategoryId(ulong id)
+        {
+            return await _context.Games
+                .AsQueryable()
+                .Where(g => g.CategoryId == id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Add new user to DB
+        /// </summary>
+        /// <param name="user">User to be added</param>
+        /// <returns>Nothing</returns>
+        public async Task AddUser(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Remove give user from the DB
+        /// </summary>
+        /// <param name="user">User to be removed</param>
+        /// <returns>Nothing</returns>
+        public async Task RemoveUser(User user)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Updates given user in DB
+        /// </summary>
+        /// <param name="user">User to be updated</param>
+        /// <returns>Nothing</returns>
+        public async Task UpdateUser(User user)
+        {
+            var currUser = await FindUser(user);
+            currUser.DiscordId = user.DiscordId;
+            currUser.CompletedQuests = user.CompletedQuests;
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Find given user in DB
+        /// </summary>
+        /// <param name="user">User to be found</param>
+        /// <returns>User</returns>
+        public async Task<User> FindUser(User user)
+        {
+            return await _context.Users.FindAsync(user.Id);
+        }
+
+        /// <summary>
+        /// Finds user by given Id in DB
+        /// </summary>
+        /// <param name="id">Id of the given user</param>
+        /// <returns>User</returns>
+        public async Task<User> FindUser(ulong id)
+        {
+            return await _context.Users
+                .Where(u => u.DiscordId == id)
+                .SingleOrDefaultAsync();
+        }
+
+        public async Task<ICollection<User>> FindUsersWithQuestsForGame(Game game)
+        {
+            return await _context.Users
+                .Where(u => u.CompletedQuests.Where(c => c.GameName == game.Name).Any())
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Add new quest to DB
+        /// </summary>
+        /// <param name="quest">Quest to be added</param>
+        /// <returns>Nothing</returns>
+        public async Task AddQuest(Quest quest)
+        {
+            await _context.Quests.AddAsync(quest);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Remove give quest from the DB
+        /// </summary>
+        /// <param name="quest">Quest to be removed</param>
+        /// <returns>Nothing</returns>
+        public async Task RemoveQuest(Quest quest)
+        {
+            _context.Quests.Remove(quest);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Updates given quest in DB
+        /// </summary>
+        /// <param name="quest">Quest to be updated</param>
+        /// <returns>Nothing</returns>
+        public async Task UpdateQuest(Quest quest)
+        {
+            var currQuest = await FindQuest(quest);
+            currQuest.GameName = quest.GameName;
+            currQuest.Text = quest.Text;
+            currQuest.QuestMessage = quest.QuestMessage;
+            currQuest.ModMessage = quest.ModMessage;
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Find given quest in DB
+        /// </summary>
+        /// <param name="quest">Quest to be found</param>
+        /// <returns>Quest</returns>
+        public async Task<Quest> FindQuest(Quest quest)
+        {
+            return await _context.Quests.FindAsync(quest.Id);
+        }
+
+        /// <summary>
+        /// Finds quest with give quest message id
+        /// </summary>
+        /// <param name="id">Id of quest message</param>
+        /// <returns>Quest</returns>
+        public async Task<Quest> FindQuestByQuestMessage(ulong id)
+        {
+            return await _context.Quests
+                .Where(q => q.QuestMessage == id)
+                .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds quest with give mod message id
+        /// </summary>
+        /// <param name="id">Id of mod message</param>
+        /// <returns>Quest</returns>
+        public async Task<Quest> FindQuestByModMessage(ulong id)
+        {
+            return await _context.Quests
+                .Where(q => q.ModMessage == id)
+                .SingleOrDefaultAsync();
         }
 
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table

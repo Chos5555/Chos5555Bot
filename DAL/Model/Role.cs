@@ -1,5 +1,6 @@
 ﻿using DAL.Model;
 
+// TODO: Change to DAL.Model
 namespace DAL
 {
     /// <summary>

@@ -9,6 +9,7 @@ using Chos5555Bot.Services;
 using System;
 using System.Collections.Generic;
 using Chos5555Bot.Misc;
+using System.Reactive.Linq;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -47,6 +48,9 @@ namespace Chos5555Bot.EventHandlers
             var modRoomGame = await _repo.FindGameByModRoom(channel.Id);
             var activeCheckRoomGame = await _repo.FindGameByActiveCheckRoom(channel.Id);
             var isStageChannel = await _repo.FindGuildByStageChannel(channel.Id) is not null;
+            var questMessage = await _repo.FindQuestByQuestMessage(reaction.MessageId);
+            var modQuestMessage = await _repo.FindQuestByModMessage(reaction.MessageId);
+
             var message = await uncachedMessage.GetOrDownloadAsync();
             IUser user;
             if (!reaction.User.IsSpecified)
@@ -86,6 +90,17 @@ namespace Chos5555Bot.EventHandlers
                 removeReaction = await AddedStageChannelReaction(message, reaction, user as IGuildUser, channel);
             }
 
+            if (questMessage is not null)
+            {
+                removeReaction = await AddedQuestMessageReaction(message, reaction, questMessage, channel.Guild);
+            }
+
+            if (modQuestMessage is not null)
+            {
+                removeReaction = await AddedModQuestMessageReaction(message, reaction, modQuestMessage, channel.Guild);
+            }
+
+            // Remove reaction if handler return true
             if (removeReaction)
             {
                 await message.RemoveReactionAsync(reaction.Emote, user);
@@ -320,6 +335,195 @@ namespace Chos5555Bot.EventHandlers
             await UserVoicePropertiesSetter.UpdateMute(message.Author as SocketGuildUser, false);
 
             return false;
+        }
+
+        private async static Task<bool> AddedQuestMessageReaction(IMessage message, SocketReaction reaction, Quest quest, IGuild guild)
+        {
+            var game = await _repo.FindGame(quest.GameName);
+
+            // Setup emotes to compare to
+            var take = EmoteParser.ParseEmote("✋");
+            var checkmark = EmoteParser.ParseEmote("✅");
+            var cross = EmoteParser.ParseEmote("❎");
+
+            // Handle accordingly to what reaction has been used
+            if (CompareEmoteToEmoteEmoji(reaction.Emote, take))
+            {
+                // Handle quest being taken
+                // Send a message in the mod quest channel
+                var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
+                var modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} has taken quest:\n{quest.Text}");
+
+                // Update quest in DB
+                quest.ModMessage = modMessage.Id;
+                quest.TakerId = reaction.UserId;
+
+                await _repo.UpdateQuest(quest);
+
+                // Modify the content of the message to show it's been taken
+                var content = $"{(await guild.GetUserAsync(quest.TakerId)).Mention} has taken this quest:\n{quest.Text}\n" +
+                    $"To complete this quest click the ✅, then wait for a moderator to confirm.\n" +
+                    $"If you want to cancel this quest, click ❎";
+                await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+
+                // Remove all reactions
+                await message.RemoveAllReactionsAsync();
+
+                // React with checkmark and cross
+                await message.AddReactionAsync(new Emoji("✅"));
+                await message.AddReactionAsync(new Emoji("❎"));
+
+                return false;
+            }
+            else if (CompareEmoteToEmoteEmoji(reaction.Emote, checkmark))
+            {
+                // Handle quest being completed
+                // Remove reaction if a different user than the taker reacted
+                if (reaction.UserId != quest.TakerId)
+                    return true;
+
+                var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
+                var modMessage = await modChannel.GetMessageAsync(quest.ModMessage);
+
+                // Delete previous mod message saying quest was taken
+                await modMessage.DeleteAsync();
+
+                // Create new message and react to it
+                modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} claims he completed quest:\n{quest.Text}\n" +
+                    $"Is it really completed?");
+
+                await modMessage.AddReactionAsync(new Emoji("✅"));
+                await modMessage.AddReactionAsync(new Emoji("❎"));
+                
+                // Update quest in DB
+                quest.ModMessage = modMessage.Id;
+                await _repo.UpdateQuest(quest);
+
+                // Modify quest message
+                var content = $"{reaction.User.Value.Mention} has completed quest:\n{quest.Text}\nWaiting for moderator confirmation.";
+                await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+
+                // Remove all reactions
+                await message.RemoveAllReactionsAsync();
+
+                return false;
+            }
+            else if (CompareEmoteToEmoteEmoji(reaction.Emote, cross))
+            {
+                // Handle quest being cancelled
+                // Remove reaction if a different user than the taker reacted
+                if (reaction.UserId != quest.TakerId)
+                    return true;
+
+                var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
+                var modMessage = await modChannel.GetMessageAsync(quest.ModMessage);
+
+                // Delete previous mod message saying quest was taken
+                await modMessage.DeleteAsync();
+
+                // Create new message and react to it
+                await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} cancelled quest:\n{quest.Text}\n" +
+                    $"Making it available again.");
+
+                // Update quest in DB
+                quest.ModMessage = 0;
+                quest.TakerId = 0;
+                await _repo.UpdateQuest(quest);
+
+                // Modify quest message back to before it was taken
+                var content = $"{(await guild.GetUserAsync(quest.AuthorId)).Mention} has added a new quest:\n{quest.Text}\n" +
+                    $"Press ✋ down below to claim this quest.";
+                await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+                await message.RemoveAllReactionsAsync();
+                await message.AddReactionAsync(new Emoji("✋"));
+
+                return false;
+            }
+
+            // Remove reaction if it doesn't match any of the used emotes
+            return true;
+        }
+
+        private async static Task<bool> AddedModQuestMessageReaction(IMessage message, SocketReaction reaction, Quest quest, IGuild guild)
+        {
+            // Setup emotes to compare to
+            var checkmark = EmoteParser.ParseEmote("✅");
+            var cross = EmoteParser.ParseEmote("❎");
+
+            // Handle accordingly to what reaction has been used
+            if (CompareEmoteToEmoteEmoji(reaction.Emote, checkmark))
+            {
+                // Handle qeust completion accepted
+                // Find quest message and delete it
+                var questChannel = await guild.GetTextChannelAsync(quest.QuestMessageChannelId);
+                var questMessage = await questChannel.GetMessageAsync(quest.QuestMessage);
+                await questMessage.DeleteAsync();
+
+                // Modify mod message content and remove reactions
+                var content = $"{reaction.User.Value.Mention} accepted completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
+                    $"of quest: \n{quest.Text}\nQuest completed!";
+                await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+                await message.RemoveAllReactionsAsync();
+
+                // Find user in DB or create and add it into DB
+                var userId = message.MentionedUserIds.SingleOrDefault();
+                var user = await _repo.FindUser(userId);
+                if (user is null)
+                {
+                    user = new User()
+                    {
+                        DiscordId = userId
+                    };
+                    await _repo.AddUser(user);
+                }
+
+                // Increase users completed quest count for this game
+                // Create new entry in completed quests it's this game is not there yet
+                if (!user.CompletedQuests.Where(c => c.GameName == quest.GameName).Any())
+                    user.CompletedQuests.Add(new CompletedQuests()
+                    {
+                        GameName = quest.GameName,
+                        QuestCount = 0
+                    });
+                user.CompletedQuests.Where(c => c.GameName == quest.GameName).Single().QuestCount++;
+
+                // Remove quest from DB
+                await _repo.RemoveQuest(quest);
+
+                return false;
+            }
+            else if (CompareEmoteToEmoteEmoji(reaction.Emote, cross))
+            {
+                // Handle quest completion denied
+                // Modify quest message back to the non completed state
+                var questChannel = await guild.GetTextChannelAsync(quest.QuestMessageChannelId);
+                var questMessage = await questChannel.GetMessageAsync(quest.QuestMessage);
+
+                // Modify the content of the message to show it's been taken
+                var content = $"{await guild.GetUserAsync(quest.TakerId)} has taken this quest: \n{quest.Text}\n" +
+                    $"To complete this quest click the ✅, then wait for a moderator to confirm.\n" +
+                    $"If you want to cancel this quest, click ❎";
+                await (questMessage as IUserMessage).ModifyAsync(p => { p.Content = content; });
+
+                // Add complete and cancel reactions again
+                await questMessage.AddReactionAsync(new Emoji("✅"));
+                await questMessage.AddReactionAsync(new Emoji("❎"));
+
+                // Send DM to user telling him the completion was rejected
+                var taker = await guild.GetUserAsync(message.MentionedUserIds.SingleOrDefault());
+                await taker.SendMessageAsync($"Completion of quest:\n{quest.Text}\n was **rejected**, complete it and click the checkmark again.");
+
+                // Modify mod message content and remove reactions
+                content = $"{reaction.User.Value.Mention} rejected completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
+                    $"of quest:\n{quest.Text}\nRemoving completed status.";
+                await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+                await message.RemoveAllReactionsAsync();
+
+                return false;
+            }
+
+            // Remove reaction if it doesn't match any of the used emotes
+            return true;
         }
 
         /// <summary>
