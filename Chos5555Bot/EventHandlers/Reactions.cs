@@ -369,10 +369,13 @@ namespace Chos5555Bot.EventHandlers
                 // Remove all reactions
                 await message.RemoveAllReactionsAsync();
 
+                // Add delay because of rate limitting
+                await Task.Delay(2000);
+
                 // React with checkmark and cross
                 await message.AddReactionAsync(new Emoji("✅"));
                 // Add delay because of rate limitting
-                await Task.Delay(1000);
+                await Task.Delay(2000);
                 await message.AddReactionAsync(new Emoji("❎"));
 
                 return false;
@@ -396,7 +399,7 @@ namespace Chos5555Bot.EventHandlers
 
                 await modMessage.AddReactionAsync(new Emoji("✅"));
                 // Add delay because of rate limitting
-                await Task.Delay(1000);
+                await Task.Delay(2000);
                 await modMessage.AddReactionAsync(new Emoji("❎"));
                 
                 // Update quest in DB
@@ -441,7 +444,7 @@ namespace Chos5555Bot.EventHandlers
                 await message.RemoveAllReactionsAsync();
 
                 // Add delay because of rate limitting
-                await Task.Delay(1000);
+                await Task.Delay(2000);
 
                 await message.AddReactionAsync(new Emoji("✋"));
 
@@ -473,7 +476,7 @@ namespace Chos5555Bot.EventHandlers
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
                 // Add delay because of rate limitting
-                await Task.Delay(1000);
+                await Task.Delay(2000);
 
                 await message.RemoveAllReactionsAsync();
 
@@ -533,7 +536,7 @@ namespace Chos5555Bot.EventHandlers
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
                 // Add delay because of rate limitting
-                await Task.Delay(1000);
+                await Task.Delay(2000);
 
                 await message.RemoveAllReactionsAsync();
 
