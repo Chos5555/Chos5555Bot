@@ -23,6 +23,7 @@ namespace DAL
         public DbSet<Game> Games { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Quest> Quests { get; set; }
+        public DbSet<CompletedQuests> CompletedQuests { get; set; }
 
         public BotDbContext() : base()
         {
@@ -74,6 +75,10 @@ namespace DAL
             modelBuilder.Entity<Game>().Navigation(g => g.ActiveCheckRoom).AutoInclude();
             modelBuilder.Entity<Game>().Navigation(g => g.ModAcceptRoom).AutoInclude();
             modelBuilder.Entity<Game>().Navigation(g => g.ModAcceptRoles).AutoInclude();
+            modelBuilder.Entity<Game>().Navigation(g => g.ModQuestRoom).AutoInclude();
+
+            // Set auto includes for users properties in other tables
+            modelBuilder.Entity<User>().Navigation(u => u.CompletedQuests).AutoInclude();
         }
     }
 }
