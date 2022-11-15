@@ -14,7 +14,6 @@ using Config;
 
 public class Program
 {
-    // TODO: Add quest feature
     // TODO: Add music feature
     // TODO: Add user joined voice tracking feature with _client.UserVoiceStateUpdated
     // TODO: ADD README
