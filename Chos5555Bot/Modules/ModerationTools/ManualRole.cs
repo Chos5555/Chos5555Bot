@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using DAL.Misc;
 using Chos5555Bot.Misc;
+using Chos5555Bot.EventHandlers;
+using System;
 
 namespace Chos5555Bot.Modules.ModerationTools
 {
@@ -219,8 +221,11 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Summary("Removes given users active role of the game the command is used in (Also removes smaller roles, that don't need mod approval" +
             "and all reactions of user in active check room).")]
         private async Task RemoveUsersActiveRole(
-            [Name("User")][Summary("User to get his active role removed")]IUser user)
+            [Name("User")][Summary("Name or Username of user to get his active role removed")] string name)
         {
+            var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
+                .Where(u => u.Username == name || u.Nickname == name || u.DisplayName == name)
+                .SingleOrDefault();
             // TODO: Replace with categoryId search from quest feature
             var room = await _repo.FindRoom(Context.Channel);
             var game = await _repo.FindGameByRoom(room);
@@ -245,9 +250,13 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Command("removeUsersRole")]
         [Summary("Removes given users role (Also remove reaction of user in active check room).")]
         private async Task RemoveUsersRole(
-            [Name("User")][Summary("User from which to remove role")] IUser user,
-            [Name("Role")][Summary("Role to remove from the user")] IRole discordRole)
+        [Name("User")][Summary("Name or Username of user to get his active role removed")] string name,
+        [Name("Role")][Summary("Role to remove from the user")] IRole discordRole)
         {
+            var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
+                .Where(u => u.Username == name || u.Nickname == name || u.DisplayName == name)
+                .SingleOrDefault();
+
             var role = await _repo.FindRole(discordRole);
             var game = await _repo.FindGameByRole(role);
             // Find announce message for role
