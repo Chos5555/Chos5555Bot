@@ -72,6 +72,19 @@ namespace Chos5555Bot.Misc
         }
 
         /// <summary>
+        /// Enables speak for <paramref name="enableRole"/>
+        /// and disables it for <paramref name="disableRole"/> for <paramref name="channel"/>
+        /// </summary>
+        /// <param name="enableRole">Discord roles</param>
+        /// <param name="disableRole">Discord role</param>
+        /// <param name="channel">Discord channel</param>
+        /// <returns>Nothing</returns>
+        public async static Task EnableSpeakOnlyForRole(IRole enableRole, IRole disableRole, IGuildChannel channel)
+        {
+            await EnableOnlyForRole(enableRole, disableRole, channel, "speak");
+        }
+
+        /// <summary>
         /// Makes <paramref name="channel"> visible for all <paramref name="enableRoles">
         /// and hides it for <paramref name="disableRole"/>
         /// </summary>
@@ -85,16 +98,16 @@ namespace Chos5555Bot.Misc
         }
 
         /// <summary>
-        /// Enables speak for <paramref name="enableRole"/>
-        /// and disables it for <paramref name="disableRole"/> for <paramref name="channel"/>
+        /// Makes <paramref name="channel"> visible for all <paramref name="enableRoles">
+        /// and hides it for <paramref name="disableRole"/>
         /// </summary>
-        /// <param name="enableRole">Discord roles</param>
+        /// <param name="enableRoles">Discord roles</param>
         /// <param name="disableRole">Discord role</param>
         /// <param name="channel">Discord channel</param>
         /// <returns>Nothing</returns>
-        public async static Task EnableSpeakOnlyForRole(IRole enableRole, IRole disableRole, IGuildChannel channel)
+        public async static Task EnableMessagesOnlyForRoles(ICollection<IRole> enableRoles, IRole disableRole, IGuildChannel channel)
         {
-            await EnableOnlyForRole(enableRole, disableRole, channel, "speak");
+            await EnableOnlyForRoles(enableRoles, disableRole, channel, "sendMessages");
         }
 
         /// <summary>

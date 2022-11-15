@@ -1,4 +1,5 @@
 ﻿
+// TODO: Change to DAL.Model
 namespace DAL
 {
     /// <summary>

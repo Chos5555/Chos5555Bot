@@ -303,5 +303,51 @@ namespace Chos5555Bot.Modules.ModerationTools
 
             await _repo.UpdateGame(game);
         }
+
+        /// <summary>
+        /// Sets quest channel for game that has the same category as the channel it was posted in,
+        /// sets permission to the channel, so only people with mod roles of the game can send messages in it
+        /// </summary>
+        /// <returns>Nothing</returns>
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [Command("SetModQuestChannel")]
+        [Summary("Sets this channel as a mod quest channel for this game.")]
+        private async Task SetQuestChannel()
+        {
+            // Find a game for the category this channel is in
+            var categoryId = (Context.Channel as INestedChannel).CategoryId.Value;
+            var game = await _repo.FindGameByCategoryId(categoryId);
+
+            if (game is null)
+            {
+                await Context.Channel.SendMessageAsync("This channel is not in a category of a game.");
+                return;
+            }
+
+            // Find channel in DB, if it's not there, add it
+            var room = await _repo.FindRoom(Context.Channel);
+            if (room is null)
+            {
+                room = new Room()
+                {
+                    DiscordId = Context.Channel.Id
+                };
+                await _repo.AddRoom(room);
+            }
+
+            game.ModQuestRoom = room;
+
+            // Get a list of IRole of ModRoles and only enable them to send message into the quest channel
+            var modRoles = new List<IRole>();
+            foreach (var role in game.ModAcceptRoles)
+            {
+                modRoles.Add(Context.Guild.GetRole(role.DisordId));
+            }
+            await PermissionSetter.EnableMessagesOnlyForRoles(modRoles, Context.Guild.EveryoneRole, Context.Channel as IGuildChannel);
+
+            await _repo.UpdateGame(game);
+
+            await _log.Log($"Set {Context.Channel.Name} channel as mod Quest chanel for {game.Name} in {Context.Guild.Name}.", LogSeverity.Info);
+        }
     }
 }

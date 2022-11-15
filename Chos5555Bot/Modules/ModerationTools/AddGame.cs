@@ -105,6 +105,8 @@ namespace Chos5555Bot.Modules
 
             var gameCategory = await Context.Guild.CreateCategoryChannelAsync(name);
 
+            game.CategoryId = gameCategory.Id;
+
             await PermissionSetter.EnableViewOnlyForRole(discordRole, Context.Guild.EveryoneRole, gameCategory);
 
             var remainder = game.HasActiveRole ? "Recruit" : "General";

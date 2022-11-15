@@ -15,6 +15,8 @@ namespace DAL.Model
         public Guild Guild { get; set; }
         // Emote of the game (used in selection message)
         public EmoteEmoji ActiveEmote { get; set; }
+        // Id of the category of the game
+        public ulong CategoryId { get; set; }
         // Id of game's selection message
         public ulong SelectionMessageId { get; set; }
         // All rooms belonging to this game
@@ -37,5 +39,7 @@ namespace DAL.Model
         // All roles that can accept request in ModAcceptRoom
         [ForeignKey("ModAcceptRoleGameId")]
         public ICollection<Role> ModAcceptRoles { get; set; } = new List<Role>();
+        // Quest room for mods to post quests in
+        public Room ModQuestRoom { get; set; }
     }
 }
