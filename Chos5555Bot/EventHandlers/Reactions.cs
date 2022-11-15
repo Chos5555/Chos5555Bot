@@ -369,11 +369,10 @@ namespace Chos5555Bot.EventHandlers
                 // Remove all reactions
                 await message.RemoveAllReactionsAsync();
 
-                // Add delay because of rate limitting
-                await Task.Delay(1000);
-
                 // React with checkmark and cross
                 await message.AddReactionAsync(new Emoji("✅"));
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
                 await message.AddReactionAsync(new Emoji("❎"));
 
                 return false;
@@ -395,10 +394,9 @@ namespace Chos5555Bot.EventHandlers
                 modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} claims he completed quest:\n{quest.Text}\n" +
                     $"Is it really completed?");
 
+                await modMessage.AddReactionAsync(new Emoji("✅"));
                 // Add delay because of rate limitting
                 await Task.Delay(1000);
-
-                await modMessage.AddReactionAsync(new Emoji("✅"));
                 await modMessage.AddReactionAsync(new Emoji("❎"));
                 
                 // Update quest in DB
@@ -519,11 +517,10 @@ namespace Chos5555Bot.EventHandlers
                     $"If you want to cancel this quest, click ❎";
                 await (questMessage as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
-                // Add delay because of rate limitting
-                await Task.Delay(1000);
-
                 // Add complete and cancel reactions again
                 await questMessage.AddReactionAsync(new Emoji("✅"));
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
                 await questMessage.AddReactionAsync(new Emoji("❎"));
 
                 // Send DM to user telling him the completion was rejected
