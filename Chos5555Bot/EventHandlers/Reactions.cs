@@ -369,6 +369,9 @@ namespace Chos5555Bot.EventHandlers
                 // Remove all reactions
                 await message.RemoveAllReactionsAsync();
 
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
+
                 // React with checkmark and cross
                 await message.AddReactionAsync(new Emoji("✅"));
                 await message.AddReactionAsync(new Emoji("❎"));
@@ -391,6 +394,9 @@ namespace Chos5555Bot.EventHandlers
                 // Create new message and react to it
                 modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} claims he completed quest:\n{quest.Text}\n" +
                     $"Is it really completed?");
+
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
 
                 await modMessage.AddReactionAsync(new Emoji("✅"));
                 await modMessage.AddReactionAsync(new Emoji("❎"));
@@ -435,6 +441,10 @@ namespace Chos5555Bot.EventHandlers
                     $"Press ✋ down below to claim this quest.";
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
                 await message.RemoveAllReactionsAsync();
+
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
+
                 await message.AddReactionAsync(new Emoji("✋"));
 
                 return false;
@@ -463,6 +473,10 @@ namespace Chos5555Bot.EventHandlers
                 var content = $"{reaction.User.Value.Mention} accepted completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
                     $"of quest: \n{quest.Text}\nQuest completed!";
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
+
                 await message.RemoveAllReactionsAsync();
 
                 // Find user in DB or create and add it into DB
@@ -505,6 +519,9 @@ namespace Chos5555Bot.EventHandlers
                     $"If you want to cancel this quest, click ❎";
                 await (questMessage as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
+
                 // Add complete and cancel reactions again
                 await questMessage.AddReactionAsync(new Emoji("✅"));
                 await questMessage.AddReactionAsync(new Emoji("❎"));
@@ -517,6 +534,10 @@ namespace Chos5555Bot.EventHandlers
                 content = $"{reaction.User.Value.Mention} rejected completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
                     $"of quest:\n{quest.Text}\nRemoving completed status.";
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
+
+                // Add delay because of rate limitting
+                await Task.Delay(1000);
+
                 await message.RemoveAllReactionsAsync();
 
                 return false;
