@@ -3,6 +3,7 @@ using System;
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DAL.Migrations
 {
     [DbContext(typeof(BotDbContext))]
-    partial class BotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221115150735_QuestUpdate")]
+    partial class QuestUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,8 +163,8 @@ namespace DAL.Migrations
                     b.Property<decimal>("AuthorId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<string>("GameName")
-                        .HasColumnType("text");
+                    b.Property<int?>("GameId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("ModMessage")
                         .HasColumnType("numeric(20,0)");
@@ -180,6 +182,8 @@ namespace DAL.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GameId");
 
                     b.ToTable("Quests");
                 });
@@ -356,6 +360,15 @@ namespace DAL.Migrations
                     b.Navigation("ModAcceptRoom");
 
                     b.Navigation("ModQuestRoom");
+                });
+
+            modelBuilder.Entity("DAL.Model.Quest", b =>
+                {
+                    b.HasOne("DAL.Model.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId");
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("DAL.Role", b =>
