@@ -274,9 +274,11 @@ namespace Chos5555Bot.Modules.Quests
             // Create a line for each user
             foreach (var user in input)
             {
-                var name = (await guild.GetUserAsync(user.Item1)).Username;
+                var discordUser = await guild.GetUserAsync(user.Item1);
+                var name = discordUser.Nickname ?? discordUser.Username;
 
                 result += $"`{(position + 1).ToString():00}.` {GetMedal(position + 1)} `{user.Item2.ToString().PadRight(width, '\u2063')}` {name}\n";
+                position++;
             }
 
             return result;
