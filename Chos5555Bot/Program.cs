@@ -19,6 +19,7 @@ public class Program
     // TODO: ADD README
     // TODO: Documentation: Add parameters into <paramsref>
     // TODO: Add handler to auto remove reaction from active messages when there is a active role removed from a user
+    // TODO: Check out sharded client
 
     static void Main(string[] args = null)
     {
