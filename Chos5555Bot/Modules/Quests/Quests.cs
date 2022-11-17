@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Chos5555Bot.Misc;
+using System.Reflection.Metadata.Ecma335;
+using Chos5555Bot.EventHandlers;
+using System;
 
 namespace Chos5555Bot.Modules.Quests
 {
@@ -159,6 +162,49 @@ namespace Chos5555Bot.Modules.Quests
         }
 
         /// <summary>
+        /// Resets completed quest amounts for all users who completed quests for a game in whose channel the command was used
+        /// </summary>
+        /// <returns>Nothing</returns>
+        [Command("setQuestAmount")]
+        [Summary("Sets given users quest amount to given amount (for the game in whose channel the command was used in).")]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        public async Task SetQuestAmount(
+            [Name("Users name")][Summary("Name of the user.")] string userName,
+            [Name("Amount")][Summary("Amount to set users quests to.")] int amount)
+        {
+            // Check that channel is in a category and belongs to a game
+            // TODO: Add to helper method
+            var nestedChannel = (Context.Channel as INestedChannel);
+            if (!nestedChannel.CategoryId.HasValue)
+            {
+                await ReplyAsync("This channel is not in a category.");
+                return;
+            }
+
+            var game = await _repo.FindGameByCategoryId(nestedChannel.CategoryId.Value);
+            if (game is null)
+            {
+                await ReplyAsync("This category doesn't belong to a game.");
+                return;
+            }
+
+            // Find user
+            var discordUser = await UserFinder.FindUserByName(userName, Context.Guild);
+            var user = await _repo.FindUser(discordUser.Id);
+
+            // Return if user doesn't have game in his CompletedQuests
+            if (!user.CompletedQuests.Where(c => c.GameName == game.Name).Any())
+            {
+                await ReplyAsync($"This user hasn't done any quests for {game.Name} yet, thus I can't set quest amount.");
+                return;
+            }
+
+            // Set users QuestCount for the game to given amount
+            user.CompletedQuests.Where(c => c.GameName == game.Name).Single().QuestCount = amount;
+            await _repo.UpdateUser(user);
+        }
+
+        /// <summary>
         /// Posts a message with the top 10 users who have completed the most quests for game
         /// </summary>
         /// <returns>Nothing</returns>
@@ -186,17 +232,113 @@ namespace Chos5555Bot.Modules.Quests
             // Get the 10 users with the most quests completed for given game
             var users = (await _repo.FindUsersWithQuestsForGame(game))
                 .Select(u => (u.DiscordId, u.CompletedQuests.Where(q => q.GameName == game.Name).Single().QuestCount))
-                .OrderByDescending(x => x.Item2)
-                .Take(10);
+                .OrderByDescending(x => x.Item2);
 
-            // Create leaderboard text
-            var content = $"These are the 10 users with the most completions of quests for game {game.Name}:\n";
-            foreach(var user in users)
+            var top10 = users.Take(10);
+
+            var (usersPositionRows, usersPosition) = FindUsersPosition(Context.User.Id, users);
+
+            // Create new EmbedBuilder
+            var embed = new EmbedBuilder();
+
+            // Add leaderboard field
+            embed.AddField(
+                inline: false,
+                name: $"{game.Name} quest leaderboard:",
+                value: await LeaderboardField(top10, Context.Guild));
+
+            // Add users position field
+            embed.AddField(
+                inline: false,
+                name: "Your position:",
+                value: await LeaderboardField(usersPositionRows, Context.Guild, usersPosition));
+
+            // Send embed
+            await ReplyAsync("", embed: embed.Build());
+        }
+
+        /// <summary>
+        /// Creates content for a field of leaderboard embed
+        /// </summary>
+        /// <param name="input">Collection of user discord ids and quest scores</param>
+        /// <param name="guild">Guild</param>
+        /// <param name="position">Position of user</param>
+        /// <returns>Content of embed field</returns>
+        private async Task<string> LeaderboardField(IEnumerable<(ulong, int)> input, IGuild guild, int position = 0)
+        {
+            var result = "";
+
+            // Get max digits of quest amounts
+            var width = input.First().Item2.ToString().Length;
+
+            // Create a line for each user
+            foreach (var user in input)
             {
-                content += $"{Context.Guild.GetUser(user.DiscordId)} : {user.Item2}\n";
+                var name = (await guild.GetUserAsync(user.Item1)).Username;
+
+                result += $"`{(position + 1).ToString():00}.` {GetMedal(position + 1)} `{user.Item2.ToString().PadRight(width, '\u2063')}` {name}\n";
             }
 
-            await ReplyAsync(content);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns medals for the first 3 places in leaderboard
+        /// </summary>
+        /// <param name="position">Position of user</param>
+        /// <returns>Medal string</returns>
+        private static string GetMedal(int position)
+        {
+            string result;
+            switch (position)
+            {
+                case 1:
+                    result = ":first_place:";
+                    break;
+                case 2:
+                    result = ":second_place:";
+                    break;
+                case 3:
+                    result = ":third_place:";
+                    break;
+                default:
+                    result = " ";
+                    break;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds users position, one person before and after the user and returns them all
+        /// </summary>
+        /// <param name="userId">Id of the user</param>
+        /// <param name="input">List of all users with quests completed for the game</param>
+        /// <returns>entry before given user, given user and entry after, position of given user</returns>
+        private (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
+        {
+            using IEnumerator<(ulong, int)> iterator = input.GetEnumerator();
+            iterator.MoveNext();
+
+            (ulong, int) prev = (0, 0);
+            (ulong, int) curr = (0, 0);
+            var next = iterator.Current;
+
+            var position = 0;
+
+            // Keep previous, current and next element until finding userId or running out of input
+            while (curr.Item1 != userId)
+            {
+                if (!iterator.MoveNext())
+                    break;
+                position++;
+                prev = curr;
+                curr = next;
+                next = iterator.Current;
+            }
+
+            // Remove elements with id 0, return result
+            return (new List<(ulong, int)> { prev, curr, next }.Where(x => x.Item1 != 0), position);
         }
 
         /// <summary>
