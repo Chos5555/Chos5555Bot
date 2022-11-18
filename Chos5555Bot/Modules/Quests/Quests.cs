@@ -264,7 +264,7 @@ namespace Chos5555Bot.Modules.Quests
         /// <param name="guild">Guild</param>
         /// <param name="position">Position of user</param>
         /// <returns>Content of embed field</returns>
-        private async Task<string> LeaderboardField(IEnumerable<(ulong, int)> input, IGuild guild, int position = 0)
+        private async Task<string> LeaderboardField(IEnumerable<(ulong, int)> input, IGuild guild, int position = 1)
         {
             var result = "";
 
@@ -277,7 +277,7 @@ namespace Chos5555Bot.Modules.Quests
                 var discordUser = await guild.GetUserAsync(user.Item1);
                 var name = discordUser.Nickname ?? discordUser.Username;
 
-                result += $"`{(position + 1).ToString():00}.` {GetMedal(position + 1)} `{user.Item2.ToString().PadRight(width, '\u2063')}` {name}\n";
+                result += $"`{(position).ToString("D2")}.` {GetMedal(position, guild)} `{user.Item2.ToString().PadLeft(width, ' ')}` {name}\n";
                 position++;
             }
 
