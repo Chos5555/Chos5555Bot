@@ -390,8 +390,9 @@ namespace Chos5555Bot.EventHandlers
                 var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
                 var modMessage = await modChannel.GetMessageAsync(quest.ModMessage);
 
-                // Delete previous mod message saying quest was taken
-                await modMessage.DeleteAsync();
+                if (modMessage is not null)
+                    // Delete previous mod message saying quest was taken
+                    await modMessage.DeleteAsync();
 
                 // Create new message and react to it
                 modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} claims he completed quest:\n{quest.Text}\n" +
@@ -425,8 +426,9 @@ namespace Chos5555Bot.EventHandlers
                 var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
                 var modMessage = await modChannel.GetMessageAsync(quest.ModMessage);
 
-                // Delete previous mod message saying quest was taken
-                await modMessage.DeleteAsync();
+                if (modMessage is not null)
+                    // Delete previous mod message saying quest was taken
+                    await modMessage.DeleteAsync();
 
                 // Create new message and react to it
                 await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} cancelled quest:\n{quest.Text}\n" +
