@@ -79,7 +79,7 @@ public class Program
         await services.GetRequiredService<Commands>().SetupAsync();
 
         // Initialize MusicService
-        await services.GetRequiredService<MusicService>().InitializeAsync();
+        //await services.GetRequiredService<MusicService>().InitializeAsync();
 
         // Block this task until the program is closed
         await Task.Delay(-1);
@@ -97,7 +97,7 @@ public class Program
             .AddDbContext<BotDbContext>()
             .AddSingleton<BotRepository>()
             .AddSingleton<Queue>()
-            .AddLavaNode(lavaConfig)
+            //.AddLavaNode(lavaConfig)
             .AddSingleton<MusicService>()
             .AddSingleton<LogService>()
             .AddSingleton<Reactions>()
