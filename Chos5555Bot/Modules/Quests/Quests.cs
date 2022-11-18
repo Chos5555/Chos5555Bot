@@ -289,7 +289,7 @@ namespace Chos5555Bot.Modules.Quests
         /// </summary>
         /// <param name="position">Position of user</param>
         /// <returns>Medal string</returns>
-        private static string GetMedal(int position)
+        private static string GetMedal(int position, IGuild guild)
         {
             string result;
             switch (position)
@@ -304,7 +304,7 @@ namespace Chos5555Bot.Modules.Quests
                     result = ":third_place:";
                     break;
                 default:
-                    result = " ";
+                    result = guild.Emotes.Where(e => e.Name == "BLANK").SingleOrDefault().ToString();
                     break;
             }
 
