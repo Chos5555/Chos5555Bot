@@ -503,6 +503,7 @@ namespace Chos5555Bot.EventHandlers
                         QuestCount = 0
                     });
                 user.CompletedQuests.Where(c => c.GameName == quest.GameName).Single().QuestCount++;
+                await _repo.UpdateUser(user);
 
                 // Remove quest from DB
                 await _repo.RemoveQuest(quest);
