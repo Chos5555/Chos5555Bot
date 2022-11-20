@@ -124,6 +124,12 @@ namespace Chos5555Bot.Modules.Quests
                 $"Press ✋ down below to claim this quest.");
             await message.AddReactionAsync(new Emoji("✋"));
 
+            // Add a delay because of Discord API rate limiting
+            await Task.Delay(2000);
+
+            // Add reaction for deletion
+            await message.AddReactionAsync(new Emoji("🗑"));
+
             // Create new quest and store it in DB
             var quest = new Quest()
             {

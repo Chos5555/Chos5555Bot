@@ -345,6 +345,7 @@ namespace Chos5555Bot.EventHandlers
             var take = EmoteParser.ParseEmote("✋");
             var checkmark = EmoteParser.ParseEmote("✅");
             var cross = EmoteParser.ParseEmote("❎");
+            var delete = EmoteParser.ParseEmote("🗑");
 
             // Handle accordingly to what reaction has been used
             if (CompareEmoteToEmoteEmoji(reaction.Emote, take))
@@ -449,6 +450,19 @@ namespace Chos5555Bot.EventHandlers
                 await Task.Delay(2000);
 
                 await message.AddReactionAsync(new Emoji("✋"));
+
+                return false;
+            }
+            else if (CompareEmoteToEmoteEmoji(reaction.Emote, delete))
+            {
+                // Handle quest being deleted
+                // Check it's the author who is deleting
+                if (reaction.UserId != quest.AuthorId)
+                    return true;
+
+                // Delete quest from DB and quest message
+                await message.DeleteAsync();
+                await _repo.RemoveQuest(quest);
 
                 return false;
             }
@@ -632,6 +646,7 @@ namespace Chos5555Bot.EventHandlers
         {
             var roles = await _repo.FindAllRoleIdsByGame(game);
 
+            // TODO: Investigate Discord.Net.HttpException: The server responded with error 50013: Missing Permissions
             await (user as IGuildUser).RemoveRolesAsync(roles);
 
             // Removes all reactions of user in games activeCheckRoom
@@ -678,11 +693,14 @@ namespace Chos5555Bot.EventHandlers
             await user.RemoveRoleAsync(roleId);
         }
 
+        /// <summary>
+        /// Compares EmoteEmoji to IEmote
+        /// </summary>
+        /// <param name="emote1">Emote</param>
+        /// <param name="emoteEmoji2">EmoteEmoji</param>
+        /// <returns>bool</returns>
         private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
-        {
-            var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
-            return emoteEmoji1.Equals(emoteEmoji2);
-        }
+            => emoteEmoji2.Equals(emote1);
 
         /// <summary>
         /// Removes all reactions created by given user for all messages (or only messages containing mentions of role contained in roleIds if roleIds is passed) in given channel
