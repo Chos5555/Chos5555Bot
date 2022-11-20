@@ -301,7 +301,7 @@ namespace Chos5555Bot.Modules.Quests
         /// <param name="userId">Id of the user</param>
         /// <param name="input">List of all users with quests completed for the game</param>
         /// <returns>entry before given user, given user and entry after, position of given user</returns>
-        private (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
+        private static (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
         {
             using IEnumerator<(ulong, int)> iterator = input.GetEnumerator();
             iterator.MoveNext();
