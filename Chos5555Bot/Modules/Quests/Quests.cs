@@ -358,7 +358,7 @@ namespace Chos5555Bot.Modules.Quests
         [Command("quests")]
         [Summary("Shows the amount of quests given user has completed for this game.")]
         public async Task QuestsCommand(
-            [Name("User name")][Summary("Name of the user.")] string userName)
+            [Name("User name")][Summary("Name of the user.")][Remainder] string userName)
         {
             // Check that channel is in a category and belongs to a game
             var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
