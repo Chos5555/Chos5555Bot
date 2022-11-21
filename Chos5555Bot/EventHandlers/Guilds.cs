@@ -20,12 +20,22 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task LeftGuild(SocketGuild discordGuild)
+        {
+            _ = Task.Run(async () =>
+            {
+                await LeftGuildMain(discordGuild);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Removes given guild from DB when bot has left it
         /// </summary>
         /// <param name="discordGuild">Guild the bot has left</param>
         /// <returns>Nothing</returns>
-        public async static Task LeftGuild(SocketGuild discordGuild)
+        public async static Task LeftGuildMain(SocketGuild discordGuild)
         {
             var guild = await _repo.FindGuild(discordGuild);
 

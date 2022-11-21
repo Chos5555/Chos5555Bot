@@ -20,13 +20,33 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task RoleUpdated(SocketRole oldRole, SocketRole newRole)
+        {
+            _ = Task.Run(async () =>
+            {
+                await RoleUpdatedMain(oldRole, newRole);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public static Task RoleDeleted(SocketRole discordRole)
+        {
+            _ = Task.Run(async () =>
+            {
+                await RoleDeletedMain(discordRole);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Updates roles name when role is changed
         /// </summary>
         /// <param name="oldRole">old discord role</param>
         /// <param name="newRole">new discord role</param>
         /// <returns>Nothing</returns>
-        public async static Task RoleUpdated(SocketRole oldRole, SocketRole newRole)
+        public async static Task RoleUpdatedMain(SocketRole oldRole, SocketRole newRole)
         {
             var role = await _repo.FindRole(oldRole);
 
@@ -47,7 +67,7 @@ namespace Chos5555Bot.EventHandlers
         /// </summary>
         /// <param name="discordRole">Discord role to be deleted</param>
         /// <returns>Nothing</returns>
-        public async static Task RoleDeleted(SocketRole discordRole)
+        public async static Task RoleDeletedMain(SocketRole discordRole)
         {
             var role = await _repo.FindRole(discordRole);
 

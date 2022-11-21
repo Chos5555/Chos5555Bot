@@ -27,6 +27,26 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                await ReactionAddedMain(uncachedMessage, uncachedChannel, reaction);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public static Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                await ReactionRemovedMain(uncachedMessage, uncachedChannel, reaction);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// Removes the reaction if a wrong reaction was added to a selection message.
@@ -35,7 +55,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public async static Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionAddedMain(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
@@ -345,6 +365,7 @@ namespace Chos5555Bot.EventHandlers
             var take = EmoteParser.ParseEmote("✋");
             var checkmark = EmoteParser.ParseEmote("✅");
             var cross = EmoteParser.ParseEmote("❎");
+            var delete = EmoteParser.ParseEmote("🗑");
 
             // Handle accordingly to what reaction has been used
             if (CompareEmoteToEmoteEmoji(reaction.Emote, take))
@@ -452,6 +473,19 @@ namespace Chos5555Bot.EventHandlers
 
                 return false;
             }
+            else if (CompareEmoteToEmoteEmoji(reaction.Emote, delete))
+            {
+                // Handle quest being deleted
+                // Check it's the author who is deleting
+                if (reaction.UserId != quest.AuthorId)
+                    return true;
+
+                // Delete quest from DB and quest message
+                await message.DeleteAsync();
+                await _repo.RemoveQuest(quest);
+
+                return false;
+            }
 
             // Remove reaction if it doesn't match any of the used emotes
             return true;
@@ -483,6 +517,7 @@ namespace Chos5555Bot.EventHandlers
                 await message.RemoveAllReactionsAsync();
 
                 // Find user in DB or create and add it into DB
+                // TODO: Investigate why sometimes it's not a single userId in the message
                 var userId = message.MentionedUserIds.SingleOrDefault();
                 var user = await _repo.FindUser(userId);
                 if (user is null)
@@ -557,7 +592,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public async static Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionRemovedMain(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
             var message = await uncachedMessage.GetOrDownloadAsync();
@@ -632,6 +667,7 @@ namespace Chos5555Bot.EventHandlers
         {
             var roles = await _repo.FindAllRoleIdsByGame(game);
 
+            // TODO: Investigate Discord.Net.HttpException: The server responded with error 50013: Missing Permissions
             await (user as IGuildUser).RemoveRolesAsync(roles);
 
             // Removes all reactions of user in games activeCheckRoom
@@ -678,11 +714,14 @@ namespace Chos5555Bot.EventHandlers
             await user.RemoveRoleAsync(roleId);
         }
 
+        /// <summary>
+        /// Compares EmoteEmoji to IEmote
+        /// </summary>
+        /// <param name="emote1">Emote</param>
+        /// <param name="emoteEmoji2">EmoteEmoji</param>
+        /// <returns>bool</returns>
         private static bool CompareEmoteToEmoteEmoji(IEmote emote1, EmoteEmoji emoteEmoji2)
-        {
-            var emoteEmoji1 = EmoteParser.ParseEmote(emote1.ToString());
-            return emoteEmoji1.Equals(emoteEmoji2);
-        }
+            => emoteEmoji2.Equals(emote1);
 
         /// <summary>
         /// Removes all reactions created by given user for all messages (or only messages containing mentions of role contained in roleIds if roleIds is passed) in given channel

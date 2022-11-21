@@ -34,7 +34,12 @@ namespace DAL.Misc
             }
             else
             {
-                throw new EmoteNotParsedException("Couldn't parse emote with either Emote or Emoji.");
+                result = new Emoji(emoteString);
+                type = EmoteType.Emoji;
+                // TODO: Commented out because of Discords weird behaviour with multi char emojis,
+                // like waste bucket, which is 2 chars but reaction in discord reactionAdded event
+                // returns only one char, revisit after slash command conversion
+                // throw new EmoteNotParsedException("Couldn't parse emote with either Emote or Emoji.");
             }
 
             return new EmoteEmoji(type, result);

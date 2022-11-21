@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System.Runtime.CompilerServices;
 
 namespace DAL.Model
 {
@@ -47,6 +48,45 @@ namespace DAL.Model
                 return ((Emote)Emote).Id == ((Emote)emoteEmoji.Emote).Id;
 
             return ((Emoji)Emote).Name == ((Emoji)emoteEmoji.Emote).Name;
+        }
+
+        /// <summary>
+        /// Compares to IEmote
+        /// </summary>
+        /// <param name="emote">IEmote object to compare to</param>
+        /// <returns>bool</returns>
+        public bool Equals(IEmote emote)
+        {
+            if(Emote.GetType() == typeof(Emote))
+                return Equals((Emote)emote);
+
+            return Equals((Emoji)emote);
+        }
+
+        /// <summary>
+        /// Compares to Emote
+        /// </summary>
+        /// <param name="emote">Emoji object to compare to</param>
+        /// <returns>bool</returns>
+        public bool Equals(Emote emote)
+        {
+            if (Type == EmoteType.Emoji)
+                return false;
+
+            return ((Emote)Emote).Id == emote.Id;
+        }
+
+        /// <summary>
+        /// Compares to Emoji
+        /// </summary>
+        /// <param name="emoji">Emoji object to compare to</param>
+        /// <returns>bool</returns>
+        public bool Equals(Emoji emoji)
+        {
+            if (Type == EmoteType.Emote)
+                return false;
+
+            return ((Emoji)Emote).Name == emoji.Name;
         }
     }
 }

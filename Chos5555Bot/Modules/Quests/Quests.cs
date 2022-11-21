@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Chos5555Bot.Misc;
-using System.Reflection.Metadata.Ecma335;
-using Chos5555Bot.EventHandlers;
-using System;
 using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules.Quests
@@ -123,6 +120,12 @@ namespace Chos5555Bot.Modules.Quests
             var message = await Context.Channel.SendMessageAsync($"{Context.Message.Author.Mention} has added a new quest:\n{text}\n" +
                 $"Press ✋ down below to claim this quest.");
             await message.AddReactionAsync(new Emoji("✋"));
+
+            // Add a delay because of Discord API rate limiting
+            await Task.Delay(2000);
+
+            // Add reaction for deletion
+            await message.AddReactionAsync(new Emoji("🗑"));
 
             // Create new quest and store it in DB
             var quest = new Quest()
@@ -295,7 +298,7 @@ namespace Chos5555Bot.Modules.Quests
         /// <param name="userId">Id of the user</param>
         /// <param name="input">List of all users with quests completed for the game</param>
         /// <returns>entry before given user, given user and entry after, position of given user</returns>
-        private (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
+        private static (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
         {
             using IEnumerator<(ulong, int)> iterator = input.GetEnumerator();
             iterator.MoveNext();
@@ -352,7 +355,7 @@ namespace Chos5555Bot.Modules.Quests
         [Command("quests")]
         [Summary("Shows the amount of quests given user has completed for this game.")]
         public async Task QuestsCommand(
-            [Name("User name")][Summary("Name of the user.")] string userName)
+            [Name("User name")][Summary("Name of the user.")][Remainder] string userName)
         {
             // Check that channel is in a category and belongs to a game
             var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
