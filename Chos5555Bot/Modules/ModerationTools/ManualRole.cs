@@ -160,7 +160,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// <param name="discordRole">Discord role</param>
         /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.ManageRoles)]
-        [Command("resetRole")]
+        [Command("resetRole", RunMode = RunMode.Async)]
         [Summary("Removes this role from all users, removes reactions from its selection message.")]
         private async Task ResetRoleCommand(
             [Name("Role")][Summary("Role to be reset (needs to be a mention).")] IRole discordRole)
@@ -216,7 +216,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [RequireUserPermission(GuildPermission.ManageRoles)]
-        [Command("removeUsersActiveRole")]
+        [Command("removeUsersActiveRole", RunMode = RunMode.Async)]
         [Alias("removeActiveRole")]
         [Summary("Removes given users active role of the game the command is used in (Also removes smaller roles, that don't need mod approval" +
             "and all reactions of user in active check room).")]

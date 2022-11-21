@@ -27,7 +27,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Command("deleteGame")]
+        [Command("deleteGame", RunMode = RunMode.Async)]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameByRoleCommand(
             [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole)
@@ -43,7 +43,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         }
 
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Command("deleteGame")]
+        [Command("deleteGame", RunMode = RunMode.Async)]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameByRoleCommand(
             [Name("Name")][Summary("Name of game to be deleted.")][Remainder] string gameName)
@@ -65,7 +65,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         /// <param name="gameName">Name of the game</param>
         /// <returns>Nothing</returns>
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Command("deleteGame")]
+        [Command("deleteGame", RunMode = RunMode.Async)]
         [Summary("Deletes game, all of its channels and roles.")]
         private async Task DeleteGameCommand(
             [Name("Role")][Summary("Role of game to be deleted (needs to be a mention).")] IRole discordRole,
