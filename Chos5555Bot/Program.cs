@@ -39,6 +39,13 @@ public class Program
             GatewayIntents = GatewayIntents.All
         };
 
+        // Setup config for command service
+        var commandServiceConfig = new CommandServiceConfig()
+        {
+            DefaultRunMode = RunMode.Sync,
+            CaseSensitiveCommands = false,
+        };
+
         // Setup config for lavalink
         Action<LavaConfig> lavaConfig = x =>
         {
@@ -49,7 +56,7 @@ public class Program
         };
 
         // Setup services
-        var services = ConfigureServices(socketConfig, lavaConfig);
+        var services = ConfigureServices(socketConfig, commandServiceConfig, lavaConfig);
 
         // Assign client and commands to local variables
         _client = services.GetRequiredService<DiscordSocketClient>();
@@ -85,13 +92,13 @@ public class Program
         await Task.Delay(-1);
     }
 
-    private ServiceProvider ConfigureServices(DiscordSocketConfig discordConfig, Action<LavaConfig> lavaConfig)
+    private ServiceProvider ConfigureServices(DiscordSocketConfig discordConfig, CommandServiceConfig commandServiceConfig, Action<LavaConfig> lavaConfig)
     {
         // Setup services and dependency injection
         var services = new ServiceCollection()
             .AddSingleton(new DiscordSocketClient(discordConfig))
             .AddSingleton(_config)
-            .AddSingleton<CommandService>()
+            .AddSingleton(new CommandService(commandServiceConfig))
             .AddSingleton<Commands>()
             // TODO: Use AddDbContextPool for higher performance if number of requests to DB ever gets >2000/s
             .AddDbContext<BotDbContext>()
