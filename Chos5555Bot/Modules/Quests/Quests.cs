@@ -149,6 +149,7 @@ namespace Chos5555Bot.Modules.Quests
         [RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task ResetQuests()
         {
+            // TODO: Delete active quests that haven't been solved? (Will be a problem since quest doesn't store id of a channel in which it was posted)
             // Check that channel is in a category and belongs to a game
             var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
             if (game is null || nestedChannel is null)
