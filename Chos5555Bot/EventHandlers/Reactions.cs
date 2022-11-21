@@ -537,7 +537,7 @@ namespace Chos5555Bot.EventHandlers
                         GameName = quest.GameName,
                         QuestCount = 0
                     });
-                user.CompletedQuests.Where(c => c.GameName == quest.GameName).Single().QuestCount++;
+                user.CompletedQuests.Where(c => c.GameName == quest.GameName).Single().QuestCount += quest.Score;
                 await _repo.UpdateUser(user);
 
                 // Remove quest from DB
