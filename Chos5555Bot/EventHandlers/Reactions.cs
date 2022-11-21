@@ -667,8 +667,12 @@ namespace Chos5555Bot.EventHandlers
         {
             var roles = await _repo.FindAllRoleIdsByGame(game);
 
-            // TODO: Investigate Discord.Net.HttpException: The server responded with error 50013: Missing Permissions
+            // Remove all of games roles
             await (user as IGuildUser).RemoveRolesAsync(roles);
+
+            // Return early if game doesn't have active role (doesn't need removing of reactions in active room)
+            if (!game.HasActiveRole)
+                return;
 
             // Removes all reactions of user in games activeCheckRoom
             var discordActiveRoom = (ITextChannel)await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId);
