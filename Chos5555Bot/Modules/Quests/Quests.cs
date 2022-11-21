@@ -101,12 +101,30 @@ namespace Chos5555Bot.Modules.Quests
         /// adds raised hand reaction.
         /// </summary>
         /// <param name="text">Text of the quest</param>
+        /// <param name="score">Score of the quest</param>>
         /// <returns>Nothing</returns>
         [Command("addQuest")]
-        [Summary("Adds a new quest.")]
+        [Summary("Adds a new quest with score 1.")]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task AddQuest(
-            [Name("Text")][Summary("Text of the quest")][Remainder] string text)
+            [Name("Text")][Summary("Text of the quest.")][Remainder] string text)
+        {
+            await AddQuest(1, text);
+        }
+
+        /// <summary>
+        /// Creates a new quest with given text and score. Deletes the command message and sends a quest message,
+        /// adds raised hand reaction.
+        /// </summary>
+        /// <param name="text">Text of the quest</param>
+        /// <param name="score">Score of the quest</param>>
+        /// <returns>Nothing</returns>
+        [Command("addQuest")]
+        [Summary("Adds a new quest with given score.")]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task AddQuest(
+            [Name("Score")][Summary("Number, score of the quest.")] int score,
+            [Name("Text")][Summary("Text of the quest.")][Remainder] string text)
         {
             // Check that channel is in a category and belongs to a game
             var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
@@ -132,6 +150,7 @@ namespace Chos5555Bot.Modules.Quests
             {
                 GameName = game.Name,
                 Text = text,
+                Score = score,
                 AuthorId = Context.User.Id,
                 QuestMessage = message.Id,
                 QuestMessageChannelId = Context.Channel.Id
@@ -170,12 +189,12 @@ namespace Chos5555Bot.Modules.Quests
         /// Resets completed quest amounts for all users who completed quests for a game in whose channel the command was used
         /// </summary>
         /// <returns>Nothing</returns>
-        [Command("setQuestAmount")]
-        [Summary("Sets given users quest amount to given amount (for the game in whose channel the command was used in).")]
+        [Command("setQuestScore")]
+        [Summary("Sets given users quest score to given amount (for the game in whose channel the command was used in).")]
         [RequireUserPermission(GuildPermission.ManageChannels)]
-        public async Task SetQuestAmount(
+        public async Task SetQuestScore(
             [Name("Users name")][Summary("Name of the user.")] string userName,
-            [Name("Amount")][Summary("Amount to set users quests to.")] int amount)
+            [Name("Amount")][Summary("Number to set users quest score to.")] int amount)
         {
             // Check that channel is in a category and belongs to a game
             var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
@@ -189,7 +208,7 @@ namespace Chos5555Bot.Modules.Quests
             // Return if user doesn't have game in his CompletedQuests
             if (!user.CompletedQuests.Where(c => c.GameName == game.Name).Any())
             {
-                await ReplyAsync($"This user hasn't done any quests for {game.Name} yet, thus I can't set quest amount.");
+                await ReplyAsync($"This user hasn't done any quests for {game.Name} yet, thus I can't set quest score.");
                 return;
             }
 
@@ -203,7 +222,7 @@ namespace Chos5555Bot.Modules.Quests
         /// </summary>
         /// <returns>Nothing</returns>
         [Command("questLeaderboard")]
-        [Summary("Shows the top 10 users with the most completed quests for this game.")]
+        [Summary("Shows the top 10 users with the highest quest score for this game.")]
         public async Task QuestLeaderboard()
         {
             // Check that channel is in a category and belongs to a game
@@ -226,7 +245,7 @@ namespace Chos5555Bot.Modules.Quests
             // Add leaderboard field
             embed.AddField(
                 inline: false,
-                name: $"{game.Name} quest leaderboard:",
+                name: $"{game.Name} quest score leaderboard:",
                 value: await LeaderboardField(top10, Context.Guild));
 
             // Add users position field
@@ -330,7 +349,7 @@ namespace Chos5555Bot.Modules.Quests
         /// </summary>
         /// <returns>Nothing</returns>
         [Command("quests")]
-        [Summary("Shows the amount of quests you have completed for this game.")]
+        [Summary("Shows your quest score for this game.")]
         public async Task QuestsCommand()
         {
             // Check that channel is in a category and belongs to a game
@@ -354,7 +373,7 @@ namespace Chos5555Bot.Modules.Quests
         /// <param name="userName">Name of the user</param>
         /// <returns></returns>
         [Command("quests")]
-        [Summary("Shows the amount of quests given user has completed for this game.")]
+        [Summary("Shows the given users quest score for this game.")]
         public async Task QuestsCommand(
             [Name("User name")][Summary("Name of the user.")][Remainder] string userName)
         {
