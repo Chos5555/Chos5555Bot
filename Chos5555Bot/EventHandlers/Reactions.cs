@@ -27,6 +27,26 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                await ReactionAddedMain(uncachedMessage, uncachedChannel, reaction);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public static Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                await ReactionRemovedMain(uncachedMessage, uncachedChannel, reaction);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// This method is the main handler for added reactions. Checks in which room the reaction was added and calls the appropriate handler.
         /// Removes the reaction if a wrong reaction was added to a selection message.
@@ -35,7 +55,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public async static Task ReactionAdded(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionAddedMain(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
 
@@ -497,6 +517,7 @@ namespace Chos5555Bot.EventHandlers
                 await message.RemoveAllReactionsAsync();
 
                 // Find user in DB or create and add it into DB
+                // TODO: Investigate why sometimes it's not a single userId in the message
                 var userId = message.MentionedUserIds.SingleOrDefault();
                 var user = await _repo.FindUser(userId);
                 if (user is null)
@@ -571,7 +592,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="uncachedChannel">Uncached channel</param>
         /// <param name="reaction">Reaction</param>
         /// <returns>Nothing</returns>
-        public async static Task ReactionRemoved(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
+        public async static Task ReactionRemovedMain(Cacheable<IUserMessage, ulong> uncachedMessage, Cacheable<IMessageChannel, ulong> uncachedChannel, SocketReaction reaction)
         {
             var channel = await uncachedChannel.GetOrDownloadAsync() as SocketGuildChannel;
             var message = await uncachedMessage.GetOrDownloadAsync();

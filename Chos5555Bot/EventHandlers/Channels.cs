@@ -3,7 +3,6 @@ using Chos5555Bot.Services;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord;
-using System.Linq;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -21,12 +20,22 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task ChannelDestroyed(SocketChannel discordChannel)
+        {
+            _ = Task.Run(async () =>
+            {
+                await ChannelDestroyedMain(discordChannel);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Removes given channel from DB when its deleted on discord
         /// </summary>
         /// <param name="discordChannel">Given discord channel</param>
         /// <returns>Nothing</returns>
-        public async static Task ChannelDestroyed(SocketChannel discordChannel)
+        public async static Task ChannelDestroyedMain(SocketChannel discordChannel)
         {
             // If the channel deleted was one of the stage channels, remove delete the other one
             // and remove from DB

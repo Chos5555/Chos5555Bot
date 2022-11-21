@@ -21,12 +21,32 @@ namespace Chos5555Bot.EventHandlers
             _log = log;
         }
 
+        public static Task UserLeft(SocketGuild discordGuild, SocketUser user)
+        {
+            _ = Task.Run(async () =>
+            {
+                await UserLeftMain(discordGuild, user);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public static Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
+        {
+            _ = Task.Run(async () =>
+            {
+                await UserVoiceStateUpdatedMain(user, oldState, newState);
+            });
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Sends a message to a designated channel when user leaves given guild
         /// </summary>
         /// <param name="discordGuild">Guild from which a user left</param>
         /// <returns>Nothing</returns>
-        public async static Task UserLeft(SocketGuild discordGuild, SocketUser user)
+        public async static Task UserLeftMain(SocketGuild discordGuild, SocketUser user)
         {
             var guild = await _repo.FindGuild(discordGuild);
 
@@ -48,7 +68,7 @@ namespace Chos5555Bot.EventHandlers
         /// <param name="oldState"></param>
         /// <param name="newState"></param>
         /// <returns></returns>
-        public async static Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
+        public async static Task UserVoiceStateUpdatedMain(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
         {
             // If voice channel is null on both states, return
             var voiceChannel = oldState.VoiceChannel ?? newState.VoiceChannel;
