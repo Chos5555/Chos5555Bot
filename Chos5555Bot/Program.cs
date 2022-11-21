@@ -64,8 +64,6 @@ public class Program
         // Get token from config file
         _config = services.GetRequiredService<Configuration>();
 
-        Console.WriteLine($"{_config.ConnectionString}");
-
         // Initialize GameAnnouncer
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
