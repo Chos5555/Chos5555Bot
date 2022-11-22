@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DAL.Model
@@ -41,5 +42,11 @@ namespace DAL.Model
         public ICollection<Role> ModAcceptRoles { get; set; } = new List<Role>();
         // Quest room for mods to post quests in
         public Room ModQuestRoom { get; set; }
+        // Last time the activity of players was check to remove active roles
+        public DateTime LastActivityCheck { get; set; }
+        // TODO: When adding veteran status or something, make into a list of options of period, add/remove, role
+        // TODO: Change int into something else to parse "5 days"/"7 hours", etc. (TimeSpan)
+        // Period of time (amount of days) after which games active role should be removed
+        public TimeSpan RemoveAfter { get; set; } = TimeSpan.FromDays(7);
     }
 }
