@@ -198,6 +198,10 @@ namespace Chos5555Bot.EventHandlers
 
                 // Remove users reaction on MainActiveRole announce message, this will remove all other active roles in reactions handler
                 await message.RemoveReactionAsync(game.MainActiveRole.ChoiceEmote.Out(), user.DiscordId);
+
+                // Remove GameActivity from user when MainActiveRoleIsRemoved
+                user.GameActivities.Remove(activity);
+                await _repo.UpdateUser(user);
             }
         }
     }
