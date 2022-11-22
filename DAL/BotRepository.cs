@@ -738,7 +738,7 @@ namespace DAL
         /// </summary>
         /// <param name="game">Game whose users are to be found</param>
         /// <returns>List of User</returns>
-        public Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        public ICollection<(User, GameActivity)> FindAllUsersActivityForGame(Game game)
         {
             var query = _context.Users
                 .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name));
@@ -749,6 +749,17 @@ namespace DAL
                 result.Add((item, item.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault()));
 
             return result;
+        }
+
+        /// <summary>
+        /// Removes given GameActivity from the DB
+        /// </summary>
+        /// <param name="activity">GameActivity to be deleted</param>
+        /// <returns>Nothing</returns>
+        public async Task RemoveGameActivity(GameActivity activity)
+        {
+            _context.GameActivities.Remove(activity);
+            await _context.SaveChangesAsync();
         }
 
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table

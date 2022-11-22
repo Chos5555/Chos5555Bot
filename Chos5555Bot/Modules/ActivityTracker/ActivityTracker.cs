@@ -112,13 +112,14 @@ namespace Chos5555Bot.Modules.ActivityTracker
             }
 
             // Get all users that have activity for this game
-            var users = await _repo.FindAllUsersActivityForGame(game);
+            var users = _repo.FindAllUsersActivityForGame(game);
 
             // Remove activity of game for user and update in DB
             foreach (var (user, activity) in users)
             {
                 user.GameActivities.Remove(activity);
                 await _repo.UpdateUser(user);
+                await _repo.RemoveGameActivity(activity);
             }
 
             game.LastActivityCheck = DateTime.UtcNow;
