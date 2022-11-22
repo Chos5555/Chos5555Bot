@@ -11,8 +11,11 @@ namespace DAL.Model
         public int Id { get; set; }
         // Id of a corresponding channel in discord
         public ulong DiscordId { get; set; }
-        // Completed for this user
+        // List of quest scores for different games
         [ForeignKey("CompletedQuestsUserId")]
         public List<CompletedQuests> CompletedQuests { get; set; } = new List<CompletedQuests>();
+        // List of activity in different games
+        [ForeignKey("GameActivityUserId")]
+        public List<GameActivity> GameActivities { get; set; } = new List<GameActivity>();
     }
 }

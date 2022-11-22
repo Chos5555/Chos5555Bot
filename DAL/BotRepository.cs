@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -417,6 +418,9 @@ namespace DAL
             currGame.ModAcceptRoom = game.ModAcceptRoom;
             currGame.ModAcceptRoles = game.ModAcceptRoles;
             currGame.ModQuestRoom = game.ModQuestRoom;
+            currGame.TrackActivity = game.TrackActivity;
+            currGame.LastActivityCheck = game.LastActivityCheck;
+            currGame.RemoveAfter = game.RemoveAfter;
             await _context.SaveChangesAsync();
         }
 
@@ -607,6 +611,7 @@ namespace DAL
             var currUser = await FindUser(user);
             currUser.DiscordId = user.DiscordId;
             currUser.CompletedQuests = user.CompletedQuests;
+            currUser.GameActivities = user.GameActivities;
             await _context.SaveChangesAsync();
         }
 
@@ -712,6 +717,38 @@ namespace DAL
             return await _context.Quests
                 .Where(q => q.ModMessage == id)
                 .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds GameActivity for given user with given gameName
+        /// </summary>
+        /// <param name="user">User whose game activity is to be found</param>
+        /// <param name="gameName">Name of the game of which activity is to be found</param>
+        /// <returns>GameActivity</returns>
+        public async Task<GameActivity> FindUsersGameActivity(User user, string gameName)
+        {
+            return (await FindUser(user))
+                .GameActivities
+                .Where(g => g.GameName == gameName)
+                .SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Finds all users that have some activity for given game
+        /// </summary>
+        /// <param name="game">Game whose users are to be found</param>
+        /// <returns>List of User</returns>
+        public Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        {
+            var query = _context.Users
+                .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name));
+
+            ICollection <(User, GameActivity)> result = new List<(User, GameActivity)>();
+
+            foreach (var item in query)
+                result.Add((item, item.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault()));
+
+            return result;
         }
 
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table

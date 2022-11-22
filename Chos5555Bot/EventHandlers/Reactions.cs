@@ -186,6 +186,7 @@ namespace Chos5555Bot.EventHandlers
             // Find activeCheckRoom message to which the original reaction was added, remove it, PM user, delete message in modRoom
             if (CompareEmoteToEmoteEmoji(emote, cross))
             {
+                // TODO: Add comments
                 await _log.Log($"Request denied, removing reaction and DMing user {user.Username}", LogSeverity.Verbose);
 
                 var activeCheckRoom = await guild.GetChannelAsync(game.ActiveCheckRoom.DiscordId) as IMessageChannel;
@@ -213,6 +214,27 @@ namespace Chos5555Bot.EventHandlers
                 await message.Channel.SendMessageAsync($"{(reaction.User.IsSpecified ? reaction.User.Value.Username : $"User with Id {reaction.UserId}")} " +
                     $"has given user {user.Mention} role {role.Mention}.");
                 await message.DeleteAsync();
+
+                // Only set activity when user's been given MainActiveRole of game
+                if (roleId != game.MainActiveRole.DisordId)
+                    return false;
+
+                // Get user from DB, find his activity
+                var activityUser = await _repo.FindUser(user.Id);
+                var activity = await _repo.FindUsersGameActivity(activityUser, game.Name);
+
+                // Create new activity if there is none yet
+                activity ??= new GameActivity()
+                {
+                    GameName = game.Name,
+                };
+
+                // Set LastAppearance
+                activity.LastAppearance = DateTime.UtcNow;
+
+                // Update user in DB
+                await _repo.UpdateUser(activityUser);
+
                 return false;
             }
 
