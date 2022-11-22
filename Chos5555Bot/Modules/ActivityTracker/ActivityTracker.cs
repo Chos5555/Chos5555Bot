@@ -25,6 +25,7 @@ namespace Chos5555Bot.Modules.ActivityTracker
         [Command("InititalizeTracking")]
         [Alias("InitTracking")]
         [Summary("Initializes tracking feature for game in which category the commands has been used.")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task InitTracking()
         {
             // Check that channel is in a category and belongs to a game
@@ -43,6 +44,7 @@ namespace Chos5555Bot.Modules.ActivityTracker
 
         [Command("SetTrackingDuration")]
         [Summary("Sets tracking duration after which main active role is supposed to be removed for game in whose category the command has been used in.")]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task SetTrackingDuratin(
             [Name("Time")][Summary("Time in format of \"x seconds/minutes/hours/days/weeks\"")][Remainder]string stringDuration)
         {
@@ -101,6 +103,7 @@ namespace Chos5555Bot.Modules.ActivityTracker
 
         [Command("ResetTracking")]
         [Summary("Resets tracking for all users that are playing the game in whose channel the command was used in.")]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task ResetTracking()
         {
             // Check that channel is in a category and belongs to a game
