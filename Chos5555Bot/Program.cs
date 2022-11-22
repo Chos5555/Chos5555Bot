@@ -11,6 +11,7 @@ using DAL;
 using Victoria;
 using Chos5555Bot.Services;
 using Config;
+using Chos5555Bot.Misc;
 
 public class Program
 {
@@ -66,6 +67,14 @@ public class Program
 
         // Initialize GameAnnouncer
         GameAnnouncer.InitAnnouncer(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize MessageFinder
+        MessageFinder.InitFinder(services.GetRequiredService<BotRepository>(),
+            services.GetRequiredService<LogService>());
+
+        // Initialize GameFinder
+        GameFinder.InitFinder(services.GetRequiredService<BotRepository>(),
             services.GetRequiredService<LogService>());
 
         // Configure event handlers
