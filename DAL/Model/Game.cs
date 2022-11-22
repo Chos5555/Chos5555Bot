@@ -42,6 +42,8 @@ namespace DAL.Model
         public ICollection<Role> ModAcceptRoles { get; set; } = new List<Role>();
         // Quest room for mods to post quests in
         public Room ModQuestRoom { get; set; }
+        // Whether the game has activity tracking enabled
+        public bool TrackActivity { get; set; } = false;
         // Last time the activity of players was check to remove active roles
         public DateTime LastActivityCheck { get; set; }
         // TODO: When adding veteran status or something, make into a list of options of period, add/remove, role
