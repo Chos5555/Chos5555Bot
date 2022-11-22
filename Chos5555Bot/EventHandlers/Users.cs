@@ -180,7 +180,7 @@ namespace Chos5555Bot.EventHandlers
         public async static Task RemoveInactiveUsers(Game game, IGuild guild)
         {
             // Only check once every day to not slow down bot
-            if ((DateTime.UtcNow - game.LastActivityCheck).TotalDays < 1)
+            if ((DateTime.UtcNow - game.LastActivityCheck).TotalDays > 1)
                 return;
 
             // Get all users with activity for game
@@ -189,7 +189,7 @@ namespace Chos5555Bot.EventHandlers
             foreach (var (user, activity) in users)
             {
                 // If LastAppearance is less than RemoveAfter from now, return
-                if (activity.LastAppearance - DateTime.UtcNow < game.RemoveAfter)
+                if (activity.LastAppearance - DateTime.UtcNow > game.RemoveAfter)
                     continue;
 
                 // Find activerole announce message
