@@ -738,7 +738,7 @@ namespace DAL
         /// </summary>
         /// <param name="game">Game whose users are to be found</param>
         /// <returns>List of User</returns>
-        public Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        public ICollection<(User, GameActivity)> FindAllUsersActivityForGame(Game game)
         {
             var query = _context.Users
                 .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name));

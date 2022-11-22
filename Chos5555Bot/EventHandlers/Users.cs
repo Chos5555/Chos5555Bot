@@ -184,7 +184,7 @@ namespace Chos5555Bot.EventHandlers
                 return;
 
             // Get all users with activity for game
-            var users = await _repo.FindAllUsersActivityForGame(game);
+            var users = _repo.FindAllUsersActivityForGame(game);
 
             foreach (var (user, activity) in users)
             {
