@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -737,12 +738,17 @@ namespace DAL
         /// </summary>
         /// <param name="game">Game whose users are to be found</param>
         /// <returns>List of User</returns>
-        public async Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        public Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
         {
-            return (ICollection<(User, GameActivity)>) await _context.Users
-                .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name))
-                .Select(u => new { u, act = u.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault() })
-                .ToListAsync();
+            var query = _context.Users
+                .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name));
+
+            ICollection <(User, GameActivity)> result = new List<(User, GameActivity)>();
+
+            foreach (var item in query)
+                result.Add((item, item.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault()));
+
+            return result;
         }
 
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
