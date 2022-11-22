@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Chos5555Bot.Misc;
-using Game = DAL.Model.Game;
 
 namespace Chos5555Bot.Modules.Quests
 {
@@ -25,26 +24,6 @@ namespace Chos5555Bot.Modules.Quests
             _log = log;
         }
 
-        public async Task<(Game, INestedChannel)> FindGameForChannel(IChannel channel)
-        {
-            // Check that channel is in a category and belongs to a game
-            var nestedChannel = (channel as INestedChannel);
-            if (!nestedChannel.CategoryId.HasValue)
-            {
-                await ReplyAsync("This channel is not in a category.");
-                return (null, null);
-            }
-
-            var game = await _repo.FindGameByCategoryId(nestedChannel.CategoryId.Value);
-            if (game is null)
-            {
-                await ReplyAsync("This category doesn't belong to a game.");
-                return (null, null);
-            }
-
-            return (game, nestedChannel);
-        }
-
         /// <summary>
         /// Initializes quest feature for a game in whose channel the command was used.
         /// Sets ModQuestRoom of the game to a channel with the id provided, if no id was provided,
@@ -59,9 +38,12 @@ namespace Chos5555Bot.Modules.Quests
             [Name("ModQuestRoom Id")][Summary("Sets this channel as the mod quest room, if no channel id is given, creates new channel (optional")] ulong modRoomId = 0)
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             ITextChannel modQuestChannel = Context.Guild.GetTextChannel(modRoomId);
 
@@ -127,9 +109,12 @@ namespace Chos5555Bot.Modules.Quests
             [Name("Text")][Summary("Text of the quest.")][Remainder] string text)
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Delete command message
             await Context.Message.DeleteAsync();
@@ -170,9 +155,12 @@ namespace Chos5555Bot.Modules.Quests
         {
             // TODO: Delete active quests that haven't been solved? (Will be a problem since quest doesn't store id of a channel in which it was posted)
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Find all users who have completed a quest for given game
             var users = await _repo.FindUsersWithQuestsForGame(game);
@@ -197,9 +185,12 @@ namespace Chos5555Bot.Modules.Quests
             [Name("Amount")][Summary("Number to set users quest score to.")] int amount)
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Find user
             var discordUser = await UserFinder.FindUserByName(userName, Context.Guild);
@@ -226,9 +217,12 @@ namespace Chos5555Bot.Modules.Quests
         public async Task QuestLeaderboard()
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Get the 10 users with the most quests completed for given game
             var users = (await _repo.FindUsersWithQuestsForGame(game))
@@ -353,9 +347,12 @@ namespace Chos5555Bot.Modules.Quests
         public async Task QuestsCommand()
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Get user from DB
             var user = await _repo.FindUser(Context.User.Id);
@@ -378,9 +375,12 @@ namespace Chos5555Bot.Modules.Quests
             [Name("User name")][Summary("Name of the user.")][Remainder] string userName)
         {
             // Check that channel is in a category and belongs to a game
-            var (game, nestedChannel) = await FindGameForChannel(Context.Channel);
-            if (game is null || nestedChannel is null)
+            var ((result, exception), game, nestedChannel) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
                 return;
+            }
 
             // Find user with given name
             var discordUser = await UserFinder.FindUserByName(userName, Context.Guild);
