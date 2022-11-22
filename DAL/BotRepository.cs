@@ -671,7 +671,11 @@ namespace DAL
             var currQuest = await FindQuest(quest);
             currQuest.GameName = quest.GameName;
             currQuest.Text = quest.Text;
+            currQuest.Score = quest.Score;
+            currQuest.AuthorId = quest.AuthorId;
+            currQuest.TakerId = quest.TakerId;
             currQuest.QuestMessage = quest.QuestMessage;
+            currQuest.QuestMessageChannelId = quest.QuestMessageChannelId;
             currQuest.ModMessage = quest.ModMessage;
             await _context.SaveChangesAsync();
         }

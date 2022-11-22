@@ -11,6 +11,8 @@ namespace DAL.Model
         public string GameName { get; set; }
         // Text of the quest
         public string Text { get; set; }
+        // Score of the quest
+        public int Score { get; set; }
         // Id of the user that created this quest
         public ulong AuthorId { get; set; }
         // Id of the user that took this quest
