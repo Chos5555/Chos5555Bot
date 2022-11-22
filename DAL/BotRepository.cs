@@ -737,11 +737,11 @@ namespace DAL
         /// </summary>
         /// <param name="game">Game whose users are to be found</param>
         /// <returns>List of User</returns>
-        public async Task<ICollection<(ulong, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        public async Task<ICollection<(User, GameActivity)>> FindAllUsersActivityForGame(Game game)
         {
-            return (ICollection<(ulong, GameActivity)>) await _context.Users
+            return (ICollection<(User, GameActivity)>) await _context.Users
                 .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name))
-                .Select(u => new { u.DiscordId, act = u.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault() })
+                .Select(u => new { u, act = u.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault() })
                 .ToListAsync();
         }
 
