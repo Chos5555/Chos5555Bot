@@ -119,6 +119,7 @@ namespace Chos5555Bot.Modules.ActivityTracker
             {
                 user.GameActivities.Remove(activity);
                 await _repo.UpdateUser(user);
+                await _repo.RemoveGameActivity(activity);
             }
 
             game.LastActivityCheck = DateTime.UtcNow;

@@ -751,6 +751,17 @@ namespace DAL
             return result;
         }
 
+        /// <summary>
+        /// Removes given GameActivity from the DB
+        /// </summary>
+        /// <param name="activity">GameActivity to be deleted</param>
+        /// <returns>Nothing</returns>
+        public async Task RemoveGameActivity(GameActivity activity)
+        {
+            _context.GameActivities.Remove(activity);
+            await _context.SaveChangesAsync();
+        }
+
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
     }
 }

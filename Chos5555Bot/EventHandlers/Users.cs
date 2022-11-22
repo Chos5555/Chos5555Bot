@@ -202,6 +202,7 @@ namespace Chos5555Bot.EventHandlers
                 // Remove GameActivity from user when MainActiveRoleIsRemoved
                 user.GameActivities.Remove(activity);
                 await _repo.UpdateUser(user);
+                await _repo.RemoveGameActivity(activity);
             }
         }
     }
