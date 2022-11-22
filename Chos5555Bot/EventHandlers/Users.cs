@@ -4,6 +4,9 @@ using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord;
 using Chos5555Bot.Misc;
+using DAL.Model;
+using Game = DAL.Model.Game;
+using System;
 
 namespace Chos5555Bot.EventHandlers
 {
@@ -70,6 +73,12 @@ namespace Chos5555Bot.EventHandlers
         /// <returns></returns>
         public async static Task UserVoiceStateUpdatedMain(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
         {
+            await TrackActivity(user, oldState, newState);
+            await UnmuteAfterStage(user, oldState, newState);
+        }
+
+        public async static Task UnmuteAfterStage(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
+        {
             // If voice channel is null on both states, return
             var voiceChannel = oldState.VoiceChannel ?? newState.VoiceChannel;
             if (voiceChannel is null)
@@ -116,6 +125,83 @@ namespace Chos5555Bot.EventHandlers
                         await UserVoicePropertiesSetter.UpdateMute(guildUser, false);
                     }
                 }
+            }
+        }
+
+        public async static Task TrackActivity(SocketUser discordUser, SocketVoiceState oldState, SocketVoiceState newState)
+        {
+            // Only update LastAppearance if user left voice channel
+            if (newState.VoiceChannel is not null || oldState.VoiceChannel == newState.VoiceChannel)
+                return;
+
+            // Return if channel isn't in a category
+            var categoryId = (oldState.VoiceChannel as INestedChannel).CategoryId;
+            if (!categoryId.HasValue)
+                return;
+
+            // Return if channel isn't a game channel
+            var game = await _repo.FindGameByCategoryId(categoryId.Value);
+            if (game is null)
+                return;
+
+            // If game doesn't have tracking enabled, return
+            if (!game.TrackActivity)
+                return;
+
+            // Remove active roles of inactive users
+            await RemoveInactiveUsers(game, oldState.VoiceChannel.Guild);
+
+            var user = await _repo.FindUser(discordUser.Id);
+
+            // Create a new user if none is found
+            if (user is null)
+            {
+                user = new User()
+                {
+                    DiscordId = discordUser.Id,
+                };
+                await _repo.AddUser(user);
+            }
+
+            var gameActivity = await _repo.FindUsersGameActivity(user, game.Name);
+            
+            // Create new game activity if none is found
+            gameActivity ??= new GameActivity()
+                {
+                    GameName = game.Name,
+                };
+
+            // Set LastAppearance
+            gameActivity.LastAppearance = DateTime.UtcNow;
+
+            await _repo.UpdateUser(user);
+        }
+
+        public async static Task RemoveInactiveUsers(Game game, IGuild guild)
+        {
+            // Only check once every day to not slow down bot
+            if ((DateTime.UtcNow - game.LastActivityCheck).TotalDays > 1)
+                return;
+
+            // Get all users with activity for game
+            var users = await _repo.FindAllUsersActivityForGame(game);
+
+            foreach (var (user, activity) in users)
+            {
+                // If LastAppearance is less than RemoveAfter from now, return
+                if (activity.LastAppearance - DateTime.UtcNow > game.RemoveAfter)
+                    continue;
+
+                // Find activerole announce message
+                var activeCheckChannel = await guild.GetTextChannelAsync(game.ActiveCheckRoom.DiscordId);
+                var message = await MessageFinder.FindAnnouncedMessage(game.MainActiveRole, activeCheckChannel);
+
+                // Remove users reaction on MainActiveRole announce message, this will remove all other active roles in reactions handler
+                await message.RemoveReactionAsync(game.MainActiveRole.ChoiceEmote.Out(), user.DiscordId);
+
+                // Remove GameActivity from user when MainActiveRoleIsRemoved
+                user.GameActivities.Remove(activity);
+                await _repo.UpdateUser(user);
             }
         }
     }

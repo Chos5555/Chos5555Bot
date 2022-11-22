@@ -223,6 +223,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         private async Task RemoveUsersActiveRole(
             [Name("User")][Summary("Name or Username of user to get his active role removed")] string name)
         {
+            // TODO: Use UserFinder
             name = name.ToLower();
             var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
                 .Where(u => u.Username.ToLower() == name || u.Nickname.ToLower() == name || u.DisplayName.ToLower() == name)
@@ -246,6 +247,7 @@ namespace Chos5555Bot.Modules.ModerationTools
                 var activeChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel;
                 var message = await MessageFinder.FindAnnouncedMessage(currRole, activeChannel);
                 // Remove role from user and remove users reaction from announce messages
+                // TODO: Remove cast
                 await (user as IGuildUser).RemoveRoleAsync(currRole.DisordId);
                 await message.RemoveReactionAsync(currRole.ChoiceEmote.Out(), user);
             }
@@ -260,6 +262,7 @@ namespace Chos5555Bot.Modules.ModerationTools
         [Name("User")][Summary("Name or Username of user to get his active role removed")] string name,
         [Name("Role")][Summary("Role to remove from the user")] IRole discordRole)
         {
+            // TODO: Use UserFinder
             name = name.ToLower();
             var user = (await Context.Guild.GetUsersAsync().FlattenAsync())
                 .Where(u => u.Username.ToLower() == name || u.Nickname.ToLower() == name || u.DisplayName.ToLower() == name)
@@ -277,6 +280,7 @@ namespace Chos5555Bot.Modules.ModerationTools
             var activeChannel = Context.Guild.GetChannel(game.ActiveCheckRoom.DiscordId) as ITextChannel;
             var message = await MessageFinder.FindAnnouncedMessage(role, activeChannel);
             // Remove role from user and remove users reaction from announce messages
+            // TODO: Remove cast
             await (user as IGuildUser).RemoveRoleAsync(discordRole);
             await message.RemoveReactionAsync(role.ChoiceEmote.Out(), user);
 
