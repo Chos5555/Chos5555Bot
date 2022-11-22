@@ -607,6 +607,7 @@ namespace DAL
             var currUser = await FindUser(user);
             currUser.DiscordId = user.DiscordId;
             currUser.CompletedQuests = user.CompletedQuests;
+            currUser.GameActivities = user.GameActivities;
             await _context.SaveChangesAsync();
         }
 
@@ -712,6 +713,33 @@ namespace DAL
             return await _context.Quests
                 .Where(q => q.ModMessage == id)
                 .SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Finds GameActivity for given user with given gameName
+        /// </summary>
+        /// <param name="user">User whose game activity is to be found</param>
+        /// <param name="gameName">Name of the game of which activity is to be found</param>
+        /// <returns>GameActivity</returns>
+        public async Task<GameActivity> FindUsersGameActivity(User user, string gameName)
+        {
+            return (await FindUser(user))
+                .GameActivities
+                .Where(g => g.GameName == gameName)
+                .SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Finds all users that have some activity for given game
+        /// </summary>
+        /// <param name="game">Game whose users are to be found</param>
+        /// <returns>List of User</returns>
+        public async Task<ICollection<(ulong, GameActivity)>> FindAllUsersActivityForGame(Game game)
+        {
+            return (ICollection<(ulong, GameActivity)>) await _context.Users
+                .Where(u => u.GameActivities.Select(g => g.GameName).Contains(game.Name))
+                .Select(u => new { u.DiscordId, act = u.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault() })
+                .ToListAsync();
         }
 
         // TODO: When making FindSongs of a guild, use Include() to get songs from Songs table
