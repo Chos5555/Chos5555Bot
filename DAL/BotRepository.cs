@@ -417,6 +417,9 @@ namespace DAL
             currGame.ModAcceptRoom = game.ModAcceptRoom;
             currGame.ModAcceptRoles = game.ModAcceptRoles;
             currGame.ModQuestRoom = game.ModQuestRoom;
+            currGame.TrackActivity = game.TrackActivity;
+            currGame.LastActivityCheck = game.LastActivityCheck;
+            currGame.RemoveAfter = game.RemoveAfter;
             await _context.SaveChangesAsync();
         }
 
