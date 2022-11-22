@@ -135,7 +135,7 @@ namespace Chos5555Bot.Modules.Quests
             await Context.Message.DeleteAsync();
 
             // Send quest message
-            var message = await Context.Channel.SendMessageAsync($"{Context.Message.Author.Mention} has added a new quest:\n{text}\n" +
+            var message = await Context.Channel.SendMessageAsync($"{Context.Message.Author.Mention} has added a new quest worth **{score}** points:\n{text}\n" +
                 $"Press ✋ down below to claim this quest.");
             await message.AddReactionAsync(new Emoji("✋"));
 
