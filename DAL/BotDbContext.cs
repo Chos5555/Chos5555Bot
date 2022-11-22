@@ -24,6 +24,7 @@ namespace DAL
         public DbSet<User> Users { get; set; }
         public DbSet<Quest> Quests { get; set; }
         public DbSet<CompletedQuests> CompletedQuests { get; set; }
+        public DbSet<GameActivity> GameActivities { get; set; }
 
         public BotDbContext() : base()
         {
@@ -79,6 +80,7 @@ namespace DAL
 
             // Set auto includes for users properties in other tables
             modelBuilder.Entity<User>().Navigation(u => u.CompletedQuests).AutoInclude();
+            modelBuilder.Entity<User>().Navigation(u => u.GameActivities).AutoInclude();
         }
     }
 }
