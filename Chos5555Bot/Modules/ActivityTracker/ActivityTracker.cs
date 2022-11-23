@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Chos5555Bot.Misc;
 using System;
+using System.Linq;
 
 namespace Chos5555Bot.Modules.ActivityTracker
 {
@@ -129,6 +130,77 @@ namespace Chos5555Bot.Modules.ActivityTracker
             await _repo.UpdateGame(game);
 
             await _log.Log($"Reset tracking for {game.Name} in {Context.Guild.Name}.", LogSeverity.Info);
+        }
+
+        [Command("ListTracking")]
+        [Summary("Lists all users that are tracked and time when they last connected to a games voice channel.")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task ListTracking()
+        {
+            // Check that channel is in a category and belongs to a game
+            var ((result, exception), game, _) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
+                return;
+            }
+
+            // Get all users that have activity for this game
+            var users = _repo.FindAllUsersActivityForGame(game);
+
+            var content = $"**Tracked users for {game.Name} (in UTC time):**\n";
+
+            // Put all users and their last appearance into message content
+            foreach (var (user, activity) in users)
+            {
+                content += $"{Context.Guild.GetUser(user.DiscordId).DisplayName} : {activity.LastAppearance}\n";
+            }
+
+            // Send message
+            await ReplyAsync(content);
+        }
+
+        [Command("TrackUser")]
+        [Summary("Shows when user last connected to a games voice channel and how much time remains until they get the games main active role removed.")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task TrackUser(
+            [Name("User")][Summary("Name of the user to get info about.")][Remainder] string username)
+        {
+            // Check that channel is in a category and belongs to a game
+            var ((result, exception), game, _) = await GameFinder.TryFindGameForChannel(Context.Channel);
+            if (!result)
+            {
+                await ReplyAsync(exception.Message);
+                return;
+            }
+
+            var discordUser = await UserFinder.FindUserByName(username, Context.Guild);
+            if (discordUser is null)
+            {
+                await ReplyAsync("Couldn't find this user, make sure you wrote the name correctly.");
+                return;
+            }
+
+            var user = await _repo.FindUser(discordUser.Id);
+            if (user is null)
+            {
+                await ReplyAsync($"This user isn't in the database, so he is not tracked.");
+                return;
+            }
+
+            var gameActivity = user.GameActivities.Where(g => g.GameName == game.Name).SingleOrDefault();
+            if (gameActivity is null)
+            {
+                await ReplyAsync($"This user doesn't have {game.MainActiveRole.Name} role, so he is not tracked.");
+                return;
+            }
+
+            var timeUntilRemove = game.RemoveAfter - (DateTime.UtcNow - gameActivity.LastAppearance);
+            var formattedTime = $"{timeUntilRemove.Days} days {timeUntilRemove.Hours} hours {timeUntilRemove.Minutes} minutes {timeUntilRemove.Seconds} seconds";
+            
+
+            await ReplyAsync($"{discordUser.Mention} has last joined {game.Name}s voice channel at {gameActivity.LastAppearance} (UTC). " +
+                $"This user will have his **{game.MainActiveRole.Name}** role removed if he doesn't connect to a voice channel in **{formattedTime}**");
         }
     }
 }

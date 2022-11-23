@@ -696,6 +696,18 @@ namespace DAL
         }
 
         /// <summary>
+        /// Finds all quests for given game
+        /// </summary>
+        /// <param name="game">Game whose quests are to be found</param>
+        /// <returns>List of quests</returns>
+        public async Task<ICollection<Quest>> FindAllQuestsForGame(Game game)
+        {
+            return await _context.Quests
+                .Where(q => q.GameName == game.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Finds quest with give quest message id
         /// </summary>
         /// <param name="id">Id of quest message</param>
