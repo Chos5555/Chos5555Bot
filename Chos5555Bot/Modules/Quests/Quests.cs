@@ -178,8 +178,18 @@ namespace Chos5555Bot.Modules.Quests
             // Delete all quest messages and remove them from DB
             foreach (var quest in quests)
             {
+                // Delete message if the channel and message still exist
                 var channel = Context.Guild.GetTextChannel(quest.QuestMessageChannelId);
-                await (await channel.GetMessageAsync(quest.QuestMessage)).DeleteAsync();
+                if (channel is not null)
+                {
+                    var message = await channel.GetMessageAsync(quest.QuestMessage);
+                    if (message is not null)
+                    {
+                        await message.DeleteAsync();
+                    }
+                }
+                
+                // Delete quest from DB
                 await _repo.RemoveQuest(quest);
             }
         }
