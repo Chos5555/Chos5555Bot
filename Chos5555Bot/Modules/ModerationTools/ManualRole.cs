@@ -104,6 +104,10 @@ namespace Chos5555Bot.Modules.ModerationTools
             var newMessageContent = message.Content.Replace(oldEmote.ToString(), role.ChoiceEmote.Out().ToString());
 
             await (message as IUserMessage).ModifyAsync(m => { m.Content = newMessageContent; });
+
+            // Replace old emote reaction with new one
+            await message.RemoveAllReactionsForEmoteAsync(oldEmote);
+            await message.AddReactionAsync(role.ChoiceEmote.Out());
         }
 
         [RequireUserPermission(GuildPermission.ManageRoles)]
