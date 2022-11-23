@@ -232,6 +232,9 @@ namespace Chos5555Bot.EventHandlers
                 // Set LastAppearance
                 activity.LastAppearance = DateTime.UtcNow;
 
+                // Add activity to user
+                activityUser.GameActivities.Add(activity);
+
                 // Update user in DB
                 await _repo.UpdateUser(activityUser);
 
