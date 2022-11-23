@@ -148,7 +148,7 @@ namespace Chos5555Bot.Modules.Quests
         /// Resets completed quest amounts for all users who completed quests for a game in whose channel the command was used
         /// </summary>
         /// <returns>Nothing</returns>
-        [Command("resetQuests")]
+        [Command("resetQuests", RunMode = RunMode.Async)]
         [Summary("Resets completed quest amount for all users.")]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         public async Task ResetQuests()
@@ -170,6 +170,17 @@ namespace Chos5555Bot.Modules.Quests
             {
                 user.CompletedQuests.Where(c => c.GameName == game.Name).Single().QuestCount = 0;
                 await _repo.UpdateUser(user);
+            }
+
+            // Find all quests that have not been finished
+            var quests = await _repo.FindAllQuestsForGame(game);
+
+            // Delete all quest messages and remove them from DB
+            foreach (var quest in quests)
+            {
+                var channel = Context.Guild.GetTextChannel(quest.QuestMessageChannelId);
+                await (await channel.GetMessageAsync(quest.QuestMessage)).DeleteAsync();
+                await _repo.RemoveQuest(quest);
             }
         }
 
