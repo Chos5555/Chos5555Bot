@@ -221,6 +221,14 @@ namespace Chos5555Bot.EventHandlers
 
                 // Get user from DB, find his activity
                 var activityUser = await _repo.FindUser(user.Id);
+                if (activityUser is null)
+                {
+                    activityUser = new User()
+                    {
+                        DiscordId = userId
+                    };
+                    await _repo.AddUser(activityUser);
+                }
                 var activity = await _repo.FindUsersGameActivity(activityUser, game.Name);
 
                 // Create new activity if there is none yet
