@@ -539,6 +539,9 @@ namespace Chos5555Bot.EventHandlers
                 var questMessage = await questChannel.GetMessageAsync(quest.QuestMessage);
                 await questMessage.DeleteAsync();
 
+                // Get userId before the content of the message is modified
+                var userId = message.MentionedUserIds.SingleOrDefault();
+
                 // Modify mod message content and remove reactions
                 var content = $"{reaction.User.Value.Mention} accepted completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
                     $"of quest: \n{quest.Text}\nQuest completed!";
@@ -549,9 +552,7 @@ namespace Chos5555Bot.EventHandlers
 
                 await message.RemoveAllReactionsAsync();
 
-                // Find user in DB or create and add it into DB
-                // TODO: Investigate why sometimes it's not a single userId in the message
-                var userId = message.MentionedUserIds.SingleOrDefault();
+                // Find user in DB or create and add it into DB                
                 var user = await _repo.FindUser(userId);
                 if (user is null)
                 {
