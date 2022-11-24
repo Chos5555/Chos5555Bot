@@ -562,16 +562,23 @@ namespace Chos5555Bot.EventHandlers
                     await _repo.AddUser(user);
                 }
 
-                // Increase users completed quest count for this game
+                // Find completed quests for this game
+                var completedQuests = user.CompletedQuests.Where(c => c.GameName == quest.GameName).SingleOrDefault();
+
                 // Create new entry in completed quests it's this game is not there yet
-                if (!user.CompletedQuests.Where(c => c.GameName == quest.GameName).Any())
-                    user.CompletedQuests.Add(new CompletedQuests()
+                if (completedQuests is null)
+                {
+                    completedQuests = new CompletedQuests()
                     {
                         GameName = quest.GameName,
                         QuestCount = 0
-                    });
-                user.CompletedQuests.Where(c => c.GameName == quest.GameName).Single().QuestCount += quest.Score;
-                await _repo.UpdateUser(user);
+                    };
+                    user.CompletedQuests.Add(completedQuests);
+                }
+
+                // Increase users completed quest count for this game
+                completedQuests.QuestCount += quest.Score;
+                await _repo.UpdateCompletedQuests(completedQuests);
 
                 // Remove quest from DB
                 await _repo.RemoveQuest(quest);
@@ -746,6 +753,7 @@ namespace Chos5555Bot.EventHandlers
 
                 // Remove reactions to removed roles
                 await RemoveReactionsByUserInChannel(reaction.Channel as ITextChannel, user, roleIds);
+                // TODO: Remove game activity
             }
 
             await user.RemoveRoleAsync(roleId);
