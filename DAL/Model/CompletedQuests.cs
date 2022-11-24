@@ -12,7 +12,7 @@ namespace DAL.Model
         public int Id { get; set; }
         // Name of the game
         public string GameName { get; set; }
-        // Number of quests completed
+        // Score of completed quests
         public int QuestCount { get; set; } = 0;
     }
 }

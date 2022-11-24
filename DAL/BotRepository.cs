@@ -732,6 +732,29 @@ namespace DAL
         }
 
         /// <summary>
+        /// Find given completed quests in DB
+        /// </summary>
+        /// <param name="completedQuests">Completed quests to be found</param>
+        /// <returns>CompletedQuests</returns>
+        public async Task<CompletedQuests> FindCompletedQuests(CompletedQuests completedQuests)
+        {
+            return await _context.CompletedQuests.FindAsync(completedQuests.Id);
+        }
+
+        /// <summary>
+        /// Updates given completed quests in DB
+        /// </summary>
+        /// <param name="completedQuests">Completed quests to be updated</param>
+        /// <returns>Nothing</returns>
+        public async Task UpdateCompletedQuests(CompletedQuests completedQuests)
+        {
+            var currCompletedQuests = await FindCompletedQuests(completedQuests);
+            currCompletedQuests.GameName = completedQuests.GameName;
+            currCompletedQuests.QuestCount = completedQuests.QuestCount;
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
         /// Finds GameActivity for given user with given gameName
         /// </summary>
         /// <param name="user">User whose game activity is to be found</param>
