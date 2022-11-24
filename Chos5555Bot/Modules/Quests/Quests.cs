@@ -15,6 +15,7 @@ namespace Chos5555Bot.Modules.Quests
     /// </summary>
     public class Quests : ModuleBase<SocketCommandContext>
     {
+        // TODO: Add logging
         private readonly BotRepository _repo;
         private readonly LogService _log;
 
@@ -336,6 +337,7 @@ namespace Chos5555Bot.Modules.Quests
         private static (IEnumerable<(ulong, int)>, int) FindUsersPosition(ulong userId, IEnumerable<(ulong, int)> input)
         {
             using IEnumerator<(ulong, int)> iterator = input.GetEnumerator();
+            // Move to first member of input
             iterator.MoveNext();
 
             (ulong, int) prev = (0, 0);
@@ -345,15 +347,20 @@ namespace Chos5555Bot.Modules.Quests
             var position = 0;
 
             // Keep previous, current and next element until finding userId or running out of input
-            while (curr.Item1 != userId)
+            while (iterator.MoveNext())
             {
-                if (!iterator.MoveNext())
-                    break;
                 position++;
                 prev = curr;
                 curr = next;
                 next = iterator.Current;
+
+                if (curr.Item1 == userId)
+                    break;
             }
+
+            // Subtract one position if previous is present, since it will be written before searched user
+            if (prev.Item1 != 0)
+                position--;
 
             // Remove elements with id 0, return result
             return (new List<(ulong, int)> { prev, curr, next }.Where(x => x.Item1 != 0), position);
