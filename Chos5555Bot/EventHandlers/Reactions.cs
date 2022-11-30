@@ -406,7 +406,7 @@ namespace Chos5555Bot.EventHandlers
                 // Handle quest being taken
                 // Send a message in the mod quest channel
                 var modChannel = await guild.GetTextChannelAsync(game.ModQuestRoom.DiscordId);
-                var modMessage = await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} has taken quest:\n{quest.Text}");
+                var modMessage = await modChannel.SendMessageAsync($"✋ User {reaction.User.Value.Mention} has taken quest:\n{quest.Text}");
 
                 // Update quest in DB
                 quest.ModMessage = modMessage.Id;
@@ -485,7 +485,7 @@ namespace Chos5555Bot.EventHandlers
                     await modMessage.DeleteAsync();
 
                 // Create new message and react to it
-                await modChannel.SendMessageAsync($"User {reaction.User.Value.Mention} cancelled quest:\n{quest.Text}\n" +
+                await modChannel.SendMessageAsync($"❗ User {reaction.User.Value.Mention} cancelled quest:\n{quest.Text}\n" +
                     $"Making it available again.");
 
                 // Update quest in DB
@@ -543,7 +543,7 @@ namespace Chos5555Bot.EventHandlers
                 var userId = message.MentionedUserIds.SingleOrDefault();
 
                 // Modify mod message content and remove reactions
-                var content = $"{reaction.User.Value.Mention} accepted completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
+                var content = $"✅ {reaction.User.Value.Mention} accepted completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
                     $"of quest: \n{quest.Text}\nQuest completed!";
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
@@ -610,7 +610,7 @@ namespace Chos5555Bot.EventHandlers
                 await taker.SendMessageAsync($"Completion of quest:\n{quest.Text}\n was **rejected**, complete it and click the checkmark again.");
 
                 // Modify mod message content and remove reactions
-                content = $"{reaction.User.Value.Mention} rejected completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
+                content = $"❎ {reaction.User.Value.Mention} rejected completion by {(await guild.GetUserAsync(quest.TakerId)).Mention} " +
                     $"of quest:\n{quest.Text}\nRemoving completed status.";
                 await (message as IUserMessage).ModifyAsync(p => { p.Content = content; });
 
