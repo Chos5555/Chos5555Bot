@@ -389,7 +389,7 @@ namespace Chos5555Bot.Modules.Quests
             var count = 0;
             if (user is not null && user.CompletedQuests.Where(c => c.GameName == game.Name).Any())
                 count = user.CompletedQuests.Where(c => c.GameName == game.Name).Single().QuestCount;
-            await ReplyAsync($"You have completed {count} quests for {game.Name}.");
+            await ReplyAsync($"Your quest score for {game.Name} is: **{count}**");
         }
 
         /// <summary>
@@ -426,7 +426,7 @@ namespace Chos5555Bot.Modules.Quests
             var count = 0;
             if (user is not null && user.CompletedQuests.Where(c => c.GameName == game.Name).Any())
                 count = user.CompletedQuests.Where(c => c.GameName == game.Name).Single().QuestCount;
-            await ReplyAsync($"{discordUser.Username} has completed {count} quests for {game.Name}.");
+            await ReplyAsync($"{discordUser.Username}s quest score for {game.Name} is: **{count}**");
         }
     }
 }
